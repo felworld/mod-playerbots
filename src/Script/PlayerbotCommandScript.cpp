@@ -43,6 +43,9 @@ public:
 
         static ChatCommandTable playerbotsCommandTable = {
             {"bot", HandlePlayerbotCommand, SEC_PLAYER, Console::No},
+            {"enable", HandleEnableCommand, SEC_ADMINISTRATOR, Console::Yes},
+            {"disable", HandleDisableCommand, SEC_ADMINISTRATOR, Console::Yes},
+            {"status", HandleStatusCommand, SEC_ADMINISTRATOR, Console::Yes},
             {"gtask", HandleGuildTaskCommand, SEC_GAMEMASTER, Console::Yes},
             {"pmon", HandlePerfMonCommand, SEC_GAMEMASTER, Console::Yes},
             {"rndbot", HandleRandomPlayerbotCommand, SEC_GAMEMASTER, Console::Yes},
@@ -65,6 +68,58 @@ public:
     static bool HandleRandomPlayerbotCommand(ChatHandler* handler, char const* args)
     {
         return RandomPlayerbotMgr::HandlePlayerbotConsoleCommand(handler, args);
+    }
+
+    static bool HandleEnableCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        if (sPlayerbotAIConfig.enabled)
+        {
+            handler->PSendSysMessage("Playerbots are already enabled.");
+            return true;
+        }
+
+        // Flip the master switch live. The random-bot tick
+        // (RandomPlayerbotMgr::UpdateAIInternal) reads sPlayerbotAIConfig.enabled
+        // every pass and resumes on its own, calling AddRandomBots() to refill
+        // the population over the next few minutes. This is a runtime-only
+        // override: a later config reload or restart re-reads AiPlayerbot.Enabled
+        // from playerbots.conf.
+        sPlayerbotAIConfig.enabled = true;
+        handler->PSendSysMessage("Playerbots enabled. Random bots will repopulate over the next few minutes.");
+        LOG_INFO("playerbots", "Playerbots enabled at runtime via .playerbots enable.");
+        return true;
+    }
+
+    static bool HandleDisableCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        if (!sPlayerbotAIConfig.enabled)
+        {
+            handler->PSendSysMessage("Playerbots are already disabled.");
+            return true;
+        }
+
+        sPlayerbotAIConfig.enabled = false;
+
+        // Kick every random bot now. This reuses the same mass-logout the core
+        // runs at shutdown and when no real players remain online. With
+        // enabled = false the random-bot tick early-returns, so nothing
+        // repopulates them until re-enabled. Player-summoned alt bots live in
+        // separate per-player PlayerbotMgr holders and are not touched here;
+        // the enabled gate simply stops new alt-bot logins.
+        uint32 count = sRandomPlayerbotMgr.GetPlayerbotsCount();
+        sRandomPlayerbotMgr.LogoutAllBots();
+
+        handler->PSendSysMessage("Playerbots disabled. Logging out {} random bot(s).", count);
+        LOG_INFO("playerbots", "Playerbots disabled at runtime via .playerbots disable ({} bots logged out).", count);
+        return true;
+    }
+
+    static bool HandleStatusCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        handler->PSendSysMessage("Playerbots are currently {}. {} random bot(s) online.",
+            sPlayerbotAIConfig.enabled ? "ENABLED" : "DISABLED",
+            sRandomPlayerbotMgr.GetPlayerbotsCount());
+        return true;
     }
 
     static bool HandleGuildTaskCommand(ChatHandler* handler, char const* args)
