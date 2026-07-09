@@ -28,6 +28,19 @@ void GrindingStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
 }
 
+void GrindQuestsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    // reduce lower than loot
+    triggers.push_back(
+        new TriggerNode(
+            "no target",
+            {
+                NextAction("attack quest target", 4.0f)
+            }
+        )
+    );
+}
+
 void MoveRandomStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(

@@ -137,6 +137,7 @@ public:
         creators["sit"] = &ActionContext::sit;
         creators["aggressive target"] = &ActionContext::aggressive_target;
         creators["attack anything"] = &ActionContext::attack_anything;
+        creators["attack quest target"] = &ActionContext::attack_quest_target;
         creators["attack least hp target"] = &ActionContext::attack_least_hp_target;
         creators["attack enemy player"] = &ActionContext::attack_enemy_player;
         creators["emote"] = &ActionContext::emote;
@@ -341,6 +342,7 @@ private:
     static Action* suggest_dungeon(PlayerbotAI* botAI) { return new SuggestDungeonAction(botAI); }
     static Action* aggressive_target(PlayerbotAI* botAI) { return new AggressiveTargetAction(botAI); }
     static Action* attack_anything(PlayerbotAI* botAI) { return new AttackAnythingAction(botAI); }
+    static Action* attack_quest_target(PlayerbotAI* botAI) { return new AttackQuestTargetAction(botAI); }
     static Action* attack_least_hp_target(PlayerbotAI* botAI) { return new AttackLeastHpTargetAction(botAI); }
     static Action* attack_enemy_player(PlayerbotAI* botAI) { return new AttackEnemyPlayerAction(botAI); }
     static Action* stay(PlayerbotAI* botAI) { return new StayAction(botAI); }

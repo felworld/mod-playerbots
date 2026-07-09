@@ -53,6 +53,7 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
 
     float distance = 0;
     Unit* result = nullptr;
+    bool const questOnly = QuestTargetsOnly();
     std::unordered_map<uint32, bool> needForQuestMap;
 
     for (ObjectGuid const guid : targets)
@@ -64,15 +65,25 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
         if (!unit->IsInWorld() || unit->IsDuringRemoveFromWorld())
             continue;
 
-        if (unit->ToCreature() && !unit->ToCreature()->GetCreatureTemplate()->lootid &&
+        // quest-needed targets are attacked even when neutral or too low for xp
+        if (!questOnly && unit->ToCreature() && !unit->ToCreature()->GetCreatureTemplate()->lootid &&
             bot->GetReactionTo(unit) >= REP_NEUTRAL)
             continue;
 
         if (!bot->IsHostileTo(unit) && unit->GetNpcFlags() != UNIT_NPC_FLAG_NONE)
             continue;
 
-        if (!bot->isHonorOrXPTarget(unit))
+        if (!questOnly && !bot->isHonorOrXPTarget(unit))
             continue;
+
+        if (questOnly)
+        {
+            if (needForQuestMap.find(unit->GetEntry()) == needForQuestMap.end())
+                needForQuestMap[unit->GetEntry()] = groupNeedForQuest(unit);
+
+            if (!needForQuestMap[unit->GetEntry()])
+                continue;
+        }
 
         if (abs(bot->GetPositionZ() - unit->GetPositionZ()) > INTERACTION_DISTANCE)
             continue;
@@ -111,7 +122,7 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
         if (unit->ToCreature())
             aggroRange = std::min(30.0f, unit->ToCreature()->GetAggroRange(bot) + 10.0f);
         bool outOfAggro = unit->ToCreature() && bot->GetDistance(unit) > aggroRange;
-        if (inactiveGrindStatus && outOfAggro)
+        if (!questOnly && inactiveGrindStatus && outOfAggro)
         {
             if (needForQuestMap.find(unit->GetEntry()) == needForQuestMap.end())
                 needForQuestMap[unit->GetEntry()] = needForQuest(unit);
@@ -151,9 +162,34 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
     return result;
 }
 
-bool GrindTargetValue::needForQuest(Unit* target)
+bool GrindTargetValue::needForQuest(Unit* target) { return needForQuest(bot, target); }
+
+bool GrindTargetValue::groupNeedForQuest(Unit* target)
 {
-    QuestStatusMap& questMap = bot->getQuestStatusMap();
+    if (needForQuest(bot, target))
+        return true;
+
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
+    for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); itr++)
+    {
+        Player* member = ObjectAccessor::FindPlayer(itr->guid);
+        if (!member || member == bot)
+            continue;
+
+        if (needForQuest(member, target))
+            return true;
+    }
+
+    return false;
+}
+
+bool GrindTargetValue::needForQuest(Player* player, Unit* target)
+{
+    QuestStatusMap& questMap = player->getQuestStatusMap();
     for (auto& quest : questMap)
     {
         Quest const* questTemplate = sObjectMgr->GetQuestTemplate(quest.first);
@@ -164,13 +200,13 @@ bool GrindTargetValue::needForQuest(Unit* target)
         if (!questId)
             continue;
 
-        QuestStatus status = bot->GetQuestStatus(questId);
+        QuestStatus status = player->GetQuestStatus(questId);
 
         if (status == QUEST_STATUS_INCOMPLETE)
         {
-            const QuestStatusData* questStatus = &bot->getQuestStatusMap()[questId];
+            const QuestStatusData* questStatus = &questMap[questId];
 
-            if (questTemplate->GetQuestLevel() > bot->GetLevel() + 5)
+            if (questTemplate->GetQuestLevel() > player->GetLevel() + 5)
                 continue;
 
             for (int j = 0; j < QUEST_OBJECTIVES_COUNT; j++)
@@ -193,7 +229,7 @@ bool GrindTargetValue::needForQuest(Unit* target)
     {
         if (uint32 lootId = data->lootid)
         {
-            if (LootTemplates_Creature.HaveQuestLootForPlayer(lootId, bot))
+            if (LootTemplates_Creature.HaveQuestLootForPlayer(lootId, player))
             {
                 return true;
             }

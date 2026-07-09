@@ -11,6 +11,8 @@
 class PlayerbotAI;
 class Unit;
 
+class Player;
+
 class GrindTargetValue : public TargetValue
 {
 public:
@@ -18,10 +20,24 @@ public:
 
     Unit* Calculate() override;
 
+protected:
+    virtual bool QuestTargetsOnly() const { return false; }
+
 private:
     uint32 GetTargetingPlayerCount(Unit* unit);
     Unit* FindTargetForGrinding(uint32 assistCount);
     bool needForQuest(Unit* target);
+    bool needForQuest(Player* player, Unit* target);
+    bool groupNeedForQuest(Unit* target);
+};
+
+class QuestGrindTargetValue : public GrindTargetValue
+{
+public:
+    QuestGrindTargetValue(PlayerbotAI* botAI) : GrindTargetValue(botAI, "quest grind target") {}
+
+protected:
+    bool QuestTargetsOnly() const override { return true; }
 };
 
 #endif

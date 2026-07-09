@@ -47,12 +47,20 @@ public:
 class AttackAnythingAction : public AttackAction
 {
 public:
-    AttackAnythingAction(PlayerbotAI* botAI) : AttackAction(botAI, "attack anything") {}
+    AttackAnythingAction(PlayerbotAI* botAI, std::string const name = "attack anything") : AttackAction(botAI, name) {}
 
     std::string const GetTargetName() override { return "grind target"; }
     bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;
+};
+
+class AttackQuestTargetAction : public AttackAnythingAction
+{
+public:
+    AttackQuestTargetAction(PlayerbotAI* botAI) : AttackAnythingAction(botAI, "attack quest target") {}
+
+    std::string const GetTargetName() override { return "quest grind target"; }
 };
 
 class AttackLeastHpTargetAction : public AttackAction

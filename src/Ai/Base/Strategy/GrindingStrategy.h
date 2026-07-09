@@ -21,6 +21,17 @@ public:
     void InitTriggers(std::vector<TriggerNode*>& triggers) override;
 };
 
+// Like GrindingStrategy, but only attacks mobs someone in the group still
+// needs for a quest (kill credit or quest loot)
+class GrindQuestsStrategy : public GrindingStrategy
+{
+public:
+    GrindQuestsStrategy(PlayerbotAI* botAI) : GrindingStrategy(botAI) {}
+
+    std::string const getName() override { return "grind quests"; }
+    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+};
+
 class MoveRandomStrategy : public NonCombatStrategy
 {
 public:
