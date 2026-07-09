@@ -71,4 +71,12 @@ private:
     bool ignoreRange;
 };
 
+class TeamFlagCarrierAttackerValue : public UnitCalculatedValue
+{
+public:
+    TeamFlagCarrierAttackerValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "team fc attacker") {}
+
+    Unit* Calculate() override;
+};
+
 #endif

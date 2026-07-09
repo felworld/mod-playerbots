@@ -78,6 +78,30 @@ Unit* FlagCarrierValue::Calculate()
     return carrier;
 }
 
+Unit* TeamFlagCarrierAttackerValue::Calculate()
+{
+    Unit* carrier = AI_VALUE(Unit*, "team flag carrier");
+    if (!carrier || carrier == bot)
+        return nullptr;
+
+    Unit* closest = nullptr;
+    float closestDist = 40.0f;
+    for (Unit* attacker : carrier->getAttackers())
+    {
+        if (!attacker || !attacker->IsAlive() || !bot->IsValidAttackTarget(attacker))
+            continue;
+
+        float dist = bot->GetDistance(attacker);
+        if (dist < closestDist)
+        {
+            closest = attacker;
+            closestDist = dist;
+        }
+    }
+
+    return closest;
+}
+
 std::vector<CreatureData const*> BgMastersValue::Calculate()
 {
     BattlegroundTypeId bgTypeId = (BattlegroundTypeId)stoi(qualifier);

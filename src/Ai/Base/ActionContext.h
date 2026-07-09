@@ -226,6 +226,7 @@ public:
         creators["bg protect fc"] = &ActionContext::bg_protect_fc;
         creators["bg use buff"] = &ActionContext::bg_use_buff;
         creators["attack enemy flag carrier"] = &ActionContext::attack_enemy_fc;
+        creators["attack team fc attacker"] = &ActionContext::attack_team_fc_attacker;
         creators["bg check flag"] = &ActionContext::bg_check_flag;
 
         // Vehicles
@@ -433,6 +434,7 @@ private:
     static Action* bg_attack_fc(PlayerbotAI* botAI) { return new BGTactics(botAI, "attack fc"); }
     static Action* bg_protect_fc(PlayerbotAI* botAI) { return new BGTactics(botAI, "protect fc"); }
     static Action* attack_enemy_fc(PlayerbotAI* botAI) { return new AttackEnemyFlagCarrierAction(botAI); }
+    static Action* attack_team_fc_attacker(PlayerbotAI* botAI) { return new AttackTeamFlagCarrierAttackerAction(botAI); }
     static Action* bg_use_buff(PlayerbotAI* botAI) { return new BGTactics(botAI, "use buff"); }
     static Action* bg_check_flag(PlayerbotAI* botAI) { return new BGTactics(botAI, "check flag"); }
 

@@ -25,9 +25,15 @@ bool AttackEnemyPlayerAction::isUseful()
 
 bool AttackEnemyFlagCarrierAction::isUseful()
 {
+    // A bot carrying a flag itself should keep running, not turn to fight
     Unit* target = context->GetValue<Unit*>("enemy flag carrier")->Get();
     return target && ServerFacade::instance().IsDistanceLessOrEqualThan(ServerFacade::instance().GetDistance2d(bot, target), 100.0f) &&
-           PlayerHasFlag::IsCapturingFlag(bot);
+           !PlayerHasFlag::IsCapturingFlag(bot);
+}
+
+bool AttackTeamFlagCarrierAttackerAction::isUseful()
+{
+    return !PlayerHasFlag::IsCapturingFlag(bot) && context->GetValue<Unit*>("team fc attacker")->Get();
 }
 
 bool AggressiveTargetAction::isUseful()

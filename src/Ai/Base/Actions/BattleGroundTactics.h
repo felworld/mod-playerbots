@@ -127,6 +127,7 @@ private:
     bool atFlag(std::vector<BattleBotPath*> const& vPaths, std::vector<uint32> const& vFlagIds);
     bool flagTaken();
     bool teamFlagTaken();
+    bool isWsEscortRole();
     bool protectFC();
     bool useBuff();
     uint32 getPlayersInArea(TeamId teamId, Position point, float range, bool combat = true);

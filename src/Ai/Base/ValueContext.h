@@ -261,6 +261,7 @@ public:
         creators["bg master"] = &ValueContext::bg_master;
         creators["enemy flag carrier"] = &ValueContext::enemy_fc;
         creators["team flag carrier"] = &ValueContext::team_fc;
+        creators["team fc attacker"] = &ValueContext::team_fc_attacker;
 
         creators["home bind"] = &ValueContext::home_bind;
         creators["last long move"] = &ValueContext::last_long_move;
@@ -515,6 +516,7 @@ private:
     static UntypedValue* rpg_bg_type(PlayerbotAI* botAI) { return new RpgBgTypeValue(botAI); }
     static UntypedValue* team_fc(PlayerbotAI* botAI) { return new FlagCarrierValue(botAI, true, true); }
     static UntypedValue* enemy_fc(PlayerbotAI* botAI) { return new FlagCarrierValue(botAI, false, true); }
+    static UntypedValue* team_fc_attacker(PlayerbotAI* botAI) { return new TeamFlagCarrierAttackerValue(botAI); }
 
     static UntypedValue* last_long_move(PlayerbotAI* botAI) { return new LastLongMoveValue(botAI); }
     static UntypedValue* home_bind(PlayerbotAI* botAI) { return new HomeBindValue(botAI); }

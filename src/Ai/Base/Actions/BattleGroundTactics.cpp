@@ -2177,31 +2177,17 @@ bool BGTactics::selectObjective(bool reset)
 
             uint8 defendersProhab = 3;  // Default balanced
 
-            switch (static_cast<uint8>(strategy))
-            {
-                case 0:
-                case 1:
-                case 2:
-                case 3:  // Balanced
-                    defendersProhab = 3;
-                    break;
-                case 4:
-                case 5:
-                case 6:
-                case 7:  // Heavy Offense
-                    defendersProhab = 1;
-                    break;
-                case 8:
-                case 9:  // Heavy Defense
-                    defendersProhab = 6;
-                    break;
-            }
+            if (strategy == WS_STRATEGY_OFFENSIVE)
+                defendersProhab = 1;
+            else if (strategy == WS_STRATEGY_DEFENSIVE)
+                defendersProhab = 6;
 
             if (enemyStrategy == WS_STRATEGY_DEFENSIVE)
                 defendersProhab = 2;
 
             // Role check
             bool isDefender = role < defendersProhab;
+            bool isEscort = isWsEscortRole();
 
             // Retrieve flag carriers
             Unit* enemyFC = AI_VALUE(Unit*, "enemy flag carrier");
@@ -2213,17 +2199,17 @@ bool BGTactics::selectObjective(bool reset)
 
             // Check if both teams currently have the flag
             bool bothFlagsTaken = enemyFC && teamFC;
-            if (!hasFlag && bothFlagsTaken)
+            if (!hasFlag && isEscort && teamFC && teamFC != bot)
             {
-                // If both flags taken: Bots have 20% chance to support own flag carrier, otherwise attack enemy FC
-                if (urand(0, 99) < 20 && teamFC)
-                {
-                    target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
-                    if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
-                        Follow(teamFC);
-                }
-                else
-                    target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
+                // Escorts stick with their flag carrier regardless of flag state
+                target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
+                if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
+                    Follow(teamFC);
+            }
+            else if (!hasFlag && bothFlagsTaken)
+            {
+                // Both flags taken: non-escorts hunt the enemy flag carrier to break the stalemate
+                target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
             }
             // Graveyard Camping if in lead
             else if (!hasFlag && role < 8 &&
@@ -3370,7 +3356,7 @@ bool BGTactics::resetObjective()
     BattlegroundTypeId bgType = bg->GetBgTypeID();
 
     if (bgType == BATTLEGROUND_WS)
-        oddsToChangeRole = 2;
+        oddsToChangeRole = 0;  // WSG roles re-roll on death instead (below)
     else if (bgType == BATTLEGROUND_EY || bgType == BATTLEGROUND_IC || bgType == BATTLEGROUND_AB)
         oddsToChangeRole = 1;
     else if (bgType == BATTLEGROUND_AV)
@@ -3384,6 +3370,22 @@ bool BGTactics::resetObjective()
     // Change role if allowed by odds and not carrying flag
     if (urand(0, 99) < oddsToChangeRole && !isCarryingFlag)
         context->GetValue<uint32>("bg role")->Set(urand(0, 9));
+
+    // WSG: mirror real players — re-decide role after dying, biased toward whatever is happening near the graveyard
+    if (bgType == BATTLEGROUND_WS && !bot->IsAlive() && !isCarryingFlag)
+    {
+        uint32 newRole = urand(0, 9);
+
+        if (Unit* teamFC = AI_VALUE(Unit*, "team flag carrier"))
+            if (teamFC != bot && bot->GetDistance(teamFC) < 60.0f && urand(0, 99) < 50)
+                newRole = 9;  // escort the carrier passing by
+
+        if (Unit* enemyFC = AI_VALUE(Unit*, "enemy flag carrier"))
+            if (bot->GetDistance(enemyFC) < 60.0f && urand(0, 99) < 50)
+                newRole = 0;  // intercept the enemy carrier passing by
+
+        context->GetValue<uint32>("bg role")->Set(newRole);
+    }
 
     // Reset objective position
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
@@ -3996,6 +3998,24 @@ bool BGTactics::teamFlagTaken()
     return !bg->GetFlagPickerGUID(bot->GetTeamId()).IsEmpty();
 }
 
+bool BGTactics::isWsEscortRole()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg)
+        return false;
+
+    WSBotStrategy strategy = static_cast<WSBotStrategy>(GetBotStrategyForTeam(bg, bot->GetTeamId()));
+
+    uint32 escortSlots = 2;
+    if (strategy == WS_STRATEGY_OFFENSIVE)
+        escortSlots = 1;
+    else if (strategy == WS_STRATEGY_DEFENSIVE)
+        escortSlots = 3;
+
+    uint32 role = context->GetValue<uint32>("bg role")->Get();
+    return role >= 10 - escortSlots;
+}
+
 bool BGTactics::protectFC()
 {
     Battleground* bg = bot->GetBattleground();
@@ -4005,22 +4025,32 @@ bool BGTactics::protectFC()
     Unit* teamFC = AI_VALUE(Unit*, "team flag carrier");
 
     if (!teamFC || teamFC == bot)
-    {
         return false;
-    }
 
-    if (!bot->IsInCombat() && !bot->IsWithinDistInMap(teamFC, 20.0f))
-    {
-        // Get the flag carrier's position
-        float fcX = teamFC->GetPositionX();
-        float fcY = teamFC->GetPositionY();
-        float fcZ = teamFC->GetPositionZ();
-        uint32 mapId = bot->GetMapId();
+    // Only dedicated escorts glue themselves to the carrier;
+    // everyone else helps via "attack team fc attacker" when close
+    if (!isWsEscortRole())
+        return false;
 
+    float fcX = teamFC->GetPositionX();
+    float fcY = teamFC->GetPositionY();
+    float fcZ = teamFC->GetPositionZ();
+    uint32 mapId = bot->GetMapId();
+
+    float dist = bot->GetDistance(teamFC);
+
+    // Carrier is getting away: break off (even mid-fight) and catch up
+    if (dist > 40.0f)
+        return MoveNear(mapId, fcX, fcY, fcZ, 5.0f, MovementPriority::MOVEMENT_COMBAT);
+
+    // Close enough: let the combat engine fight whatever threatens the carrier
+    if (bot->IsInCombat())
+        return false;
+
+    if (dist > 15.0f)
         return MoveNear(mapId, fcX, fcY, fcZ, 5.0f, MovementPriority::MOVEMENT_NORMAL);
-    }
 
-    return false;
+    return Follow(teamFC);
 }
 
 bool BGTactics::useBuff()

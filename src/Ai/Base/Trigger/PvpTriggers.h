@@ -53,6 +53,14 @@ public:
     bool IsActive() override;
 };
 
+class TeamFlagCarrierAttackerNear : public Trigger
+{
+public:
+    TeamFlagCarrierAttackerNear(PlayerbotAI* botAI) : Trigger(botAI, "team fc attacker near") {}
+
+    bool IsActive() override;
+};
+
 class TeamHasFlag : public Trigger
 {
 public:

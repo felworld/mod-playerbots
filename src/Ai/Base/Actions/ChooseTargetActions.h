@@ -99,6 +99,15 @@ public:
     bool isUseful() override;
 };
 
+class AttackTeamFlagCarrierAttackerAction : public AttackAction
+{
+public:
+    AttackTeamFlagCarrierAttackerAction(PlayerbotAI* botAI) : AttackAction(botAI, "attack team fc attacker") {}
+
+    std::string const GetTargetName() override { return "team fc attacker"; }
+    bool isUseful() override;
+};
+
 class DropTargetAction : public Action
 {
 public:
