@@ -15,13 +15,22 @@ is forked from — the two move together.
 
 ## Felworld changes
 
+- Bot commands require a `!` prefix. Felworld sets upstream's
+  `AiPlayerbot.CommandPrefix` option to `!`, so every command from the
+  [playerbot command list](https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Commands)
+  is written `!follow`, `!attack`, `!who warrior`, etc. Messages without the
+  prefix are never parsed as commands — they're ordinary chat, which (with
+  Ollama enabled) goes to mod-ollama-chat instead of being silently eaten
+  because it happened to start with a command word ("who said that?"). Our
+  fork also fixes the bot's internally re-queued commands (repeated `cast`)
+  to respect the prefix, which upstream's option didn't.
 - `grind quests` strategy: like upstream's `grind` ("attack any visible
   target"), but the bot only engages mobs that someone in its group still
   needs for an incomplete quest — kill credit or a quest-item drop —
   including neutral and gray ones. The result is a bot that pulls and fights
   like a questing partner instead of slaughtering everything in sight. Say
-  `grind quests` to the bot in chat to enable it (`grind` and `grind quests`
-  replace each other; `nc -grind quests` turns it off).
+  `!grind quests` to the bot in chat to enable it (`grind` and `grind quests`
+  replace each other; `!nc -grind quests` turns it off).
 - `.playerbots enable|disable|status` GM/console commands: flip random bots
   on or off at runtime without a restart. Disabling logs out all random bots
   and stops repopulation (player-owned alt bots are untouched); enabling
