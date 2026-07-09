@@ -199,13 +199,30 @@ bool GrindChatShortcutAction::Execute(Event /*event*/)
         return false;
 
     botAI->Reset();
-    botAI->ChangeStrategy("+grind,-passive,-stay", BOT_STATE_NON_COMBAT);
+    botAI->ChangeStrategy("+grind,-grind quests,-passive,-stay", BOT_STATE_NON_COMBAT);
 
     ResetReturnPosition();
     ResetStayPosition();
 
     botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
         "grinding", "Grinding", {}));
+    return true;
+}
+
+bool GrindQuestsChatShortcutAction::Execute(Event /*event*/)
+{
+    Player* master = GetMaster();
+    if (!master)
+        return false;
+
+    botAI->Reset();
+    botAI->ChangeStrategy("+grind quests,-grind,-passive,-stay", BOT_STATE_NON_COMBAT);
+
+    ResetReturnPosition();
+    ResetStayPosition();
+
+    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "grinding_quests", "Grinding quest mobs", {}));
     return true;
 }
 

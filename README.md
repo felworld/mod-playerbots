@@ -15,6 +15,13 @@ is forked from — the two move together.
 
 ## Felworld changes
 
+- `grind quests` strategy: like upstream's `grind` ("attack any visible
+  target"), but the bot only engages mobs that someone in its group still
+  needs for an incomplete quest — kill credit or a quest-item drop —
+  including neutral and gray ones. The result is a bot that pulls and fights
+  like a questing partner instead of slaughtering everything in sight. Say
+  `grind quests` to the bot in chat to enable it (`grind` and `grind quests`
+  replace each other; `nc -grind quests` turns it off).
 - `.playerbots enable|disable|status` GM/console commands: flip random bots
   on or off at runtime without a restart. Disabling logs out all random bots
   and stops repopulation (player-owned alt bots are untouched); enabling

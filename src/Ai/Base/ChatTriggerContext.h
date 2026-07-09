@@ -87,6 +87,7 @@ public:
         creators["stay"] = &ChatTriggerContext::stay;
         creators["flee"] = &ChatTriggerContext::flee;
         creators["grind"] = &ChatTriggerContext::grind;
+        creators["grind quests"] = &ChatTriggerContext::grind_quests;
         creators["tank attack"] = &ChatTriggerContext::tank_attack;
         creators["talk"] = &ChatTriggerContext::talk;
         creators["enter vehicle"] = &ChatTriggerContext::enter_vehicle;
@@ -200,6 +201,7 @@ private:
     static Trigger* leave_vehicle(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "leave vehicle"); }
     static Trigger* flee(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "flee"); }
     static Trigger* grind(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "grind"); }
+    static Trigger* grind_quests(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "grind quests"); }
     static Trigger* tank_attack(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "tank attack"); }
     static Trigger* stay(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "stay"); }
     static Trigger* follow(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "follow"); }

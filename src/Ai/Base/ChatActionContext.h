@@ -158,6 +158,7 @@ public:
         creators["runaway chat shortcut"] = &ChatActionContext::runaway_chat_shortcut;
         creators["move from group chat shortcut"] = &ChatActionContext::move_from_group_chat_shortcut;
         creators["grind chat shortcut"] = &ChatActionContext::grind_chat_shortcut;
+        creators["grind quests chat shortcut"] = &ChatActionContext::grind_quests_chat_shortcut;
         creators["tank attack chat shortcut"] = &ChatActionContext::tank_attack_chat_shortcut;
         creators["gossip hello"] = &ChatActionContext::gossip_hello;
         creators["cast custom spell"] = &ChatActionContext::cast_custom_spell;
@@ -243,6 +244,7 @@ private:
     static Action* cast_custom_nc_spell(PlayerbotAI* botAI) { return new CastCustomNcSpellAction(botAI); }
     static Action* tank_attack_chat_shortcut(PlayerbotAI* botAI) { return new TankAttackChatShortcutAction(botAI); }
     static Action* grind_chat_shortcut(PlayerbotAI* botAI) { return new GrindChatShortcutAction(botAI); }
+    static Action* grind_quests_chat_shortcut(PlayerbotAI* botAI) { return new GrindQuestsChatShortcutAction(botAI); }
     static Action* flee_chat_shortcut(PlayerbotAI* botAI) { return new FleeChatShortcutAction(botAI); }
     static Action* runaway_chat_shortcut(PlayerbotAI* botAI) { return new GoawayChatShortcutAction(botAI); }
     static Action* stay_chat_shortcut(PlayerbotAI* botAI) { return new StayChatShortcutAction(botAI); }

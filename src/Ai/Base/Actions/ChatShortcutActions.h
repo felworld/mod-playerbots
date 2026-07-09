@@ -69,6 +69,14 @@ public:
     bool Execute(Event event) override;
 };
 
+class GrindQuestsChatShortcutAction : public PositionsResetAction
+{
+public:
+    GrindQuestsChatShortcutAction(PlayerbotAI* botAI) : PositionsResetAction(botAI, "grind quests chat shortcut") {}
+
+    bool Execute(Event event) override;
+};
+
 class TankAttackChatShortcutAction : public PositionsResetAction
 {
 public:
