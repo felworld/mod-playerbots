@@ -79,4 +79,12 @@ public:
     Unit* Calculate() override;
 };
 
+class NearEnemyFlagRoomValue : public BoolCalculatedValue
+{
+public:
+    NearEnemyFlagRoomValue(PlayerbotAI* botAI) : BoolCalculatedValue(botAI, "near enemy flag room") {}
+
+    bool Calculate() override;
+};
+
 #endif

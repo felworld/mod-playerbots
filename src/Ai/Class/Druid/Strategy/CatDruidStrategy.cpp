@@ -377,3 +377,40 @@ void CatOffhealStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 }
+
+class ProwlStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
+{
+public:
+    ProwlStrategyActionNodeFactory()
+    {
+        creators["prowl"] = &prowl;
+    }
+
+private:
+    static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "prowl",
+            /*P*/ { NextAction("cat form") },
+            /*A*/ {},
+            /*C*/ {}
+        );
+    }
+};
+
+ProwlStrategy::ProwlStrategy(PlayerbotAI* botAI) : Strategy(botAI)
+{
+    actionNodeFactories.Add(new ProwlStrategyActionNodeFactory());
+}
+
+void ProwlStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    triggers.push_back(
+        new TriggerNode(
+            "prowl",
+            {
+                NextAction("prowl", ACTION_INTERRUPT)
+            }
+        )
+    );
+}

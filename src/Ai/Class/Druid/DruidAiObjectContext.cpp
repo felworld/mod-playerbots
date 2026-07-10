@@ -36,6 +36,7 @@ public:
         creators["blanketing"] = &DruidStrategyFactoryInternal::blanketing;
         creators["tranquility"] = &DruidStrategyFactoryInternal::tranquility;
         creators["feral charge"] = &DruidStrategyFactoryInternal::feral_charge;
+        creators["prowl"] = &DruidStrategyFactoryInternal::prowl;
     }
 
 private:
@@ -51,6 +52,7 @@ private:
     static Strategy* blanketing(PlayerbotAI* botAI) { return new DruidBlanketStrategy(botAI); }
     static Strategy* tranquility(PlayerbotAI* botAI) { return new DruidTranquilityStrategy(botAI); }
     static Strategy* feral_charge(PlayerbotAI* botAI) { return new FeralChargeDruidStrategy(botAI); }
+    static Strategy* prowl(PlayerbotAI* botAI) { return new ProwlStrategy(botAI); }
 };
 
 class DruidDruidStrategyFactoryInternal : public NamedObjectContext<Strategy>

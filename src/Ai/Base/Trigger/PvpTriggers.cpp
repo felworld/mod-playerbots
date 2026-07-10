@@ -278,6 +278,44 @@ bool TeamFlagCarrierAttackerNear::IsActive()
     return AI_VALUE(Unit*, "team fc attacker") != nullptr;
 }
 
+bool ShadowmeldTrigger::IsActive()
+{
+    // Classes with a real stealth of their own don't need the racial
+    if (bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID)
+        return false;
+
+    constexpr uint32 SPELL_SHADOWMELD = 58984;
+    if (!bot->HasSpell(SPELL_SHADOWMELD) || bot->HasSpellCooldown(SPELL_SHADOWMELD))
+        return false;
+
+    // Shadowmeld only holds while standing still, and is pointless when already hidden
+    if (bot->IsInCombat() || bot->isMoving() || bot->HasStealthAura())
+        return false;
+
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+        return false;
+
+    if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))
+        return false;
+
+    // Waiting in the flag room with our flag still at base
+    if (!AI_VALUE(Unit*, "enemy flag carrier"))
+    {
+        Position const& ownFlagPos =
+            bot->GetTeamId() == TEAM_ALLIANCE ? WS_FLAG_POS_ALLIANCE : WS_FLAG_POS_HORDE;
+        if (bot->GetDistance(ownFlagPos) < 20.0f)
+            return true;
+    }
+
+    // Escorting a carrier who is standing still (e.g. waiting on a flag return)
+    Unit* teamFC = AI_VALUE(Unit*, "team flag carrier");
+    if (teamFC && teamFC != bot && !teamFC->isMoving() && bot->GetDistance(teamFC) < 15.0f)
+        return true;
+
+    return false;
+}
+
 bool PlayerWantsInBattlegroundTrigger::IsActive()
 {
     if (bot->InBattleground())

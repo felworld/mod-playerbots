@@ -2188,6 +2188,7 @@ bool BGTactics::selectObjective(bool reset)
             // Role check
             bool isDefender = role < defendersProhab;
             bool isEscort = isWsEscortRole();
+            bool isHomeDefender = isWsHomeDefenderRole();
 
             // Retrieve flag carriers
             Unit* enemyFC = AI_VALUE(Unit*, "enemy flag carrier");
@@ -2205,6 +2206,19 @@ bool BGTactics::selectObjective(bool reset)
                 target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
                 if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
                     Follow(teamFC);
+            }
+            else if (!hasFlag && isHomeDefender)
+            {
+                if (enemyFC)
+                {
+                    // Our flag is out: run it down
+                    target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
+                }
+                else
+                {
+                    // Station in the flag room before the enemy ever gets there
+                    SetSafePos(team == TEAM_ALLIANCE ? WS_FLAG_HIDE_ALLIANCE[urand(0, 2)] : WS_FLAG_HIDE_HORDE[urand(0, 2)], 5.0f);
+                }
             }
             else if (!hasFlag && bothFlagsTaken)
             {
@@ -4014,6 +4028,20 @@ bool BGTactics::isWsEscortRole()
 
     uint32 role = context->GetValue<uint32>("bg role")->Get();
     return role >= 10 - escortSlots;
+}
+
+bool BGTactics::isWsHomeDefenderRole()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg)
+        return false;
+
+    WSBotStrategy strategy = static_cast<WSBotStrategy>(GetBotStrategyForTeam(bg, bot->GetTeamId()));
+
+    uint32 homeSlots = strategy == WS_STRATEGY_DEFENSIVE ? 2 : 1;
+
+    uint32 role = context->GetValue<uint32>("bg role")->Get();
+    return role < homeSlots;
 }
 
 bool BGTactics::protectFC()

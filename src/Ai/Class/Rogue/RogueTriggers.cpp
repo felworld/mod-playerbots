@@ -38,6 +38,10 @@ bool StealthTrigger::IsActive()
     if (bot->HasAura(SPELL_STEALTH) || bot->IsInCombat() || bot->HasSpellCooldown(SPELL_STEALTH))
         return false;
 
+    // Sneak into the enemy flag room even when no enemy has been spotted yet
+    if (AI_VALUE(bool, "near enemy flag room"))
+        return true;
+
     float distance = 30.f;
 
     Unit* target = AI_VALUE(Unit*, "enemy player target");

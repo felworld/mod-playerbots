@@ -189,6 +189,7 @@ public:
         creators["enemy flagcarrier near"] = &TriggerContext::enemy_flagcarrier_near;
         creators["team flagcarrier near"] = &TriggerContext::team_flagcarrier_near;
         creators["team fc attacker near"] = &TriggerContext::team_fc_attacker_near;
+        creators["shadowmeld"] = &TriggerContext::shadowmeld;
         creators["in Battleground"] = &TriggerContext::player_is_in_BATTLEGROUND;
         creators["in Battleground without flag"] = &TriggerContext::player_is_in_BATTLEGROUND_no_flag;
         creators["wants in bg"] = &TriggerContext::player_wants_in_bg;
@@ -412,6 +413,7 @@ private:
     static Trigger* enemy_flagcarrier_near(PlayerbotAI* botAI) { return new EnemyFlagCarrierNear(botAI); }
     static Trigger* team_flagcarrier_near(PlayerbotAI* botAI) { return new TeamFlagCarrierNear(botAI); }
     static Trigger* team_fc_attacker_near(PlayerbotAI* botAI) { return new TeamFlagCarrierAttackerNear(botAI); }
+    static Trigger* shadowmeld(PlayerbotAI* botAI) { return new ShadowmeldTrigger(botAI); }
     static Trigger* player_is_in_BATTLEGROUND(PlayerbotAI* botAI) { return new PlayerIsInBattleground(botAI); }
     static Trigger* player_is_in_BATTLEGROUND_no_flag(PlayerbotAI* botAI) { return new PlayerIsInBattlegroundWithoutFlag(botAI); }
     static Trigger* alliance_no_snowfall_gy(PlayerbotAI* botAI) { return new AllianceNoSnowfallGY(botAI); }

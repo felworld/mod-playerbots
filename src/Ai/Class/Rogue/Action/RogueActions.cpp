@@ -42,6 +42,23 @@ bool UnstealthAction::Execute(Event /*event*/)
     return true;
 }
 
+bool UnstealthAction::isUseful()
+{
+    // Don't throw away the stealth advantage while enemy players are around
+    if (bot->InBattleground() || bot->IsPvP())
+    {
+        GuidVector enemies = AI_VALUE(GuidVector, "nearest enemy players");
+        for (ObjectGuid const guid : enemies)
+        {
+            Unit* enemy = botAI->GetUnit(guid);
+            if (enemy && enemy->IsAlive() && bot->GetDistance(enemy) < 40.0f)
+                return false;
+        }
+    }
+
+    return true;
+}
+
 bool CheckStealthAction::Execute(Event /*event*/)
 {
     if (botAI->HasAura("stealth", bot))

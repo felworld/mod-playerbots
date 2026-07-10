@@ -680,6 +680,12 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
         nonCombatEngine->removeStrategy("rpg", false);
         nonCombatEngine->removeStrategy("grind", false);
 
+        // Stealth openers: approach enemies and the enemy flag room hidden
+        if (player->getClass() == CLASS_ROGUE)
+            nonCombatEngine->addStrategy("stealth", false);
+        else if (player->getClass() == CLASS_DRUID)
+            nonCombatEngine->addStrategy("prowl", false);
+
         BattlegroundTypeId bgType = player->GetBattlegroundTypeId();
         if (bgType == BATTLEGROUND_RB)
             bgType = player->GetBattleground()->GetBgTypeID(true);

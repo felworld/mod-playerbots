@@ -54,6 +54,18 @@ bool ProwlTrigger::IsActive()
     if (bot->HasSpellCooldown(prowlId))
         return false;
 
+    // do not use with WSG flag or EYE flag
+    constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
+    constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
+    constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
+    if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) ||
+        bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
+        return false;
+
+    // Sneak into the enemy flag room even when no enemy has been spotted yet
+    if (AI_VALUE(bool, "near enemy flag room"))
+        return true;
+
     float distance = 30.f;
 
     Unit* target = AI_VALUE(Unit*, "enemy player target");

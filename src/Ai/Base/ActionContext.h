@@ -174,6 +174,7 @@ public:
         creators["war stomp"] = &ActionContext::war_stomp;
         creators["blood fury"] = &ActionContext::blood_fury;
         creators["berserking"] = &ActionContext::berserking;
+        creators["shadowmeld"] = &ActionContext::shadowmeld;
         creators["every man for himself"] = &ActionContext::every_man_for_himself;
         creators["will of the forsaken"] = &ActionContext::will_of_the_forsaken;
         creators["stoneform"] = &ActionContext::stoneform;
@@ -383,6 +384,7 @@ private:
     static Action* war_stomp(PlayerbotAI* botAI) { return new CastWarStompAction(botAI); }
     static Action* blood_fury(PlayerbotAI* botAI) { return new CastBloodFuryAction(botAI); }
     static Action* berserking(PlayerbotAI* botAI) { return new CastBerserkingAction(botAI); }
+    static Action* shadowmeld(PlayerbotAI* botAI) { return new CastShadowmeldAction(botAI); }
     static Action* every_man_for_himself(PlayerbotAI* botAI) { return new CastEveryManForHimselfAction(botAI); }
     static Action* will_of_the_forsaken(PlayerbotAI* botAI) { return new CastWillOfTheForsakenAction(botAI); }
     static Action* stoneform(PlayerbotAI* botAI) { return new CastStoneformAction(botAI); }

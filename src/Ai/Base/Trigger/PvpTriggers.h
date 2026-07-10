@@ -61,6 +61,14 @@ public:
     bool IsActive() override;
 };
 
+class ShadowmeldTrigger : public Trigger
+{
+public:
+    ShadowmeldTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shadowmeld") {}
+
+    bool IsActive() override;
+};
+
 class TeamHasFlag : public Trigger
 {
 public:

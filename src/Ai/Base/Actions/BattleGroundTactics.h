@@ -96,6 +96,9 @@ static std::unordered_map<uint8, AVNodePositionData> AVNodeMovementTargets = {
 
 typedef std::vector<BattleBotWaypoint> BattleBotPath;
 
+extern Position const WS_FLAG_POS_HORDE;
+extern Position const WS_FLAG_POS_ALLIANCE;
+
 extern std::vector<BattleBotPath*> const vPaths_WS;
 extern std::vector<BattleBotPath*> const vPaths_AB;
 extern std::vector<BattleBotPath*> const vPaths_AV;
@@ -128,6 +131,7 @@ private:
     bool flagTaken();
     bool teamFlagTaken();
     bool isWsEscortRole();
+    bool isWsHomeDefenderRole();
     bool protectFC();
     bool useBuff();
     uint32 getPlayersInArea(TeamId teamId, Position point, float range, bool combat = true);

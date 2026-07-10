@@ -262,6 +262,7 @@ public:
         creators["enemy flag carrier"] = &ValueContext::enemy_fc;
         creators["team flag carrier"] = &ValueContext::team_fc;
         creators["team fc attacker"] = &ValueContext::team_fc_attacker;
+        creators["near enemy flag room"] = &ValueContext::near_enemy_flag_room;
 
         creators["home bind"] = &ValueContext::home_bind;
         creators["last long move"] = &ValueContext::last_long_move;
@@ -517,6 +518,7 @@ private:
     static UntypedValue* team_fc(PlayerbotAI* botAI) { return new FlagCarrierValue(botAI, true, true); }
     static UntypedValue* enemy_fc(PlayerbotAI* botAI) { return new FlagCarrierValue(botAI, false, true); }
     static UntypedValue* team_fc_attacker(PlayerbotAI* botAI) { return new TeamFlagCarrierAttackerValue(botAI); }
+    static UntypedValue* near_enemy_flag_room(PlayerbotAI* botAI) { return new NearEnemyFlagRoomValue(botAI); }
 
     static UntypedValue* last_long_move(PlayerbotAI* botAI) { return new LastLongMoveValue(botAI); }
     static UntypedValue* home_bind(PlayerbotAI* botAI) { return new HomeBindValue(botAI); }

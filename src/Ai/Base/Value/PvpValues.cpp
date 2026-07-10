@@ -5,6 +5,7 @@
 
 #include "PvpValues.h"
 
+#include "BattleGroundTactics.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundMgr.h"
 #include "BattlegroundWS.h"
@@ -86,10 +87,11 @@ Unit* TeamFlagCarrierAttackerValue::Calculate()
 
     Unit* closest = nullptr;
     float closestDist = 40.0f;
-    for (Unit* attacker : carrier->getAttackers())
+
+    auto consider = [&](Unit* attacker)
     {
         if (!attacker || !attacker->IsAlive() || !bot->IsValidAttackTarget(attacker))
-            continue;
+            return;
 
         float dist = bot->GetDistance(attacker);
         if (dist < closestDist)
@@ -97,9 +99,41 @@ Unit* TeamFlagCarrierAttackerValue::Calculate()
             closest = attacker;
             closestDist = dist;
         }
+    };
+
+    for (Unit* attacker : carrier->getAttackers())
+        consider(attacker);
+
+    // getAttackers() only knows about engaged auto-attacks; also intercept
+    // enemies that have singled out the carrier but haven't connected yet
+    GuidVector targets = AI_VALUE(GuidVector, "possible targets");
+    for (ObjectGuid const guid : targets)
+    {
+        Unit* enemy = botAI->GetUnit(guid);
+        if (!enemy || !enemy->IsPlayer())
+            continue;
+
+        if (enemy->GetTarget() != carrier->GetGUID() && enemy->GetVictim() != carrier)
+            continue;
+
+        if (enemy->GetDistance(carrier) > 25.0f)
+            continue;
+
+        consider(enemy);
     }
 
     return closest;
+}
+
+bool NearEnemyFlagRoomValue::Calculate()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+        return false;
+
+    Position const& enemyFlagPos =
+        bot->GetTeamId() == TEAM_ALLIANCE ? WS_FLAG_POS_HORDE : WS_FLAG_POS_ALLIANCE;
+    return bot->GetDistance(enemyFlagPos) < 60.0f;
 }
 
 std::vector<CreatureData const*> BgMastersValue::Calculate()

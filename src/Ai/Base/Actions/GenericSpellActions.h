@@ -306,6 +306,12 @@ public:
     CastBerserkingAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "berserking") {}
 };
 
+class CastShadowmeldAction : public CastBuffSpellAction
+{
+public:
+    CastShadowmeldAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "shadowmeld") {}
+};
+
 class CastEveryManForHimselfAction : public CastSpellAction
 {
 public:

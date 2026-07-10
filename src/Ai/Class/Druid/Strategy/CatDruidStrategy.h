@@ -34,4 +34,15 @@ public:
     std::string const getName() override { return "offheal"; }
 };
 
+// Non-combat prowl opener, druid counterpart of the rogue "stealth" strategy.
+// Shifts to cat form if needed, so any spec can sneak when it matters.
+class ProwlStrategy : public Strategy
+{
+public:
+    ProwlStrategy(PlayerbotAI* botAI);
+
+    void InitTriggers(std::vector<TriggerNode*>& triggers) override;
+    std::string const getName() override { return "prowl"; }
+};
+
 #endif

@@ -55,6 +55,7 @@ public:
     UnstealthAction(PlayerbotAI* botAI) : Action(botAI, "unstealth") {}
 
     bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class CheckStealthAction : public Action
