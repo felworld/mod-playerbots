@@ -85,6 +85,14 @@ void EmoteActionBase::InitEmotes()
     textEmotes["train"] = 264;
 }
 
+bool EmoteActionBase::WantsToReplyTo(Player* source)
+{
+    if (!source || !GET_PLAYERBOT_AI(source))
+        return true;
+
+    return roll_chance_i(sPlayerbotAIConfig.emoteReplyChanceToBots);
+}
+
 bool EmoteActionBase::Emote(Unit* target, uint32 type, bool textEmote)
 {
     if (target && !bot->HasInArc(static_cast<float>(M_PI), target, sPlayerbotAIConfig.sightDistance))
@@ -117,8 +125,8 @@ bool EmoteActionBase::Emote(Unit* target, uint32 type, bool textEmote)
     else
         bot->HandleEmoteCommand(type);
 
-    if (oldSelection)
-        bot->SetTarget(oldSelection);
+    if (target)
+        bot->SetSelection(oldSelection);
 
     return true;
 }
@@ -667,7 +675,7 @@ bool EmoteAction::Execute(Event event)
             p >> nam;
 
         pSource = ObjectAccessor::FindPlayer(source);
-        if (pSource && (pSource->GetGUID() != bot->GetGUID()) &&
+        if (pSource && (pSource->GetGUID() != bot->GetGUID()) && WantsToReplyTo(pSource) &&
             ((urand(0, 1) && bot->HasInArc(static_cast<float>(M_PI), pSource, 10.0f)) ||
              (namlen > 1 && strstri(bot->GetName().c_str(), nam.c_str()))))
         {
@@ -691,7 +699,7 @@ bool EmoteAction::Execute(Event event)
         if (pSource && pSource != bot && ServerFacade::instance().GetDistance2d(bot, pSource) < sPlayerbotAIConfig.farDistance &&
             emoteId != EMOTE_ONESHOT_NONE)
         {
-            if ((pSource->GetGUID() != bot->GetGUID()) &&
+            if ((pSource->GetGUID() != bot->GetGUID()) && WantsToReplyTo(pSource) &&
                 (pSource->GetTarget() == bot->GetGUID() ||
                  (urand(0, 1) && bot->HasInArc(static_cast<float>(M_PI), pSource, 10.0f))))
             {
@@ -789,6 +797,12 @@ bool EmoteAction::isUseful()
 bool TalkAction::Execute(Event /*event*/)
 {
     Unit* target = botAI->GetUnit(AI_VALUE(ObjectGuid, "talk target"));
+    if (target && !WantsToReplyTo(dynamic_cast<Player*>(target)))
+    {
+        context->GetValue<ObjectGuid>("talk target")->Set(ObjectGuid::Empty);
+        target = nullptr;
+    }
+
     if (!target)
         target = GetTarget();
 

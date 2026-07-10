@@ -27,6 +27,7 @@ public:
 protected:
     bool Emote(Unit* target, uint32 type, bool textEmote = false);
     bool ReceiveEmote(Player* source, uint32 emote, bool verbal = false);
+    static bool WantsToReplyTo(Player* source);
     Unit* GetTarget();
     void InitEmotes();
     static std::map<std::string, uint32> emotes;

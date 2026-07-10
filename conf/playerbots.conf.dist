@@ -2207,6 +2207,11 @@ AiPlayerbot.EnableAutoTradeOnItemMention = 1
 AiPlayerbot.RandomBotTalk = 1
 # Enable bots emoting
 AiPlayerbot.RandomBotEmote = 0
+# Chance (0-100) for a bot to respond to another bot's emote or keep up an
+# emote conversation with another bot. Replies to real players are unaffected.
+# Keeps bot-to-bot emote exchanges from looping forever (each reply rolls this
+# chance, so chains die out quickly). 0 disables bot-to-bot emote replies.
+AiPlayerbot.EmoteReplyChanceToBots = 30
 # Enable randombots suggesting dungeons in chat
 AiPlayerbot.RandomBotSuggestDungeons = 1
 # Bots greet players when invited

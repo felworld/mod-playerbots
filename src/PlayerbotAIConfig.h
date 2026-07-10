@@ -164,6 +164,7 @@ public:
     // chat
     bool randomBotTalk;
     bool randomBotEmote;
+    uint32 emoteReplyChanceToBots;
     bool randomBotSuggestDungeons;
     bool enableBroadcasts;
     bool enableGreet;
