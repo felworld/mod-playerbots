@@ -30,6 +30,7 @@
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
+#include "World.h"
 #include "PlayerbotCommandScript.h"
 #include "cmath"
 #include "BattleGroundTactics.h"
@@ -378,8 +379,12 @@ public:
 
     void OnUpdate(uint32 diff) override
     {
+        // Keep draining already-queued world-thread operations even while gameplay is
+        // paused (GM ".pause"); map threads are idle then, so nothing new gets queued.
         PlayerbotWorldThreadProcessor::instance().Update(diff);
-        sRandomPlayerbotMgr.UpdateAI(diff);  // World thread only
+
+        if (!sWorld->IsGameplayPaused())
+            sRandomPlayerbotMgr.UpdateAI(diff);  // World thread only
     }
 };
 
@@ -447,7 +452,8 @@ public:
 
     void OnPlayerbotUpdate(uint32 /*diff*/) override
     {
-        sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
+        if (!sWorld->IsGameplayPaused())
+            sRandomPlayerbotMgr.UpdateSessions();  // Per-bot updates only
     }
 
     void OnPlayerbotUpdateSessions(Player* player) override
