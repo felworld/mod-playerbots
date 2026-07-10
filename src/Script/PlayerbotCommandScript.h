@@ -6,6 +6,14 @@
 #ifndef PLAYERBOTS_PLAYERBOTCOMMANDSCRIPT_H
 #define PLAYERBOTS_PLAYERBOTCOMMANDSCRIPT_H
 
+class ChatHandler;
+
+// .playerbots enable|disable|status handlers, free functions (not class-local)
+// so the unit tests (test/PlayerbotsToggleCommandTest.cpp) can call them directly.
+bool HandlePlayerbotsEnableCommand(ChatHandler* handler, char const* args);
+bool HandlePlayerbotsDisableCommand(ChatHandler* handler, char const* args);
+bool HandlePlayerbotsStatusCommand(ChatHandler* handler, char const* args);
+
 void AddPlayerbotsCommandscripts();
 
 #endif

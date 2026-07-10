@@ -63,6 +63,13 @@ is forked from — the two move together.
   reload or restart reverts to `AiPlayerbot.Enabled` (which Felworld drives
   per session mode via the `AC_AI_PLAYERBOT_ENABLED` env var).
 
+## Tests
+
+`test/` holds the module's Google Test sources (the `!` command prefix, the
+`.playerbots` runtime toggle), registered with the core test target by
+`mod-playerbots.cmake` and built/run through the core repo's
+`apps/docker/run-unit-tests.sh`.
+
 There is no separate install procedure: the module is a submodule of
 felworld/azerothcore and builds into the containerized server there. Our
 playtested `playerbots.conf` lives in

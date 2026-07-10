@@ -11,6 +11,7 @@
 #include <string>
 
 #include "AiFactory.h"
+#include "BotCommandPrefix.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
@@ -626,13 +627,8 @@ void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fr
         return;
     }
 
-    if (!sPlayerbotAIConfig.commandPrefix.empty())
-    {
-        if (filtered.find(sPlayerbotAIConfig.commandPrefix) != 0)
-            return;
-
-        filtered = filtered.substr(sPlayerbotAIConfig.commandPrefix.size());
-    }
+    if (!StripBotCommandPrefix(filtered, sPlayerbotAIConfig.commandPrefix))
+        return;
 
     if (chatMap.empty())
     {
@@ -968,13 +964,8 @@ void PlayerbotAI::HandleCommand(uint32 type, std::string const text, Player* fro
     }
 
     std::string filtered = text;
-    if (!sPlayerbotAIConfig.commandPrefix.empty())
-    {
-        if (filtered.find(sPlayerbotAIConfig.commandPrefix) != 0)
-            return;
-
-        filtered = filtered.substr(sPlayerbotAIConfig.commandPrefix.size());
-    }
+    if (!StripBotCommandPrefix(filtered, sPlayerbotAIConfig.commandPrefix))
+        return;
 
     if (chatMap.empty())
     {
