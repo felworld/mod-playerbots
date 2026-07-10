@@ -44,6 +44,14 @@ is forked from — the two move together.
   stealth with enemy players around), while Night Elves without native
   stealth Shadowmeld when guarding the flag room or waiting with a
   stationary carrier.
+- Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting
+  to each other's emotes could ping-pong forever: a reply aimed at the other
+  bot was always answered, and replying left the responder targeting the
+  emoter, making every further reply aimed. Now a bot replying to *another
+  bot's* emote (or continuing an emote conversation with one) rolls the new
+  `AiPlayerbot.EmoteReplyChanceToBots` option (default 30%), so exchanges
+  trail off naturally after a reply or two. Replies to real players are
+  unchanged.
 - `.playerbots enable|disable|status` GM/console commands: flip random bots
   on or off at runtime without a restart. Disabling logs out all random bots
   and stops repopulation (player-owned alt bots are untouched); enabling
