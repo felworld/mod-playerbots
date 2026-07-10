@@ -4516,7 +4516,7 @@ static void wsgMarkCallout(Battleground* bg, TeamId teamId, uint8 type)
 }
 
 constexpr uint32 WSG_CALLOUT_INCOMING_COOLDOWN_SECS = 30;
-constexpr uint32 WSG_CALLOUT_EFC_PING_COOLDOWN_SECS = 20;
+constexpr uint32 WSG_CALLOUT_EFC_PING_COOLDOWN_SECS = 5;
 
 bool WsgAnnounceIncomingAction::isUseful()
 {
