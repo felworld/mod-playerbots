@@ -87,4 +87,12 @@ public:
     bool Calculate() override;
 };
 
+class EnemiesNearOwnFlagRoomValue : public Uint32CalculatedValue
+{
+public:
+    EnemiesNearOwnFlagRoomValue(PlayerbotAI* botAI) : Uint32CalculatedValue(botAI, "enemies near own flag room") {}
+
+    uint32 Calculate() override;
+};
+
 #endif

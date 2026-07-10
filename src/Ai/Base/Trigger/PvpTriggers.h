@@ -69,6 +69,22 @@ public:
     bool IsActive() override;
 };
 
+class EnemyNearOwnFlagRoomTrigger : public Trigger
+{
+public:
+    EnemyNearOwnFlagRoomTrigger(PlayerbotAI* botAI) : Trigger(botAI, "enemy near own flag room", 3) {}
+
+    bool IsActive() override;
+};
+
+class EnemyFlagCarrierSpottedTrigger : public Trigger
+{
+public:
+    EnemyFlagCarrierSpottedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "enemy fc spotted", 2) {}
+
+    bool IsActive() override;
+};
+
 class TeamHasFlag : public Trigger
 {
 public:

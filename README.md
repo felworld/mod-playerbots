@@ -43,7 +43,11 @@ is forked from — the two move together.
   approaching the enemy flag room or nearby enemies (and no longer drop
   stealth with enemy players around), while Night Elves without native
   stealth Shadowmeld when guarding the flag room or waiting with a
-  stationary carrier.
+  stationary carrier. Bots also communicate like teammates: whoever sees
+  enemies closing on the friendly flag room calls it in battleground chat
+  ("3 incoming at our flag room!"), and a bot that spots the enemy flag
+  carrier pings the map at their position — one callout per team per wave,
+  not ten bots shouting at once.
 - Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting
   to each other's emotes could ping-pong forever: a reply aimed at the other
   bot was always answered, and replying left the responder targeting the

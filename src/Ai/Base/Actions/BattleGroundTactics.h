@@ -149,4 +149,25 @@ private:
     bool moveToCenter(Battleground* bg);
 };
 
+// Call out enemies approaching our flag room in battleground chat.
+// Rate-limited per team so ten defenders don't all shout at once.
+class WsgAnnounceIncomingAction : public Action
+{
+public:
+    WsgAnnounceIncomingAction(PlayerbotAI* botAI) : Action(botAI, "announce incoming") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+// Ping the minimap at the enemy flag carrier's position, like a player would
+class WsgPingEnemyFlagCarrierAction : public Action
+{
+public:
+    WsgPingEnemyFlagCarrierAction(PlayerbotAI* botAI) : Action(botAI, "ping enemy fc") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 #endif

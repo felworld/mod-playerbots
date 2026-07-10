@@ -136,6 +136,30 @@ bool NearEnemyFlagRoomValue::Calculate()
     return bot->GetDistance(enemyFlagPos) < 60.0f;
 }
 
+uint32 EnemiesNearOwnFlagRoomValue::Calculate()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+        return 0;
+
+    Position const& ownFlagPos =
+        bot->GetTeamId() == TEAM_ALLIANCE ? WS_FLAG_POS_ALLIANCE : WS_FLAG_POS_HORDE;
+
+    uint32 count = 0;
+    GuidVector targets = AI_VALUE(GuidVector, "possible targets");
+    for (ObjectGuid const guid : targets)
+    {
+        Unit* enemy = botAI->GetUnit(guid);
+        if (!enemy || !enemy->IsPlayer() || !enemy->IsAlive() || !bot->IsValidAttackTarget(enemy))
+            continue;
+
+        if (enemy->GetDistance(ownFlagPos) < 60.0f)
+            ++count;
+    }
+
+    return count;
+}
+
 std::vector<CreatureData const*> BgMastersValue::Calculate()
 {
     BattlegroundTypeId bgTypeId = (BattlegroundTypeId)stoi(qualifier);

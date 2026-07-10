@@ -316,6 +316,28 @@ bool ShadowmeldTrigger::IsActive()
     return false;
 }
 
+bool EnemyNearOwnFlagRoomTrigger::IsActive()
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS || bg->GetBgTypeID(true) != BATTLEGROUND_WS)
+        return false;
+
+    // The callout is about protecting a flag that is still home
+    BattlegroundWS* ws = (BattlegroundWS*)bg;
+    if (ws->GetFlagState(bot->GetTeamId()) == BG_WS_FLAG_STATE_ON_PLAYER)
+        return false;
+
+    return AI_VALUE(uint32, "enemies near own flag room") > 0;
+}
+
+bool EnemyFlagCarrierSpottedTrigger::IsActive()
+{
+    // The value is already gated on sight distance; require line of sight too,
+    // so nobody pings a carrier they couldn't actually have seen
+    Unit* carrier = AI_VALUE(Unit*, "enemy flag carrier");
+    return carrier && bot->IsWithinLOSInMap(carrier);
+}
+
 bool PlayerWantsInBattlegroundTrigger::IsActive()
 {
     if (bot->InBattleground())
