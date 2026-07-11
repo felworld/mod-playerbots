@@ -2212,6 +2212,11 @@ AiPlayerbot.RandomBotEmote = 0
 # Keeps bot-to-bot emote exchanges from looping forever (each reply rolls this
 # chance, so chains die out quickly). 0 disables bot-to-bot emote replies.
 AiPlayerbot.EmoteReplyChanceToBots = 30
+# After one bot replies to another bot's emote, other bots stay silent toward
+# that bot for this many seconds, so a single bot (occasionally two) responds
+# instead of the whole crowd emoting back at once. 0 disables the window and
+# lets every nearby bot roll EmoteReplyChanceToBots independently.
+AiPlayerbot.EmoteReplyClaimSeconds = 10
 # Enable randombots suggesting dungeons in chat
 AiPlayerbot.RandomBotSuggestDungeons = 1
 # Bots greet players when invited

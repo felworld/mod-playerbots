@@ -53,8 +53,12 @@ is forked from — the two move together.
   emoter, making every further reply aimed. Now a bot replying to *another
   bot's* emote (or continuing an emote conversation with one) rolls the new
   `AiPlayerbot.EmoteReplyChanceToBots` option (default 30%), so exchanges
-  trail off naturally after a reply or two. Replies to real players are
-  unchanged.
+  trail off naturally after a reply or two. Crowds don't reply in chorus
+  either: the first bot to reply "claims" the emoter for
+  `AiPlayerbot.EmoteReplyClaimSeconds` (default 10), silencing the rest of
+  the crowd toward it — without this, a battleground graveyard or bank full
+  of bots would answer every emote with a dozen more and the storm would
+  sustain itself. Replies to real players are unchanged.
 - `.playerbots enable|disable|status` GM/console commands: flip random bots
   on or off at runtime without a restart. Disabling logs out all random bots
   and stops repopulation (player-owned alt bots are untouched); enabling

@@ -87,10 +87,28 @@ void EmoteActionBase::InitEmotes()
 
 bool EmoteActionBase::WantsToReplyTo(Player* source)
 {
-    if (!source || !GET_PLAYERBOT_AI(source))
+    PlayerbotAI* sourceAI = source ? GET_PLAYERBOT_AI(source) : nullptr;
+    if (!sourceAI)
         return true;
 
-    return roll_chance_i(sPlayerbotAIConfig.emoteReplyChanceToBots);
+    // The claim keeps a crowd from replying in chorus: whichever nearby bot
+    // processes the emote first (and passes the chance roll) stamps the claim
+    // on the emoting bot, silencing everyone else toward it for the window.
+    Value<time_t>* claim = nullptr;
+    if (sPlayerbotAIConfig.emoteReplyClaimSeconds)
+    {
+        claim = sourceAI->GetAiObjectContext()->GetValue<time_t>("last emote", "bot reply claim");
+        if (time(nullptr) - claim->Get() < sPlayerbotAIConfig.emoteReplyClaimSeconds)
+            return false;
+    }
+
+    if (!roll_chance_i(sPlayerbotAIConfig.emoteReplyChanceToBots))
+        return false;
+
+    if (claim)
+        claim->Set(time(nullptr));
+
+    return true;
 }
 
 bool EmoteActionBase::Emote(Unit* target, uint32 type, bool textEmote)

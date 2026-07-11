@@ -165,6 +165,7 @@ public:
     bool randomBotTalk;
     bool randomBotEmote;
     uint32 emoteReplyChanceToBots;
+    uint32 emoteReplyClaimSeconds;
     bool randomBotSuggestDungeons;
     bool enableBroadcasts;
     bool enableGreet;
