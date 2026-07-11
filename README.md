@@ -19,8 +19,8 @@ is forked from — the two move together.
   `AiPlayerbot.CommandPrefix` option to `!`, so every command from the
   [playerbot command list](https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Commands)
   is written `!follow`, `!attack`, `!who warrior`, etc. Messages without the
-  prefix are never parsed as commands — they're ordinary chat, which (with
-  Ollama enabled) goes to mod-ollama-chat instead of being silently eaten
+  prefix are never parsed as commands — they're ordinary chat, which (in LLM
+  mode) goes to mod-llm instead of being silently eaten
   because it happened to start with a command word ("who said that?"). Our
   fork also fixes the bot's internally re-queued commands (repeated `cast`)
   to respect the prefix, which upstream's option didn't.
