@@ -31,7 +31,6 @@ void WarsongStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("team flagcarrier near", { NextAction("bg protect fc", ACTION_RAID)}));
     triggers.push_back(new TriggerNode("team fc attacker near", { NextAction("attack team fc attacker", ACTION_RAID + 2.0f)}));
     triggers.push_back(new TriggerNode("enemy near own flag room", { NextAction("announce incoming", ACTION_RAID + 3.0f)}));
-    triggers.push_back(new TriggerNode("enemy fc spotted", { NextAction("ping enemy fc", ACTION_RAID + 3.0f)}));
     triggers.push_back(new TriggerNode("shadowmeld", { NextAction("shadowmeld", ACTION_HIGH)}));
     triggers.push_back(new TriggerNode("often", { NextAction("bg use buff", ACTION_BG)}));
     triggers.push_back(new TriggerNode("low health", { NextAction("bg use buff", ACTION_MOVE)}));

@@ -4493,7 +4493,6 @@ bool ArenaTactics::moveToCenter(Battleground* bg)
 enum WsgCalloutType : uint8
 {
     WSG_CALLOUT_INCOMING = 0,
-    WSG_CALLOUT_EFC_PING = 1,
 };
 
 // One callout per team per cooldown window, no matter how many bots noticed
@@ -4516,7 +4515,6 @@ static void wsgMarkCallout(Battleground* bg, TeamId teamId, uint8 type)
 }
 
 constexpr uint32 WSG_CALLOUT_INCOMING_COOLDOWN_SECS = 30;
-constexpr uint32 WSG_CALLOUT_EFC_PING_COOLDOWN_SECS = 5;
 
 bool WsgAnnounceIncomingAction::isUseful()
 {
@@ -4553,26 +4551,5 @@ bool WsgAnnounceIncomingAction::Execute(Event event)
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, msg);
     group->BroadcastPacket(&data, false);
-    return true;
-}
-
-bool WsgPingEnemyFlagCarrierAction::isUseful()
-{
-    Battleground* bg = bot->GetBattleground();
-    if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS)
-        return false;
-
-    return wsgCalloutReady(bg, bot->GetTeamId(), WSG_CALLOUT_EFC_PING, WSG_CALLOUT_EFC_PING_COOLDOWN_SECS);
-}
-
-bool WsgPingEnemyFlagCarrierAction::Execute(Event event)
-{
-    Battleground* bg = bot->GetBattleground();
-    Unit* carrier = AI_VALUE(Unit*, "enemy flag carrier");
-    if (!bg || !carrier)
-        return false;
-
-    wsgMarkCallout(bg, bot->GetTeamId(), WSG_CALLOUT_EFC_PING);
-    botAI->Ping(carrier->GetPositionX(), carrier->GetPositionY());
     return true;
 }

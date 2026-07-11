@@ -160,14 +160,4 @@ public:
     bool isUseful() override;
 };
 
-// Ping the minimap at the enemy flag carrier's position, like a player would
-class WsgPingEnemyFlagCarrierAction : public Action
-{
-public:
-    WsgPingEnemyFlagCarrierAction(PlayerbotAI* botAI) : Action(botAI, "ping enemy fc") {}
-
-    bool Execute(Event event) override;
-    bool isUseful() override;
-};
-
 #endif

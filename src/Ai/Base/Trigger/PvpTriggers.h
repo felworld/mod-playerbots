@@ -77,14 +77,6 @@ public:
     bool IsActive() override;
 };
 
-class EnemyFlagCarrierSpottedTrigger : public Trigger
-{
-public:
-    EnemyFlagCarrierSpottedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "enemy fc spotted", 2) {}
-
-    bool IsActive() override;
-};
-
 class TeamHasFlag : public Trigger
 {
 public:

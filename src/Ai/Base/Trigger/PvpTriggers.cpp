@@ -330,14 +330,6 @@ bool EnemyNearOwnFlagRoomTrigger::IsActive()
     return AI_VALUE(uint32, "enemies near own flag room") > 0;
 }
 
-bool EnemyFlagCarrierSpottedTrigger::IsActive()
-{
-    // The value is already gated on sight distance; require line of sight too,
-    // so nobody pings a carrier they couldn't actually have seen
-    Unit* carrier = AI_VALUE(Unit*, "enemy flag carrier");
-    return carrier && bot->IsWithinLOSInMap(carrier);
-}
-
 bool PlayerWantsInBattlegroundTrigger::IsActive()
 {
     if (bot->InBattleground())
