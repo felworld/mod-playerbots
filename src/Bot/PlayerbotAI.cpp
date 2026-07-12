@@ -12,6 +12,7 @@
 
 #include "AiFactory.h"
 #include "BotCommandPrefix.h"
+#include "BroadcastHelper.h"
 #include "BudgetValues.h"
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
@@ -2869,6 +2870,50 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
     }
 
     return false;
+}
+
+void PlayerbotAI::UpdateZoneChannels()
+{
+    AreaTableEntry const* currentZone = GetCurrentZone();
+    ChannelMgr* cMgr = ChannelMgr::forTeam(bot->GetTeamId());
+    if (!currentZone || !cMgr)
+        return;
+
+    std::string zoneName = GetLocalizedAreaName(currentZone);
+    uint8 locale = BroadcastHelper::GetLocale();
+
+    for (uint32 i = 0; i < sChatChannelsStore.GetNumRows(); ++i)
+    {
+        ChatChannelsEntry const* entry = sChatChannelsStore.LookupEntry(i);
+        if (!entry)
+            continue;
+
+        // Only General and LocalDefense follow the player's zone; city-bound
+        // (Trade, GuildRecruitment) and global (LFG, WorldDefense) channels
+        // are joined once at login and left alone here.
+        if (entry->ChannelID != ChatChannelId::GENERAL && entry->ChannelID != ChatChannelId::LOCAL_DEFENSE)
+            continue;
+
+        char target_name_buf[100];
+        snprintf(target_name_buf, 100, entry->pattern[locale], zoneName.c_str());
+
+        // Leave the same kind of channel joined for any other zone.
+        // LeaveChannel(..., true) also erases the channel from the player's
+        // joined list; the packets it sends to the bot session are discarded.
+        std::vector<Channel*> stale;
+        for (auto const& [key, channel] : cMgr->GetChannels())
+            if (channel && channel->GetChannelId() == entry->ChannelID
+                && channel->GetName() != target_name_buf && bot->IsInChannel(channel))
+                stale.push_back(channel);
+        for (Channel* channel : stale)
+            channel->LeaveChannel(bot, true);
+
+        if (Channel* target = cMgr->GetJoinChannel(target_name_buf, entry->ChannelID))
+            if (!bot->IsInChannel(target))
+                target->JoinChannel(bot, "");
+    }
+
+    SetChannelZone(currentZone->ID);
 }
 
 bool PlayerbotAI::SayToParty(const std::string& msg)

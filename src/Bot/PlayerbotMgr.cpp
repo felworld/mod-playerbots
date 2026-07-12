@@ -627,11 +627,9 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
 
     // join standard channels
     uint8 locale = BroadcastHelper::GetLocale();
-    AreaTableEntry const* current_zone = GET_PLAYERBOT_AI(bot)->GetCurrentZone();
     ChannelMgr* cMgr = ChannelMgr::forTeam(bot->GetTeamId());
-    std::string current_zone_name = current_zone ? GET_PLAYERBOT_AI(bot)->GetLocalizedAreaName(current_zone) : "";
 
-    if (current_zone && cMgr)
+    if (cMgr)
     {
         for (uint32 i = 0; i < sChatChannelsStore.GetNumRows(); ++i)
         {
@@ -642,14 +640,6 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
             Channel* new_channel = nullptr;
             switch (channel->ChannelID)
             {
-                case ChatChannelId::GENERAL:
-                case ChatChannelId::LOCAL_DEFENSE:
-                {
-                    char new_channel_name_buf[100];
-                    snprintf(new_channel_name_buf, 100, channel->pattern[locale], current_zone_name.c_str());
-                    new_channel = cMgr->GetJoinChannel(new_channel_name_buf, channel->ChannelID);
-                    break;
-                }
                 case ChatChannelId::TRADE:
                 case ChatChannelId::GUILD_RECRUITMENT:
                 {
@@ -676,6 +666,10 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                 new_channel->JoinChannel(bot, "");
         }
     }
+
+    // General/LocalDefense follow the bot's zone; joined here and kept in
+    // sync as the bot moves (PlayerbotsPlayerScript::OnPlayerUpdateZone).
+    GET_PLAYERBOT_AI(bot)->UpdateZoneChannels();
 }
 
 std::string const PlayerbotHolder::ProcessBotCommand(std::string const cmd, ObjectGuid guid, ObjectGuid masterguid,

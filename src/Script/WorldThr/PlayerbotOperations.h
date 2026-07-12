@@ -522,4 +522,37 @@ private:
     uint32 m_masterAccountId = 0;
 };
 
+// Re-syncs a bot's zone-bound chat channels (General/LocalDefense) after a
+// zone change. Queued from the map-thread OnPlayerUpdateZone hook; channels
+// are global state and must only be touched on the world thread.
+class UpdateZoneChannelsOperation : public PlayerbotOperation
+{
+public:
+    explicit UpdateZoneChannelsOperation(ObjectGuid botGuid) : m_botGuid(botGuid)
+    {
+    }
+
+    bool Execute() override
+    {
+        Player* bot = ObjectAccessor::FindPlayer(m_botGuid);
+        if (!bot || !bot->IsInWorld())
+            return false;
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        if (!botAI || !botAI->IsBotAI())
+            return false;
+
+        botAI->UpdateZoneChannels();
+        return true;
+    }
+
+    ObjectGuid GetBotGuid() const override { return m_botGuid; }
+    std::string GetName() const override { return "UpdateZoneChannels"; }
+
+    bool IsValid() const override { return ObjectAccessor::FindPlayer(m_botGuid) != nullptr; }
+
+private:
+    ObjectGuid m_botGuid;
+};
+
 #endif

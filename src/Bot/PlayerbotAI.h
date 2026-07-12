@@ -465,6 +465,19 @@ public:
     bool SayToGuild(const std::string& msg);
     bool SayToWorld(const std::string& msg);
     bool SayToChannel(const std::string& msg, const ChatChannelId& chanId);
+    // Joins the current zone's General/LocalDefense channels and leaves the
+    // previous zone's, mirroring what a real client does on zone change.
+    // Must run on the world thread (channels are global state).
+    void UpdateZoneChannels();
+    // Remembers the zone a channel sync was last queued for; returns true if
+    // it changed and a sync should be queued. Called from map-thread hooks.
+    bool SetChannelZone(uint32 zoneId)
+    {
+        if (_channelZoneId == zoneId)
+            return false;
+        _channelZoneId = zoneId;
+        return true;
+    }
     bool SayToParty(const std::string& msg);
     bool SayToRaid(const std::string& msg);
     bool Yell(const std::string& msg);
@@ -611,6 +624,7 @@ public:
 private:
     static void _fillGearScoreData(Player* player, Item* item, std::vector<uint32>* gearScore, uint32& twoHandScore,
                                    bool mixed = false);
+    uint32 _channelZoneId = 0;
     bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     void UpdateAIGroupMaster();
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;

@@ -27,6 +27,7 @@
 #include "PlayerbotAIConfig.h"
 #include "PlayerbotGuildMgr.h"
 #include "PlayerbotSpellRepository.h"
+#include "PlayerbotOperations.h"
 #include "PlayerbotWorldThreadProcessor.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
@@ -90,8 +91,27 @@ public:
         PLAYERHOOK_CAN_PLAYER_USE_GUILD_CHAT,
         PLAYERHOOK_CAN_PLAYER_USE_CHANNEL_CHAT,
         PLAYERHOOK_ON_GIVE_EXP,
-        PLAYERHOOK_ON_BEFORE_TELEPORT
+        PLAYERHOOK_ON_BEFORE_TELEPORT,
+        PLAYERHOOK_ON_UPDATE_ZONE
     }) {}
+
+    void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 /*newArea*/) override
+    {
+        // Keep bots' zone-bound chat channels (General/LocalDefense) in step
+        // with the zone they are in, like a real client. This hook runs on
+        // map threads and can also fire periodically without a zone change,
+        // so diff against the last synced zone and defer the actual channel
+        // work to the world thread.
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(player);
+        if (!botAI || !botAI->IsBotAI())
+            return;
+
+        if (!botAI->SetChannelZone(newZone))
+            return;
+
+        PlayerbotWorldThreadProcessor::instance().QueueOperation(
+            std::make_unique<UpdateZoneChannelsOperation>(player->GetGUID()));
+    }
 
     void OnPlayerLogin(Player* player) override
     {
