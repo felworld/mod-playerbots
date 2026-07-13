@@ -59,6 +59,14 @@ is forked from — the two move together.
   the crowd toward it — without this, a battleground graveyard or bank full
   of bots would answer every emote with a dozen more and the storm would
   sustain itself. Replies to real players are unchanged.
+- Bot chat honors the faction wall (`AllowTwoSide.Interaction.Chat`).
+  Upstream bots said and yelled in the universal language, readable by both
+  factions, and would whisper or answer chatter across the faction line —
+  none of which a real player can do. Now bots speak Common/Orcish like
+  everyone else (universal only when the server config allows cross-faction
+  chat), refuse to whisper the opposite faction (GMs excepted, matching the
+  core), and ignore chatter they couldn't understand. Commands were already
+  faction-safe via the playerbot security layer.
 - `.playerbots enable|disable|status` GM/console commands: flip random bots
   on or off at runtime without a restart. Disabling logs out all random bots
   and stops repopulation (player-owned alt bots are untouched); enabling
