@@ -278,6 +278,8 @@ bool PlayerbotAIConfig::Initialize()
     emoteReplyChanceToBots =
         std::min<uint32>(100, sConfigMgr->GetOption<uint32>("AiPlayerbot.EmoteReplyChanceToBots", 30));  // 0-100
     emoteReplyClaimSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.EmoteReplyClaimSeconds", 10);
+    unpromptedEmoteChance =
+        std::min<uint32>(100, sConfigMgr->GetOption<uint32>("AiPlayerbot.UnpromptedEmoteChance", 100));  // 0-100
     randomBotSuggestDungeons = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotSuggestDungeons", true);
     randomBotSayWithoutMaster = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotSayWithoutMaster", false);
 

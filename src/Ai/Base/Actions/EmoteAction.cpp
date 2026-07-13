@@ -677,6 +677,10 @@ bool EmoteAction::Execute(Event event)
     WorldPacket p(event.getPacket());
     uint32 emote = 0;
 
+    // No packet and no param means the timer trigger fired, not a reaction or command
+    if (p.empty() && event.getParam().empty() && !roll_chance_i(sPlayerbotAIConfig.unpromptedEmoteChance))
+        return false;
+
     Player* pSource = nullptr;
     bool isReact = false;
     if (!p.empty() && p.GetOpcode() == SMSG_TEXT_EMOTE)
@@ -822,7 +826,13 @@ bool TalkAction::Execute(Event /*event*/)
     }
 
     if (!target)
+    {
+        // No talk target means we'd be starting a new exchange, not continuing one
+        if (!roll_chance_i(sPlayerbotAIConfig.unpromptedEmoteChance))
+            return false;
+
         target = GetTarget();
+    }
 
     if (!urand(0, 100))
     {

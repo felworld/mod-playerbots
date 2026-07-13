@@ -2217,6 +2217,12 @@ AiPlayerbot.EmoteReplyChanceToBots = 30
 # instead of the whole crowd emoting back at once. 0 disables the window and
 # lets every nearby bot roll EmoteReplyChanceToBots independently.
 AiPlayerbot.EmoteReplyClaimSeconds = 10
+# Chance (0-100) for a bot to actually emote or make a talk gesture when its
+# unprompted emote timer fires (requires RandomBotEmote). At 100 a bot standing
+# near others makes a talk gesture roughly every 15 seconds; lower this to
+# thin out idle emote spam. Replies to received emotes are unaffected (see
+# EmoteReplyChanceToBots).
+AiPlayerbot.UnpromptedEmoteChance = 100
 # Enable randombots suggesting dungeons in chat
 AiPlayerbot.RandomBotSuggestDungeons = 1
 # Bots greet players when invited

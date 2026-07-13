@@ -59,6 +59,14 @@ is forked from — the two move together.
   the crowd toward it — without this, a battleground graveyard or bank full
   of bots would answer every emote with a dozen more and the storm would
   sustain itself. Replies to real players are unchanged.
+- Unprompted emoting is tunable. With `AiPlayerbot.RandomBotEmote` on,
+  upstream bots near other players made a talk gesture roughly every
+  15 seconds and rolled a random emote on a fixed timer, with no way to
+  tune it short of disabling emotes entirely. The new
+  `AiPlayerbot.UnpromptedEmoteChance` option (0-100, default 100 = upstream
+  frequency) is rolled each time an unprompted emote timer fires, so idle
+  emoting can be thinned out without touching reactions: replies to
+  received emotes and emotes commanded by a master are unaffected.
 - Bot chat honors the faction wall (`AllowTwoSide.Interaction.Chat`).
   Upstream bots said and yelled in the universal language, readable by both
   factions, and would whisper or answer chatter across the faction line —
