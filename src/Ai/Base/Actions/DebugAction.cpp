@@ -891,7 +891,7 @@ bool DebugAction::Execute(Event event)
         for (uint32 i = 0; i < 100; i++)
         {
             bot->PlayDistanceSound(i + soundEffects * 100);
-            bot->Say(std::to_string(i + soundEffects * 100), LANG_UNIVERSAL);
+            bot->Say(std::to_string(i + soundEffects * 100), PlayerbotAI::GetChatLanguage(bot));
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
         }
         return true;

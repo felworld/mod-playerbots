@@ -34,7 +34,7 @@ bool ArenaTeamAcceptAction::Execute(Event event)
         // bot is already in an arena team
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "arena_team_already_in_team", "Sorry, I am already in such team", {});
-        bot->Say(text, LANG_UNIVERSAL);
+        bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
         accept = false;
     }
 
@@ -44,7 +44,7 @@ bool ArenaTeamAcceptAction::Execute(Event event)
         bot->GetSession()->HandleArenaTeamAcceptOpcode(data);
         std::string text = PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "arena_team_thanks_for_invite", "Thanks for the invite!", {});
-        bot->Say(text, LANG_UNIVERSAL);
+        bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
         LOG_INFO("playerbots", "Bot {} <{}> accepts Arena Team invite", bot->GetGUID().ToString().c_str(),
                  bot->GetName().c_str());
         return true;

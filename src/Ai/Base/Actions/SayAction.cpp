@@ -135,9 +135,9 @@ bool SayAction::Execute(Event /*event*/)
         return false;
 
     if (text.find("/y ") == 0)
-        bot->Yell(text.substr(3), (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+        bot->Yell(text.substr(3), PlayerbotAI::GetChatLanguage(bot));
     else
-        bot->Say(text, (bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH));
+        bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
 
     return true;
 }

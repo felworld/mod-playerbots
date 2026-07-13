@@ -23,7 +23,7 @@ bool AcceptAllQuestsAction::ProcessQuest(Quest const* quest, Object* questGiver)
             "quest_accept_debug",
             "Quest [%quest] accepted",
             {{"%quest", text_quest}});
-        bot->Say(text, LANG_UNIVERSAL);
+        bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
     }
 
     return true;

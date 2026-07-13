@@ -114,7 +114,7 @@ bool RpgAction::SetNextRpgAction()
 
         std::stringstream ss;
         ss << "------" << chat->FormatWorldobject(AI_VALUE(GuidPosition, "rpg target").GetWorldObject()) << "------";
-        bot->Say(ss.str(), LANG_UNIVERSAL);
+        bot->Say(ss.str(), PlayerbotAI::GetChatLanguage(bot));
         botAI->TellMasterNoFacing(ss.str());
 
         for (auto action : sortedActions)

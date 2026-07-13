@@ -1929,7 +1929,7 @@ bool AvoidAoeAction::AvoidAuraWithDynamicObj()
             lastMoveTimer = getMSTime();
             std::ostringstream out;
             out << "I'm avoiding " << name.str() << " (" << spellInfo->Id << ")" << " Radius " << radius << " - [Aura]";
-            bot->Say(out.str(), LANG_UNIVERSAL);
+            bot->Say(out.str(), PlayerbotAI::GetChatLanguage(bot));
         }
         return true;
     }
@@ -1998,7 +1998,7 @@ bool AvoidAoeAction::AvoidGameObjectWithDamage()
                 std::ostringstream out;
                 out << "I'm avoiding " << name.str() << " (" << spellInfo->Id << ")" << " Radius " << radius
                     << " - [Trap]";
-                bot->Say(out.str(), LANG_UNIVERSAL);
+                bot->Say(out.str(), PlayerbotAI::GetChatLanguage(bot));
             }
             return true;
         }
@@ -2065,7 +2065,7 @@ bool AvoidAoeAction::AvoidUnitWithDamageAura()
                                 std::ostringstream out;
                                 out << "I'm avoiding " << name.str() << " (" << triggerSpellInfo->Id << ")"
                                     << " Radius " << radius << " - [Unit Trigger]";
-                                bot->Say(out.str(), LANG_UNIVERSAL);
+                                bot->Say(out.str(), PlayerbotAI::GetChatLanguage(bot));
                             }
                         }
                     }

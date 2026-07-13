@@ -1182,6 +1182,11 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
                 if (lang == LANG_ADDON)
                         return;
 
+                // Do not react to speech the bot cannot understand (opposite
+                // faction language while cross-faction chat is disallowed).
+                if (lang != LANG_UNIVERSAL && Language(lang) != GetChatLanguage(bot))
+                    return;
+
                 if (p.GetOpcode() == SMSG_GM_MESSAGECHAT)
                 {
                     p >> textLen;
@@ -2950,31 +2955,23 @@ bool PlayerbotAI::SayToRaid(const std::string& msg)
     return true;
 }
 
+Language PlayerbotAI::GetChatLanguage(Player const* who)
+{
+    if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT))
+        return LANG_UNIVERSAL;
+
+    return who->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH;
+}
+
 bool PlayerbotAI::Yell(const std::string& msg)
 {
-    if (bot->GetTeamId() == TeamId::TEAM_ALLIANCE)
-    {
-        bot->Yell(msg, LANG_COMMON);
-    }
-    else
-    {
-        bot->Yell(msg, LANG_ORCISH);
-    }
-
+    bot->Yell(msg, GetChatLanguage(bot));
     return true;
 }
 
 bool PlayerbotAI::Say(const std::string& msg)
 {
-    if (bot->GetTeamId() == TeamId::TEAM_ALLIANCE)
-    {
-        bot->Say(msg, LANG_COMMON);
-    }
-    else
-    {
-        bot->Say(msg, LANG_ORCISH);
-    }
-
+    bot->Say(msg, GetChatLanguage(bot));
     return true;
 }
 
@@ -2986,15 +2983,15 @@ bool PlayerbotAI::Whisper(const std::string& msg, const std::string& receiverNam
         return false;
     }
 
-    if (bot->GetTeamId() == TeamId::TEAM_ALLIANCE)
+    // Whispering across factions is impossible for players (GMs excepted);
+    // honor the same rule.
+    if (!sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHAT) && receiver->GetTeamId() != bot->GetTeamId() &&
+        !receiver->IsGameMaster())
     {
-        bot->Whisper(msg, LANG_COMMON, receiver);
-    }
-    else
-    {
-        bot->Whisper(msg, LANG_ORCISH, receiver);
+        return false;
     }
 
+    bot->Whisper(msg, GetChatLanguage(bot), receiver);
     return true;
 }
 

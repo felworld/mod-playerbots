@@ -483,6 +483,9 @@ public:
     bool Yell(const std::string& msg);
     bool Say(const std::string& msg);
     bool Whisper(const std::string& msg, const std::string& receiverName);
+    // Language for public bot speech: the faction language, or universal when
+    // AllowTwoSide.Interaction.Chat permits cross-faction chat.
+    static Language GetChatLanguage(Player const* who);
 
     void SpellInterrupted(uint32 spellid);
     int32 CalculateGlobalCooldown(uint32 spellid);

@@ -78,6 +78,6 @@ bool RevealGatheringItemAction::Execute(Event /*event*/)
 
     // everything is fine, do it
     botAI->Ping(go->GetPositionX(), go->GetPositionY());
-    bot->Say(msg.str(), LANG_UNIVERSAL);
+    bot->Say(msg.str(), PlayerbotAI::GetChatLanguage(bot));
     return true;
 }

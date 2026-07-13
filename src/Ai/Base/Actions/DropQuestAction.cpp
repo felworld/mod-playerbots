@@ -56,7 +56,7 @@ bool DropQuestAction::Execute(Event event)
             "quest_removed_debug",
             "Quest [%quest] removed",
             {{"%quest", text_quest}});
-        bot->Say(text, LANG_UNIVERSAL);
+        bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
     }
 
     botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -132,7 +132,7 @@ bool CleanQuestLogAction::Execute(Event event)
                     "quest_removed_debug",
                     "Quest [%quest] removed",
                     {{"%quest", text_quest}});
-                bot->Say(text, LANG_UNIVERSAL);
+                bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
             }
 
             if (botAI->HasStrategy("debug rpg", BotState::BOT_STATE_COMBAT))
@@ -230,7 +230,7 @@ void CleanQuestLogAction::DropQuestType(uint8& numQuest, uint8 wantNum, bool isG
                 "quest_removed_debug",
                 "Quest [%quest] removed",
                 {{"%quest", text_quest}});
-            bot->Say(text, LANG_UNIVERSAL);
+            bot->Say(text, PlayerbotAI::GetChatLanguage(bot));
         }
         botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
             "quest_removed_with_name",
