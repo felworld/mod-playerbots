@@ -6,6 +6,7 @@
 #ifndef PLAYERBOTS_TRIGGERCONTEXT_H
 #define PLAYERBOTS_TRIGGERCONTEXT_H
 
+#include "BystanderTriggers.h"
 #include "CureTriggers.h"
 #include "FishingTriggers.h"
 #include "GenericTriggers.h"
@@ -167,6 +168,7 @@ public:
         creators["random bot update"] = &TriggerContext::random_bot_update_trigger;
         creators["no non bot players around"] = &TriggerContext::no_non_bot_players_around;
         creators["new player nearby"] = &TriggerContext::new_player_nearby;
+        creators["bystander in distress"] = &TriggerContext::bystander_in_distress;
         creators["no rpg target"] = &TriggerContext::no_rpg_target;
         creators["has rpg target"] = &TriggerContext::has_rpg_target;
         creators["far from rpg target"] = &TriggerContext::far_from_rpg_target;
@@ -403,6 +405,7 @@ private:
     static Trigger* random_bot_update_trigger(PlayerbotAI* botAI) { return new RandomBotUpdateTrigger(botAI); }
     static Trigger* no_non_bot_players_around(PlayerbotAI* botAI) { return new NoNonBotPlayersAroundTrigger(botAI); }
     static Trigger* new_player_nearby(PlayerbotAI* botAI) { return new NewPlayerNearbyTrigger(botAI); }
+    static Trigger* bystander_in_distress(PlayerbotAI* botAI) { return new BystanderInDistressTrigger(botAI); }
     static Trigger* bg_waiting(PlayerbotAI* botAI) { return new BgWaitingTrigger(botAI); }
     static Trigger* bg_active(PlayerbotAI* botAI) { return new BgActiveTrigger(botAI); }
     static Trigger* bg_invite_active(PlayerbotAI* botAI) { return new BgInviteActiveTrigger(botAI); }

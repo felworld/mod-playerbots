@@ -611,6 +611,9 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             // nonCombatEngine->addStrategy("guild");
             nonCombatEngine->addStrategy("grind", false);
 
+            if (sPlayerbotAIConfig.enableBystanderAssist)
+                nonCombatEngine->addStrategy("bystander assist", false);
+
             if (sPlayerbotAIConfig.enableNewRpgStrategy)
                 nonCombatEngine->addStrategy("new rpg", false);
             else if (sPlayerbotAIConfig.autoDoQuests)

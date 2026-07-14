@@ -14,6 +14,7 @@
 #include "BattleGroundJoinAction.h"
 #include "BattleGroundTactics.h"
 #include "BuyAction.h"
+#include "BystanderAssistActions.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -162,6 +163,9 @@ public:
         creators["random bot update"] = &ActionContext::random_bot_update;
         creators["delay"] = &ActionContext::delay;
         creators["greet"] = &ActionContext::greet;
+        creators["bystander heal"] = &ActionContext::bystander_heal;
+        creators["reach bystander to assist"] = &ActionContext::reach_bystander_to_assist;
+        creators["attack bystander attacker"] = &ActionContext::attack_bystander_attacker;
         creators["check values"] = &ActionContext::check_values;
         creators["ra"] = &ActionContext::ra;
         creators["apply poison"] = &ActionContext::apply_poison;
@@ -301,6 +305,9 @@ private:
     static Action* move_random(PlayerbotAI* botAI) { return new MoveRandomAction(botAI); }
     static Action* check_values(PlayerbotAI* botAI) { return new CheckValuesAction(botAI); }
     static Action* greet(PlayerbotAI* botAI) { return new GreetAction(botAI); }
+    static Action* bystander_heal(PlayerbotAI* botAI) { return new BystanderHealAction(botAI); }
+    static Action* reach_bystander_to_assist(PlayerbotAI* botAI) { return new ReachBystanderToAssistAction(botAI); }
+    static Action* attack_bystander_attacker(PlayerbotAI* botAI) { return new AttackBystanderAttackerAction(botAI); }
     static Action* check_mail(PlayerbotAI* botAI) { return new CheckMailAction(botAI); }
     static Action* drop_target(PlayerbotAI* botAI) { return new DropTargetAction(botAI); }
     static Action* attack_duel_opponent(PlayerbotAI* botAI) { return new AttackDuelOpponentAction(botAI); }
