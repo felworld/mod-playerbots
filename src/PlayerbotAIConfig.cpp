@@ -577,6 +577,21 @@ bool PlayerbotAIConfig::Initialize()
     randomBotShowCloak = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowCloak", true);
     randomBotShowHelmet = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowHelmet", true);
 
+    // bystander assist (Felworld)
+    enableBystanderAssist = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBystanderAssist", true);
+    bystanderAssistRadius = sConfigMgr->GetOption<float>("AiPlayerbot.BystanderAssistRadius", 40.0f);
+    bystanderDistressHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressHealth", 40);
+    bystanderDistressHealerHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressHealerHealth", 25);
+    bystanderDistressRateHealthLoss = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressRateHealthLoss", 20);
+    bystanderDistressRateWindow = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressRateWindow", 4);
+    bystanderDistressMobCount = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressMobCount", 3);
+    bystanderDistressLowMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressLowMana", 15);
+    bystanderDistressLowManaHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderDistressLowManaHealth", 60);
+    bystanderAssistMaxHelpers = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistMaxHelpers", 2);
+    bystanderAssistCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistCooldown", 30);
+    bystanderAssistSelfHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistSelfHealth", 50);
+    bystanderAssistSelfMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistSelfMana", 30);
+
     // SPP switches
     enableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);
     summonWhenGroup = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonWhenGroup", true);

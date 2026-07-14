@@ -2238,6 +2238,39 @@ AiPlayerbot.GuildRepliesRate = 100
 # Bots without a master will say their lines
 AiPlayerbot.RandomBotSayWithoutMaster = 0
 
+# Bystander assist (Felworld): solo random bots rescue nearby non-group
+# players (real players and bots) who look like they're about to die.
+# Healer classes (priest/paladin/druid/shaman) heal the victim; other
+# classes attack the creature attacking them. A bot never takes an
+# assistive action that would newly PvP-flag it, and it skips fights it
+# estimates as unwinnable (elites, big level gaps, outnumbered).
+AiPlayerbot.EnableBystanderAssist = 1
+# Radius (yards) within which a bot notices someone in distress.
+AiPlayerbot.BystanderAssistRadius = 40
+# A victim under creature attack counts as "in distress" when ANY of:
+# - health below BystanderDistressHealth percent (healer-class victims
+#   that still have mana use the stricter BystanderDistressHealerHealth),
+# - a mana user's mana below BystanderDistressLowMana percent while
+#   health is below BystanderDistressLowManaHealth percent,
+# - they lost BystanderDistressRateHealthLoss percent of max health
+#   within BystanderDistressRateWindow seconds,
+# - at least BystanderDistressMobCount creatures are on them and they
+#   have taken some damage.
+AiPlayerbot.BystanderDistressHealth = 40
+AiPlayerbot.BystanderDistressHealerHealth = 25
+AiPlayerbot.BystanderDistressLowMana = 15
+AiPlayerbot.BystanderDistressLowManaHealth = 60
+AiPlayerbot.BystanderDistressRateHealthLoss = 20
+AiPlayerbot.BystanderDistressRateWindow = 4
+AiPlayerbot.BystanderDistressMobCount = 3
+# Stand down when this many other players are already helping the victim.
+AiPlayerbot.BystanderAssistMaxHelpers = 2
+# Per-victim cooldown (seconds) after a bot assists, so it doesn't ping-pong.
+AiPlayerbot.BystanderAssistCooldown = 30
+# A bot only volunteers while its own health/mana are above these percents.
+AiPlayerbot.BystanderAssistSelfHealth = 50
+AiPlayerbot.BystanderAssistSelfMana = 30
+
 #
 #
 ####################################################################################################

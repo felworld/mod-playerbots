@@ -161,6 +161,21 @@ public:
     uint32 classMatchingProfessionChance;
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
+    // bystander assist (Felworld)
+    bool enableBystanderAssist;
+    float bystanderAssistRadius;
+    uint32 bystanderDistressHealth;
+    uint32 bystanderDistressHealerHealth;
+    uint32 bystanderDistressRateHealthLoss;
+    uint32 bystanderDistressRateWindow;
+    uint32 bystanderDistressMobCount;
+    uint32 bystanderDistressLowMana;
+    uint32 bystanderDistressLowManaHealth;
+    uint32 bystanderAssistMaxHelpers;
+    uint32 bystanderAssistCooldown;
+    uint32 bystanderAssistSelfHealth;
+    uint32 bystanderAssistSelfMana;
+
     // chat
     bool randomBotTalk;
     bool randomBotEmote;
