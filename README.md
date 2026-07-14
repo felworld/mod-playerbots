@@ -55,8 +55,11 @@ is forked from — the two move together.
   that still have mana are trusted to save themselves a while longer.
   Priests, paladins, druids (dropping form if needed), and shamans heal the
   victim; other classes charge the attacking mob. Bots won't dogpile a
-  fight that already has helpers, won't join one they judge unwinnable
-  (elites, big level gaps, outnumbered), and never take an assistive action
+  fight that already has helpers, won't join one they judge unwinnable —
+  a composition estimate where an elite counts as roughly three normal
+  mobs (so two players take on one elite, but not two, and world bosses
+  and mobs far above the bot's level are never taken on) — and never
+  take an assistive action
   that would newly PvP-flag them. `AiPlayerbot.EnableBystanderAssist`
   (default on) plus threshold knobs in `playerbots.conf.dist`.
 - Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting

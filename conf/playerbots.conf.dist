@@ -2243,7 +2243,9 @@ AiPlayerbot.RandomBotSayWithoutMaster = 0
 # Healer classes (priest/paladin/druid/shaman) heal the victim; other
 # classes attack the creature attacking them. A bot never takes an
 # assistive action that would newly PvP-flag it, and it skips fights it
-# estimates as unwinnable (elites, big level gaps, outnumbered).
+# estimates as unwinnable by composition (an elite counts as roughly
+# three normal mobs; world bosses and mobs far above the bot's level
+# are never taken on).
 AiPlayerbot.EnableBystanderAssist = 1
 # Radius (yards) within which a bot notices someone in distress.
 AiPlayerbot.BystanderAssistRadius = 40

@@ -152,6 +152,28 @@ TEST(BystanderDistressTest, FoePowerScalesWithLevelDelta)
     EXPECT_EQ(BystanderFoePower(3), 600u);
 }
 
+TEST(BystanderDistressTest, FoePowerScalesWithRankFactor)
+{
+    EXPECT_EQ(BystanderFoePower(0, 300), 300u);  // same-level elite
+    EXPECT_EQ(BystanderFoePower(0, 200), 200u);  // same-level rare
+    EXPECT_EQ(BystanderFoePower(-10, 300), 0u);  // gray elites still don't count
+}
+
+TEST(BystanderDistressTest, EliteCompositionMath)
+{
+    // Two same-level players muster 400: enough for one elite (300) or an
+    // elite plus one add (400), but not two elites (600) or elite + two
+    // adds (500).
+    uint32_t twoPlayers = BYSTANDER_SELF_BASE_POWER + BystanderFriendPower(0);
+    uint32_t elite = BystanderFoePower(0, 300);
+    uint32_t add = BystanderFoePower(0);
+
+    EXPECT_LE(elite, twoPlayers);
+    EXPECT_LE(elite + add, twoPlayers);
+    EXPECT_GT(elite + elite, twoPlayers);
+    EXPECT_GT(elite + add + add, twoPlayers);
+}
+
 TEST(BystanderDistressTest, FriendPowerScalesWithLevelDelta)
 {
     EXPECT_EQ(BystanderFriendPower(-10), 0u);

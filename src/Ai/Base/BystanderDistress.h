@@ -67,10 +67,15 @@ inline bool IsBystanderInDistress(BystanderSnapshot const& s, BystanderDistressC
 
 // Level-scaled power estimates, same arithmetic as OutNumberedTrigger
 // (GenericTriggers.cpp): units more than 9 levels below contribute nothing.
+// powerFactorPct scales for creature rank (an elite fights like several
+// normal mobs), mirroring AttackerCountValues' rank weighting.
 
-inline uint32_t BystanderFoePower(int32_t levelDelta) // attacker level - bot level
+inline uint32_t BystanderFoePower(int32_t levelDelta, uint32_t powerFactorPct = 100) // attacker level - bot level
 {
-    return levelDelta > -10 ? uint32_t(std::max(100 + 10 * levelDelta, levelDelta * 200)) : 0;
+    if (levelDelta <= -10)
+        return 0;
+
+    return uint32_t(std::max(100 + 10 * levelDelta, levelDelta * 200)) * powerFactorPct / 100;
 }
 
 inline uint32_t BystanderFriendPower(int32_t levelDelta) // helper level - bot level

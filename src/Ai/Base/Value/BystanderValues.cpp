@@ -244,15 +244,34 @@ bool BystanderToAssistValue::IsWinnable(Player* victim, std::vector<Unit*> const
 
     for (Unit* attacker : attackers)
     {
-        // Solo bots have no business fighting elites or mobs far above them.
+        // Mobs far above the bot are out of the question regardless of count.
         if (int32(attacker->GetLevel()) - botLevel > 4)
             return false;
 
+        // Elites aren't excluded - two players often take one elite - they
+        // just weigh in as several normal mobs (cf. AttackerCountValues'
+        // rank weighting), so composition decides: victim + bot handle one
+        // elite, two elites or an elite with adds tips the estimate over.
+        uint32 rankFactorPct = 100;
         if (Creature* creature = attacker->ToCreature())
-            if (creature->GetCreatureTemplate()->rank > CREATURE_ELITE_NORMAL)
-                return false;
+        {
+            switch (creature->GetCreatureTemplate()->rank)
+            {
+                case CREATURE_ELITE_RARE:
+                    rankFactorPct = 200;
+                    break;
+                case CREATURE_ELITE_ELITE:
+                case CREATURE_ELITE_RAREELITE:
+                    rankFactorPct = 300;
+                    break;
+                case CREATURE_ELITE_WORLDBOSS:
+                    return false;
+                default:
+                    break;
+            }
+        }
 
-        foePower += BystanderFoePower(int32(attacker->GetLevel()) - botLevel);
+        foePower += BystanderFoePower(int32(attacker->GetLevel()) - botLevel, rankFactorPct);
     }
 
     uint32 friendPower = BYSTANDER_SELF_BASE_POWER +
