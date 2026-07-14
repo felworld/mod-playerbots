@@ -47,6 +47,18 @@ is forked from — the two move together.
   enemies closing on the friendly flag room calls it in battleground chat
   ("3 incoming at our flag room!") — one callout per team per wave, not ten
   bots shouting at once.
+- Bystander assist: solo random bots rescue nearby non-group players — real
+  players and bots alike — who look like they're about to die. "About to
+  die" is more than a health threshold: rapid health loss, being swarmed,
+  or a drained mana pool all count (a caster out of mana at half health is
+  doomed long before a raw HP check would fire), and healer-class victims
+  that still have mana are trusted to save themselves a while longer.
+  Priests, paladins, druids (dropping form if needed), and shamans heal the
+  victim; other classes charge the attacking mob. Bots won't dogpile a
+  fight that already has helpers, won't join one they judge unwinnable
+  (elites, big level gaps, outnumbered), and never take an assistive action
+  that would newly PvP-flag them. `AiPlayerbot.EnableBystanderAssist`
+  (default on) plus threshold knobs in `playerbots.conf.dist`.
 - Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting
   to each other's emotes could ping-pong forever: a reply aimed at the other
   bot was always answered, and replying left the responder targeting the
@@ -85,7 +97,8 @@ is forked from — the two move together.
 ## Tests
 
 `test/` holds the module's Google Test sources (the `!` command prefix, the
-`.playerbots` runtime toggle), registered with the core test target by
+`.playerbots` runtime toggle, the bystander-assist distress predicate),
+registered with the core test target by
 `mod-playerbots.cmake` and built/run through the core repo's
 `apps/docker/run-unit-tests.sh`.
 
