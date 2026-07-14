@@ -16,6 +16,7 @@
 #include "AttackersValue.h"
 #include "AvailableLootValue.h"
 #include "BudgetValues.h"
+#include "BystanderValues.h"
 #include "CcTargetValue.h"
 #include "ChatValue.h"
 #include "CollisionValue.h"
@@ -114,6 +115,8 @@ public:
         creators["nearest vehicles"] = &ValueContext::nearest_vehicles;
         creators["nearest vehicles far"] = &ValueContext::nearest_vehicles_far;
         creators["nearest friendly players"] = &ValueContext::nearest_friendly_players;
+        creators["bystander to assist"] = &ValueContext::bystander_to_assist;
+        creators["bystander attacker"] = &ValueContext::bystander_attacker;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
         creators["possible targets"] = &ValueContext::possible_targets;
@@ -429,6 +432,8 @@ private:
     static UntypedValue* nearest_vehicles(PlayerbotAI* botAI) { return new NearestVehiclesValue(botAI); }
     static UntypedValue* nearest_vehicles_far(PlayerbotAI* botAI) { return new NearestVehiclesValue(botAI, 200.0f); }
     static UntypedValue* nearest_friendly_players(PlayerbotAI* botAI) { return new NearestFriendlyPlayersValue(botAI); }
+    static UntypedValue* bystander_to_assist(PlayerbotAI* botAI) { return new BystanderToAssistValue(botAI); }
+    static UntypedValue* bystander_attacker(PlayerbotAI* botAI) { return new BystanderAttackerValue(botAI); }
     static UntypedValue* closest_friendly_players(PlayerbotAI* botAI)
     {
         return new NearestFriendlyPlayersValue(botAI, INTERACTION_DISTANCE);
