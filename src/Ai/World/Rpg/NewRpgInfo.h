@@ -77,7 +77,8 @@ struct NewRpgInfo
         uint32 lastGoadT{0};          // last goad emote timestamp (stealth classes)
         uint8 deathCount{0};
         bool strategiesApplied{false};
-        bool test{false};             // started by "wpvp test": port-in logs at INFO
+        bool test{false};             // started by "wpvp test": progress logs at INFO
+        uint32 lastTestLogT{0};       // throttles repeated test-mode "waiting" logs
     };
     struct Idle
     {

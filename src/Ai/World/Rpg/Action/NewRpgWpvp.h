@@ -13,8 +13,9 @@ bool ComputeWpvpPositions(WorldLocation const& hubLoc, uint32 zoneId, NewRpgInfo
 
 // Shared teardown for a world-PvP excursion (also used by the GM kill
 // switch): removes the excursion strategies and returns the bot to idle.
-// The PvP flag is left to decay naturally.
-void EndWpvpExcursion(PlayerbotAI* botAI);
+// The PvP flag is left to decay naturally. The reason is logged (INFO for
+// test excursions, DEBUG otherwise).
+void EndWpvpExcursion(PlayerbotAI* botAI, char const* reason);
 
 // How a destination zone reads to an invading bot under the excursion rules.
 enum class WpvpZoneCategory : uint8

@@ -9,6 +9,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Random.h"
+#include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "Timer.h"
 
@@ -32,6 +33,27 @@ bool SampleGroundNear(Map* map, WorldLocation const& hub, float bearing, float b
 
         out = WorldPosition(hub.GetMapId(), x, y, z + 0.5f, dir);
         return true;
+    }
+    return false;
+}
+
+// Unlike PlayerbotAI::HasPlayerNearby, which only considers real players on
+// the bot's CURRENT map, this checks against the position's own map - needed
+// for the pre-teleport guard, where the arrival point is usually on another
+// continent than the bot.
+bool RealPlayerNear(WorldPosition& pos, float range)
+{
+    float sqRange = range * range;
+    for (auto& player : sRandomPlayerbotMgr.GetPlayers())
+    {
+        if (!player || (player->IsGameMaster() && !player->isGMVisible()))
+            continue;
+
+        if (player->GetMapId() != pos.GetMapId())
+            continue;
+
+        if (pos.sqDistance(WorldPosition(player)) < sqRange)
+            return true;
     }
     return false;
 }
@@ -104,11 +126,17 @@ WpvpZoneCategory ClassifyWpvpDestination(Player* invader, uint32 zoneId, uint32 
     return WpvpZoneCategory::EnemyHomeZone;
 }
 
-void EndWpvpExcursion(PlayerbotAI* botAI)
+void EndWpvpExcursion(PlayerbotAI* botAI, char const* reason)
 {
     auto* data = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data);
     if (!data)
         return;
+
+    if (data->test)
+        LOG_INFO("playerbots", "[New RPG] Bot {} (wpvp test) excursion ended: {}", botAI->GetBot()->GetName(),
+                 reason);
+    else
+        LOG_DEBUG("playerbots", "[New RPG] Bot {} wpvp excursion ended: {}", botAI->GetBot()->GetName(), reason);
 
     // Only remove what this excursion added: a bot that brought stealth from
     // elsewhere (e.g. a BG strategy set) keeps it.
@@ -154,17 +182,29 @@ bool NewRpgGoWpvpAction::Execute(Event /*event*/)
 bool NewRpgGoWpvpAction::GuardedTeleport(NewRpgInfo::GoWpvp& data)
 {
     // Never blink where a real player could watch it happen - at either end.
-    if (botAI->HasPlayerNearby(150.0f))
-        return false;
     WorldPosition telePos = data.teleportPos;
-    if (botAI->HasPlayerNearby(&telePos, 150.0f))
+    char const* blocked = nullptr;
+    if (botAI->HasPlayerNearby(150.0f))
+        blocked = "a real player is near the bot";
+    else if (RealPlayerNear(telePos, 150.0f))
+        blocked = "a real player is near the arrival point";
+
+    if (blocked)
+    {
+        if (data.test && GetMSTimeDiffToNow(data.lastTestLogT) > 10 * IN_MILLISECONDS)
+        {
+            data.lastTestLogT = getMSTime();
+            LOG_INFO("playerbots", "[New RPG] Bot {} (wpvp test) teleport waiting: {}", bot->GetName(), blocked);
+        }
         return false;
+    }
 
     // Reset(true) wipes rpgInfo (and with it this excursion's payload, which
     // `data` points into), so copy the payload out and restore it after the
     // reset. `data` must not be touched past this point.
     NewRpgInfo::GoWpvp payload = data;
     uint32 zoneId = payload.zoneId;
+    bool test = payload.test;
     WorldPosition dest = payload.teleportPos;
     bot->GetMotionMaster()->Clear();
     botAI->Reset(true);
@@ -172,15 +212,17 @@ bool NewRpgGoWpvpAction::GuardedTeleport(NewRpgInfo::GoWpvp& data)
     botAI->rpgInfo.ChangeToGoWpvp(std::move(payload));
 
     if (!bot->TeleportTo(dest))
+    {
+        if (test)
+            LOG_INFO("playerbots",
+                     "[New RPG] Bot {} (wpvp test) TeleportTo failed (map {} {:.1f},{:.1f},{:.1f})", bot->GetName(),
+                     dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ());
         return false;
+    }
 
     bot->SendMovementFlagUpdate();
-    bool test = false;
     if (auto* restored = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data))
-    {
         restored->teleported = true;
-        test = restored->test;
-    }
 
     // Test excursions log at INFO so the port-in is guaranteed to reach the
     // worldserver console (whose appender typically caps at INFO).

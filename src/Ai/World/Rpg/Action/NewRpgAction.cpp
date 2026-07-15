@@ -155,9 +155,15 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
         case RPG_GO_WPVP:
         {
             auto& data = std::get<NewRpgInfo::GoWpvp>(info.data);
-            if (!sRandomPlayerbotMgr.IsWpvpExcursionEnabled() || data.deathCount >= sPlayerbotAIConfig.wpvpDeathCap)
+            if (!sRandomPlayerbotMgr.IsWpvpExcursionEnabled())
             {
-                EndWpvpExcursion(botAI);
+                EndWpvpExcursion(botAI, "kill switch is off");
+                return true;
+            }
+
+            if (data.deathCount >= sPlayerbotAIConfig.wpvpDeathCap)
+            {
+                EndWpvpExcursion(botAI, "death cap reached");
                 return true;
             }
 
@@ -166,7 +172,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                 // Travel phase: either we make it to the anchor or we give up.
                 if (info.HasStatusPersisted(statusGoWpvpTravelDuration))
                 {
-                    EndWpvpExcursion(botAI);
+                    EndWpvpExcursion(botAI, "travel phase timed out");
                     return true;
                 }
 
@@ -177,18 +183,24 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                     data.dwellDuration = urand(sPlayerbotAIConfig.wpvpDwellMinutesMin,
                                                sPlayerbotAIConfig.wpvpDwellMinutesMax) *
                                          MINUTE * IN_MILLISECONDS;
+                    if (data.test)
+                        LOG_INFO("playerbots", "[New RPG] Bot {} (wpvp test) reached the dwell anchor; dwelling {} min",
+                                 bot->GetName(), data.dwellDuration / (MINUTE * IN_MILLISECONDS));
                 }
             }
             else
             {
                 // Dwell phase: go home on expiry, or if something yanked the
                 // bot far away (e.g. the death-count inn teleport).
-                bool expired = GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration;
-                bool yanked = bot->GetMapId() != data.anchorPos.GetMapId() ||
-                              bot->GetExactDist(data.anchorPos) > 3000.0f;
-                if (expired || yanked)
+                if (GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration)
                 {
-                    EndWpvpExcursion(botAI);
+                    EndWpvpExcursion(botAI, "dwell time expired");
+                    return true;
+                }
+
+                if (bot->GetMapId() != data.anchorPos.GetMapId() || bot->GetExactDist(data.anchorPos) > 3000.0f)
+                {
+                    EndWpvpExcursion(botAI, "yanked far from the dwell anchor");
                     return true;
                 }
             }

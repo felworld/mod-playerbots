@@ -303,6 +303,9 @@ public:
         char const* categoryName = chosen->category == WpvpZoneCategory::Contested       ? "contested-bracket"
                                    : chosen->category == WpvpZoneCategory::LowerBracket  ? "overleveled ganker"
                                                                                          : "enemy home zone";
+        LOG_INFO("playerbots", "[New RPG] wpvp test: sending bot {} (level {} {}, zone {}) to zone {} ({} pick)",
+                 chosen->bot->GetName(), chosen->bot->GetLevel(), ChatHelper::FormatClass(chosen->bot->getClass()),
+                 chosen->bot->GetZoneId(), zoneId, categoryName);
         handler->PSendSysMessage("Sent {} (level {} {}) on a wpvp excursion to your position ({} pick, {} eligible).",
                                  chosen->bot->GetName(), chosen->bot->GetLevel(),
                                  ChatHelper::FormatClass(chosen->bot->getClass()), categoryName, candidates.size());
@@ -347,7 +350,7 @@ public:
             if (!botAI || botAI->rpgInfo.GetStatus() != RPG_GO_WPVP)
                 continue;
 
-            EndWpvpExcursion(botAI);
+            EndWpvpExcursion(botAI, "GM kill switch");
             ++ended;
         }
         handler->PSendSysMessage("Ended {} active excursion(s).", ended);

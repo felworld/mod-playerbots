@@ -4654,6 +4654,13 @@ bool PlayerbotAI::AllowActive(ActivityType activityType)
     if (!WorldPosition(bot).isOverworld())
         return true;
 
+    // bot is on a world-pvp excursion — stay active even with no real player
+    // nearby, or minimal mode (which skips all triggers below relevance 100)
+    // stalls the teleport/travel/dwell phases indefinitely. Excursions are
+    // rare and time-bounded, so the extra load is negligible.
+    if (rpgInfo.GetStatus() == RPG_GO_WPVP)
+        return true;
+
     // bot is waiting in a BG queue — stay active to speed up join
     if (bot->InBattlegroundQueue())
         return true;
