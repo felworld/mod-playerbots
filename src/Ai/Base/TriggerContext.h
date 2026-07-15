@@ -17,6 +17,8 @@
 #include "NewRpgStrategy.h"
 #include "NewRpgTriggers.h"
 #include "PvpTriggers.h"
+#include "WpvpCallouts.h"
+#include "WpvpTriggers.h"
 #include "PullTriggers.h"
 #include "RpgTriggers.h"
 #include "RtiTriggers.h"
@@ -245,6 +247,10 @@ public:
         creators["do quest status"] = &TriggerContext::do_quest_status;
         creators["travel flight status"] = &TriggerContext::travel_flight_status;
         creators["outdoor pvp status"] = &TriggerContext::outdoor_pvp_status;
+        creators["go wpvp status"] = &TriggerContext::go_wpvp_status;
+        creators["wpvp goad"] = &TriggerContext::wpvp_goad;
+        creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
+        creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
         creators["can self resurrect"] = &TriggerContext::can_self_resurrect;
         creators["can fish"] = &TriggerContext::can_fish;
         creators["can use fishing bobber"] = &TriggerContext::can_use_fishing_bobber;
@@ -464,6 +470,10 @@ private:
     static Trigger* do_quest_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_DO_QUEST); }
     static Trigger* travel_flight_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_TRAVEL_FLIGHT); }
     static Trigger* outdoor_pvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_OUTDOOR_PVP); }
+    static Trigger* go_wpvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_WPVP); }
+    static Trigger* wpvp_goad(PlayerbotAI* botAI) { return new WpvpGoadTrigger(botAI); }
+    static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
+    static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }
     static Trigger* can_self_resurrect(PlayerbotAI* ai) { return new SelfResurrectTrigger(ai); }
     static Trigger* can_fish(PlayerbotAI* ai) { return new CanFishTrigger(ai); }
     static Trigger* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberTrigger(ai); }

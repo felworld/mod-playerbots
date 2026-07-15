@@ -62,6 +62,21 @@ is forked from — the two move together.
   take an assistive action
   that would newly PvP-flag them. `AiPlayerbot.EnableBystanderAssist`
   (default on) plus threshold knobs in `playerbots.conf.dist`.
+- World PvP excursions: random bots occasionally travel to enemy or contested
+  towns (Southshore/Tarren Mill, the Crossroads, Stranglethorn — rarely even
+  enemy home zones like Goldshire) on purpose, lurk near town for 15-30
+  minutes picking fights, then go home. The trip teleports the bot to a spot
+  a couple hundred yards out (guarded so no real player sees the blink) and
+  walks it in PvP-flagged; the regular reactive PvP strategy produces the
+  actual fights. All levels participate — overleveled "gankers" follow a
+  level-gap curve rather than being all 80s — and rogues/druids both go more
+  often and stay stealthed to goad unflagged enemies into attacking (Night
+  Elves of other classes Shadowmeld while lurking). Defender bots call out
+  invaders in LocalDefense ("Bloguk is attacking Goldshire!"), throttled per
+  zone and per attacker. `AiPlayerbot.RpgStatusProbWeight.GoWpvp` sets the
+  frequency (0 disables); `AiPlayerbot.Wpvp*` knobs cover the rest; GM
+  commands `.playerbots wpvp test [class] | status | off [minutes] | on`
+  provide a test hook, observability, and a runtime kill switch.
 - Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting
   to each other's emotes could ping-pong forever: a reply aimed at the other
   bot was always answered, and replying left the responder targeting the

@@ -4646,6 +4646,25 @@ void TravelMgr::PrepareDestinationCache()
     // Temporary map to group creatures by entry and area
     std::map<std::tuple<uint16, int32, int32, int32>, std::vector<CreatureData>> tempLocsCache;
     std::map<uint32, std::map<uint32, std::vector<WorldLocation>>> tempCreatureCache;
+
+    // Flat per-faction hub list for world-PvP destination selection, built
+    // alongside the level-keyed hub caches below.
+    auto addWpvpHub = [this](WorldLocation const& loc, uint32 zoneId, LevelBracket const& bracket, bool forAlliance,
+                             bool forHorde)
+    {
+        WpvpHubInfo hub;
+        hub.loc = loc;
+        hub.zoneId = zoneId;
+        AreaTableEntry const* zoneEntry = sAreaTableStore.LookupEntry(zoneId);
+        hub.areaTeam = zoneEntry ? zoneEntry->team : AREATEAM_NONE;
+        hub.bracketLow = bracket.low;
+        hub.bracketHigh = bracket.high;
+        hub.neutral = forAlliance && forHorde;
+        if (forAlliance)
+            allianceWpvpHubs.push_back(hub);
+        if (forHorde)
+            hordeWpvpHubs.push_back(hub);
+    };
     for (auto const& [guid, creatureData] : sObjectMgr->GetAllCreatureData())
     {
         CreatureTemplate const* creatureTemplate = sObjectMgr->GetCreatureTemplate(creatureData.id);
@@ -4742,7 +4761,7 @@ void TravelMgr::PrepareDestinationCache()
                     AREA_CRYSTALSONG_FOREST,
                     AREA_WINTERGRASP
                 };
-                if (zonesWithoutInnkeeper.count(areaId))
+                if (zonesWithoutInnkeeper.count(areaId) && zone2LevelBracket.find(areaId) != zone2LevelBracket.end())
                 {
                     LevelBracket bracket = zone2LevelBracket[areaId];
                     WorldPosition loc(mapId, x + cos(orient) * 5.0f, y + sin(orient) * 5.0f, z + 0.5f, orient + M_PI);
@@ -4753,6 +4772,7 @@ void TravelMgr::PrepareDestinationCache()
                         if (forAlliance)
                             allianceHubsPerLevelCache[i].push_back(loc);
                     }
+                    addWpvpHub(loc, areaId, bracket, forAlliance, forHorde);
                 }
             }
             else if (creatureTemplate->npcflag & UNIT_NPC_FLAG_INNKEEPER)
@@ -4771,6 +4791,7 @@ void TravelMgr::PrepareDestinationCache()
                         allianceHubsPerLevelCache[i].push_back(loc);
                     innkeepersCount++;
                 }
+                addWpvpHub(loc, areaId, bracket, forAlliance, forHorde);
             }
         }
         // === BANKERS ===

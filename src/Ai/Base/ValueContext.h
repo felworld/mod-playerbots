@@ -74,6 +74,7 @@
 #include "PositionValue.h"
 #include "PossibleRpgTargetsValue.h"
 #include "PossibleTargetsValue.h"
+#include "WpvpValues.h"
 #include "PvpValues.h"
 #include "QuestValues.h"
 #include "RTSCValues.h"
@@ -119,6 +120,7 @@ public:
         creators["bystander attacker"] = &ValueContext::bystander_attacker;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
+        creators["nearest unflagged enemy players"] = &ValueContext::nearest_unflagged_enemy_players;
         creators["possible targets"] = &ValueContext::possible_targets;
         creators["possible targets no los"] = &ValueContext::possible_targets_no_los;
         creators["possible triggers"] = &ValueContext::possible_triggers;
@@ -439,6 +441,10 @@ private:
         return new NearestFriendlyPlayersValue(botAI, INTERACTION_DISTANCE);
     }
     static UntypedValue* nearest_enemy_players(PlayerbotAI* botAI) { return new NearestEnemyPlayersValue(botAI); }
+    static UntypedValue* nearest_unflagged_enemy_players(PlayerbotAI* botAI)
+    {
+        return new NearestUnflaggedEnemyPlayersValue(botAI);
+    }
     static UntypedValue* nearest_corpses(PlayerbotAI* botAI) { return new NearestCorpsesValue(botAI); }
     static UntypedValue* possible_rpg_targets(PlayerbotAI* botAI) { return new PossibleRpgTargetsValue(botAI); }
     static UntypedValue* possible_new_rpg_targets(PlayerbotAI* botAI) { return new PossibleNewRpgTargetsValue(botAI); }

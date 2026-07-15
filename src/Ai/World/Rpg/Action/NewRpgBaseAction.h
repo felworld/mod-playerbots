@@ -55,8 +55,10 @@ protected:
     static WorldPosition SelectRandomGrindPos(Player* bot);
     static WorldPosition SelectRandomCampPos(Player* bot);
     bool SelectRandomFlightTaxiNode(uint32& flightMasterEntry, WorldPosition& flightMasterPos, std::vector<uint32>& path);
+    bool SelectWpvpDestination(NewRpgInfo::GoWpvp& out);
     bool RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus);
     bool CheckRpgStatusAvailable(NewRpgStatus status);
+    uint32 GetStatusWeight(NewRpgStatus status);
 
 protected:
     /* FOR MOVE FAR */

@@ -10,6 +10,7 @@
 #include "IVMapMgr.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
+#include "NewRpgWpvp.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
 #include "OutdoorPvPMgr.h"
@@ -1068,19 +1069,124 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
     return true;
 }
 
+bool NewRpgBaseAction::SelectWpvpDestination(NewRpgInfo::GoWpvp& out)
+{
+    TeamId enemyTeam = bot->GetTeamId() == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+    uint32 enemyAreaTeam = enemyTeam == TEAM_ALLIANCE ? AREATEAM_ALLY : AREATEAM_HORDE;
+    uint32 level = bot->GetLevel();
+    bool stealthy = bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID;
+    // Stealth classes prefer fights they can open on their own terms over
+    // pure overleveled ganking.
+    float overlevelMult = stealthy ? sPlayerbotAIConfig.wpvpStealthClassOverlevelMult : 1.0f;
+
+    std::vector<TravelMgr::WpvpHubInfo const*> contested;
+    std::vector<TravelMgr::WpvpHubInfo const*> lower;
+    std::vector<std::pair<TravelMgr::WpvpHubInfo const*, float>> home;
+    float homeWeightSum = 0.0f;
+    for (TravelMgr::WpvpHubInfo const& hub : sTravelMgr.GetWpvpHubs(enemyTeam))
+    {
+        if (hub.neutral || sPlayerbotAIConfig.IsInPvpProhibitedZone(hub.zoneId) || hub.zoneId == bot->GetZoneId())
+            continue;
+
+        if (hub.areaTeam == AREATEAM_NONE)
+        {
+            if (level >= hub.bracketLow && level <= hub.bracketHigh)
+                contested.push_back(&hub);
+            else if (level >= hub.bracketHigh + sPlayerbotAIConfig.wpvpGankerMinLevelGap)
+                lower.push_back(&hub);
+        }
+        else if (hub.areaTeam == enemyAreaTeam)
+        {
+            // Enemy home zone: only clearly overleveled bots dare, and the
+            // per-hub weight ramps from 25% at the minimum gap to 100% at
+            // the full-chance gap so mid-level gankers show up in low zones
+            // about as often as max-level ones.
+            uint32 minReq = hub.bracketHigh + sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap;
+            if (level < minReq)
+                continue;
+
+            float gapRange = float(sPlayerbotAIConfig.wpvpHomeZoneFullChanceGap) -
+                             float(sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap);
+            float progress = gapRange > 0.0f ? std::min(1.0f, float(level - minReq) / gapRange) : 1.0f;
+            float weight = 0.25f + 0.75f * progress;
+            home.push_back({&hub, weight});
+            homeWeightSum += weight;
+        }
+    }
+
+    if (contested.empty() && lower.empty() && home.empty())
+        return false;
+
+    float homeChance = home.empty() ? 0.0f : sPlayerbotAIConfig.wpvpHomeZoneChance * overlevelMult;
+    float lowerChance = lower.empty() ? 0.0f : sPlayerbotAIConfig.wpvpLowerBracketChance * overlevelMult;
+    float contestedChance = contested.empty() ? 0.0f : std::max(0.0f, 1.0f - homeChance - lowerChance);
+
+    TravelMgr::WpvpHubInfo const* chosen = nullptr;
+    float total = homeChance + lowerChance + contestedChance;
+    if (total <= 0.0f)
+    {
+        // Only zero-chance categories are populated: pick uniformly anyway.
+        std::vector<TravelMgr::WpvpHubInfo const*> all = contested;
+        all.insert(all.end(), lower.begin(), lower.end());
+        for (auto const& [hub, weight] : home)
+            all.push_back(hub);
+        chosen = all[urand(0, all.size() - 1)];
+    }
+    else
+    {
+        float roll = frand(0.0f, total);
+        if (roll < homeChance)
+        {
+            float pick = frand(0.0f, homeWeightSum);
+            float acc = 0.0f;
+            for (auto const& [hub, weight] : home)
+            {
+                acc += weight;
+                chosen = hub;
+                if (acc >= pick)
+                    break;
+            }
+        }
+        else if (roll < homeChance + lowerChance)
+            chosen = lower[urand(0, lower.size() - 1)];
+        else
+            chosen = contested[urand(0, contested.size() - 1)];
+    }
+
+    if (!chosen || !ComputeWpvpPositions(chosen->loc, chosen->zoneId, out))
+        return false;
+
+    LOG_DEBUG("playerbots",
+              "[New RPG] Bot {} (level {}) picks wpvp hub zone {} (areaTeam {}, bracket {}-{}) "
+              "[{} contested / {} lower / {} home available]",
+              bot->GetName(), level, chosen->zoneId, chosen->areaTeam, chosen->bracketLow, chosen->bracketHigh,
+              contested.size(), lower.size(), home.size());
+    return true;
+}
+
+uint32 NewRpgBaseAction::GetStatusWeight(NewRpgStatus status)
+{
+    uint32 weight = sPlayerbotAIConfig.RpgStatusProbWeight[status];
+    // Stealth classes lean into world PvP - a stealth opener is their game.
+    if (status == RPG_GO_WPVP && (bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID))
+        weight = uint32(weight * sPlayerbotAIConfig.wpvpStealthClassWeightMult);
+
+    return weight;
+}
+
 bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateStatus)
 {
     std::vector<NewRpgStatus> availableStatus;
     uint32 probSum = 0;
     for (NewRpgStatus status : candidateStatus)
     {
-        if (sPlayerbotAIConfig.RpgStatusProbWeight[status] == 0)
+        if (GetStatusWeight(status) == 0)
             continue;
 
         if (CheckRpgStatusAvailable(status))
         {
             availableStatus.push_back(status);
-            probSum += sPlayerbotAIConfig.RpgStatusProbWeight[status];
+            probSum += GetStatusWeight(status);
         }
     }
     // Safety check. Default to "rest" if all RPG weights = 0
@@ -1095,7 +1201,7 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
     NewRpgStatus chosenStatus = RPG_STATUS_END;
     for (NewRpgStatus status : availableStatus)
     {
-        accumulate += sPlayerbotAIConfig.RpgStatusProbWeight[status];
+        accumulate += GetStatusWeight(status);
         if (accumulate >= rand)
         {
             chosenStatus = status;
@@ -1190,6 +1296,16 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             botAI->rpgInfo.ChangeToOutdoorPvp();
             return true;
         }
+        case RPG_GO_WPVP:
+        {
+            NewRpgInfo::GoWpvp wpvp;
+            if (SelectWpvpDestination(wpvp))
+            {
+                botAI->rpgInfo.ChangeToGoWpvp(std::move(wpvp));
+                return true;
+            }
+            return false;
+        }
         default:
         {
             botAI->rpgInfo.ChangeToRest();
@@ -1261,6 +1377,21 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
 
             OutdoorPvP* outdoorPvP = sOutdoorPvPMgr->GetOutdoorPvPToZoneId(zoneId);
             return outdoorPvP != nullptr;
+        }
+        case RPG_GO_WPVP:
+        {
+            // Cheap gates only; the real hub filtering happens on selection.
+            if (!sRandomPlayerbotMgr.IsWpvpExcursionEnabled())
+                return false;
+
+            if (bot->GetLevel() < sPlayerbotAIConfig.wpvpMinBotLevel)
+                return false;
+
+            if (bot->GetGroup())
+                return false;
+
+            TeamId enemyTeam = bot->GetTeamId() == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+            return !sTravelMgr.GetWpvpHubs(enemyTeam).empty();
         }
         default:
             return false;

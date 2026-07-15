@@ -1,0 +1,30 @@
+#ifndef PLAYERBOTS_NEWRPGWPVP_H
+#define PLAYERBOTS_NEWRPGWPVP_H
+
+#include "NewRpgBaseAction.h"
+
+// Compute the dwell anchor (WpvpAnchorOffset yards off the hub) and the
+// teleport arrival point (WpvpTeleportOffset yards out on the same bearing)
+// for a world-PvP excursion. hubPos/zoneId/anchorPos/teleportPos are filled
+// in; the movement target is always the anchor, never the hub itself, so a
+// stuck-teleport recovery blinks the bot to a field instead of into town.
+// Returns false if the hub's map isn't loaded.
+bool ComputeWpvpPositions(WorldLocation const& hubLoc, uint32 zoneId, NewRpgInfo::GoWpvp& out);
+
+// Shared teardown for a world-PvP excursion (also used by the GM kill
+// switch): removes the excursion strategies and returns the bot to idle.
+// The PvP flag is left to decay naturally.
+void EndWpvpExcursion(PlayerbotAI* botAI);
+
+class NewRpgGoWpvpAction : public NewRpgBaseAction
+{
+public:
+    NewRpgGoWpvpAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg go wpvp") {}
+    bool Execute(Event event) override;
+
+private:
+    bool GuardedTeleport(NewRpgInfo::GoWpvp& data);
+    bool Dwell(NewRpgInfo::GoWpvp& data);
+};
+
+#endif

@@ -64,7 +64,9 @@ enum NewRpgStatus : int
     // Taking a break
     RPG_REST = 7,
     RPG_OUTDOOR_PVP = 8,
-    RPG_STATUS_END = 9
+    // World PvP excursion into enemy/contested territory
+    RPG_GO_WPVP = 9,
+    RPG_STATUS_END = 10
 };
 
 #define MAX_SPECNO 20
@@ -391,6 +393,24 @@ public:
     bool autoDoQuests;
     bool enableNewRpgStrategy;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
+    // World PvP excursions (RPG_GO_WPVP)
+    uint32 wpvpMinBotLevel;
+    float wpvpHomeZoneChance;
+    uint32 wpvpHomeZoneMinLevelGap;
+    uint32 wpvpHomeZoneFullChanceGap;
+    float wpvpLowerBracketChance;
+    uint32 wpvpGankerMinLevelGap;
+    float wpvpStealthClassWeightMult;
+    float wpvpStealthClassOverlevelMult;
+    uint32 wpvpTeleportOffsetMin, wpvpTeleportOffsetMax;
+    uint32 wpvpAnchorOffsetMin, wpvpAnchorOffsetMax;
+    uint32 wpvpDwellMinutesMin, wpvpDwellMinutesMax;
+    uint32 wpvpDeathCap;
+    uint32 wpvpGoadCooldown;
+    bool wpvpCalloutEnabled;
+    uint32 wpvpCalloutZoneCooldown;
+    uint32 wpvpCalloutAttackerCooldown;
+    uint32 wpvpKillSwitchDefaultMinutes;
     bool syncLevelWithPlayers;
     bool autoLearnQuestSpells;
     bool autoTeleportForLevel;

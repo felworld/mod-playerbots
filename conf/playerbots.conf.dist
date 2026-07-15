@@ -1060,6 +1060,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # TravelFlight  (Default: 15  Go to the nearest flightmaster and fly to a level-appropriate area)
 # Rest          (Default: 5   Take a break for a while and do nothing)
 # OutdoorPvp    (Default: 10  Participate in outdoor PvP capture points if already in an outdoor PvP zone)
+# GoWpvp        (Default: 3   Travel to an enemy/contested town for world PvP, lurk a while, then go home)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
 AiPlayerbot.RpgStatusProbWeight.GoGrind = 15
@@ -1068,6 +1069,78 @@ AiPlayerbot.RpgStatusProbWeight.DoQuest = 60
 AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
+AiPlayerbot.RpgStatusProbWeight.GoWpvp = 3
+
+#
+# World PvP excursions (GoWpvp): a random bot occasionally teleports to a spot
+# 180-280yd outside an enemy or contested travel hub, walks the rest of the way
+# in, and loiters near town for a while, fighting whatever the regular PvP
+# strategy picks up. Rogues/druids are more likely to go (WpvpStealthClassWeightMult)
+# and stay stealthed to goad unflagged enemies; other classes rely on the
+# regular reactive PvP strategy. Set AiPlayerbot.RpgStatusProbWeight.GoWpvp = 0
+# to disable permanently. The GM command ".playerbots wpvp off [minutes]" is a
+# runtime-only kill switch: it does not persist across server restart.
+
+# Minimum bot level to consider a world PvP excursion.
+# Default: 10
+AiPlayerbot.WpvpMinBotLevel = 10
+
+# Chance the destination roll picks an enemy home zone hub (e.g. Goldshire)
+# instead of a contested zone. Only bots at least WpvpHomeZoneMinLevelGap
+# levels above the zone's bracket qualify; the per-hub weight scales from 25%
+# at that gap up to 100% at WpvpHomeZoneFullChanceGap levels above.
+# Default: 0.15
+AiPlayerbot.WpvpHomeZoneChance = 0.15
+AiPlayerbot.WpvpHomeZoneMinLevelGap = 10
+AiPlayerbot.WpvpHomeZoneFullChanceGap = 30
+
+# Chance the destination roll picks a contested zone well below the bot's
+# level (overleveled "ganker" trip). The bot must be at least
+# WpvpGankerMinLevelGap levels above the zone bracket's top.
+# Default: 0.15 / 8
+AiPlayerbot.WpvpLowerBracketChance = 0.15
+AiPlayerbot.WpvpGankerMinLevelGap = 8
+
+# Rogues and druids are WpvpStealthClassWeightMult times as likely to start an
+# excursion, and WpvpStealthClassOverlevelMult times as likely to take the
+# overleveled routes (home zone / lower bracket) - they prefer fair fights
+# with stealth openers over pure ganking.
+# Default: 1.5 / 0.6
+AiPlayerbot.WpvpStealthClassWeightMult = 1.5
+AiPlayerbot.WpvpStealthClassOverlevelMult = 0.6
+
+# Distance bands (yards) around the destination hub: the bot teleports in at
+# Teleport offset and walks to a dwell anchor at Anchor offset.
+# Default: 180-280 / 40-80
+AiPlayerbot.WpvpTeleportOffsetMin = 180
+AiPlayerbot.WpvpTeleportOffsetMax = 280
+AiPlayerbot.WpvpAnchorOffsetMin = 40
+AiPlayerbot.WpvpAnchorOffsetMax = 80
+
+# How long (minutes) the bot loiters once it reaches its anchor, and how many
+# deaths end the excursion early.
+# Default: 15-30 / 2
+AiPlayerbot.WpvpDwellMinutesMin = 15
+AiPlayerbot.WpvpDwellMinutesMax = 30
+AiPlayerbot.WpvpDeathCap = 2
+
+# Cooldown (seconds) between goad attempts by a stealthed rogue/druid trying
+# to provoke unflagged enemies into attacking.
+# Default: 90
+AiPlayerbot.WpvpGoadCooldown = 90
+
+# Defender bots call out invaders in the LocalDefense channel. Zone cooldown
+# throttles messages per zone+faction; attacker cooldown throttles repeat
+# callouts about the same invader (seconds).
+# Default: 1 (enabled) / 180 / 600
+AiPlayerbot.WpvpCalloutEnabled = 1
+AiPlayerbot.WpvpCalloutZoneCooldown = 180
+AiPlayerbot.WpvpCalloutAttackerCooldown = 600
+
+# Default duration (minutes) for ".playerbots wpvp off" when no duration is
+# given. 0 passed to the command means "until server restart".
+# Default: 60
+AiPlayerbot.WpvpKillSwitchDefaultMinutes = 60
 
 # Bots' minimum and maximum level when teleporting in and out of a zone, according to the new RPG strategy
 # Format: AiPlayerbot.ZoneBracket.zoneID = minLevel,maxLevel

@@ -1486,6 +1486,11 @@ void PlayerbotAI::DoNextAction(bool min)
         {
             uint32 dCount = aiObjectContext->GetValue<uint32>("death count")->Get();
             aiObjectContext->GetValue<uint32>("death count")->Set(++dCount);
+
+            // Dying too often on a world-PvP excursion sends the bot home
+            // (checked by NewRpgStatusUpdateAction against WpvpDeathCap).
+            if (auto* wpvp = std::get_if<NewRpgInfo::GoWpvp>(&rpgInfo.data))
+                wpvp->deathCount++;
         }
 
         aiObjectContext->GetValue<Unit*>("current target")->Set(nullptr);

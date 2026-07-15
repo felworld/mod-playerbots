@@ -54,6 +54,7 @@
 #include "UsePotionsStrategy.h"
 #include "WaitForAttackStrategy.h"
 #include "WorldPacketHandlerStrategy.h"
+#include "WpvpStrategy.h"
 
 class StrategyContext : public NamedObjectContext<Strategy>
 {
@@ -83,6 +84,7 @@ public:
         creators["focus"] = &StrategyContext::focus;
         creators["tell target"] = &StrategyContext::tell_target;
         creators["pvp"] = &StrategyContext::pvp;
+        creators["wpvp"] = &StrategyContext::wpvp;
         creators["return"] = &StrategyContext::_return;
         creators["lfg"] = &StrategyContext::lfg;
         creators["custom"] = &StrategyContext::custom;
@@ -163,6 +165,7 @@ private:
     static Strategy* world_packet(PlayerbotAI* botAI) { return new WorldPacketHandlerStrategy(botAI); }
     static Strategy* ready_check(PlayerbotAI* botAI) { return new ReadyCheckStrategy(botAI); }
     static Strategy* pvp(PlayerbotAI* botAI) { return new AttackEnemyPlayersStrategy(botAI); }
+    static Strategy* wpvp(PlayerbotAI* botAI) { return new WpvpExcursionStrategy(botAI); }
     static Strategy* _return(PlayerbotAI* botAI) { return new ReturnStrategy(botAI); }
     static Strategy* lfg(PlayerbotAI* botAI) { return new LfgStrategy(botAI); }
     static Strategy* custom(PlayerbotAI* botAI) { return new CustomStrategy(botAI); }

@@ -64,6 +64,20 @@ struct NewRpgInfo
     {
         ObjectGuid::LowType capturePointSpawnId{0};
     };
+    // RPG_GO_WPVP
+    struct GoWpvp
+    {
+        WorldPosition hubPos{};       // the enemy/contested travel hub itself
+        WorldPosition anchorPos{};    // dwell spot 40-80yd off the hub
+        WorldPosition teleportPos{};  // arrival spot 180-280yd out; bot walks the last leg
+        uint32 zoneId{0};
+        bool teleported{false};
+        uint32 arrivedT{0};           // timestamp of reaching the anchor (0 = still travelling)
+        uint32 dwellDuration{0};      // ms to loiter once arrived
+        uint32 lastGoadT{0};          // last goad emote timestamp (stealth classes)
+        uint8 deathCount{0};
+        bool strategiesApplied{false};
+    };
     struct Idle
     {
     };
@@ -86,7 +100,8 @@ struct NewRpgInfo
         DoQuest,
         Rest,
         TravelFlight,
-        OutdoorPvP
+        OutdoorPvP,
+        GoWpvp
     >;
     RpgData data;
 
@@ -99,6 +114,7 @@ struct NewRpgInfo
     void ChangeToDoQuest(uint32 questId, const Quest* quest);
     void ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
+    void ChangeToGoWpvp(GoWpvp&& wpvp);
     void ChangeToRest();
     void ChangeToIdle();
     bool CanChangeTo(NewRpgStatus status);

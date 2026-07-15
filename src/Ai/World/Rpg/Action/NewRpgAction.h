@@ -52,6 +52,8 @@ protected:
     const int32 statusRestDuration = 30 * IN_MILLISECONDS ;
     const int32 statusDoQuestDuration = 30 * MINUTE  * IN_MILLISECONDS ;
     const int32 statusOutDoorPvPDuration = HOUR * IN_MILLISECONDS ;
+    // Travel phase cap for a wpvp excursion (dwell time is rolled per trip)
+    const int32 statusGoWpvpTravelDuration = 20 * MINUTE * IN_MILLISECONDS ;
 };
 
 class NewRpgGoGrindAction : public NewRpgBaseAction

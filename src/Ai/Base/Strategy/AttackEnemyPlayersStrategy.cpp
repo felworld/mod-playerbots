@@ -11,4 +11,8 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     triggers.push_back(new TriggerNode("enemy player near",
                                        { NextAction("attack enemy player", 55.0f) }));
+    // "pvp" is on every non-BG bot, so this is where defenders shout about
+    // invaders in LocalDefense (heavily throttled in WpvpCalloutThrottle).
+    triggers.push_back(new TriggerNode("wpvp defense callout",
+                                       { NextAction("wpvp defense callout", 40.0f) }));
 }

@@ -706,6 +706,29 @@ bool PlayerbotAIConfig::Initialize()
     RpgStatusProbWeight[RPG_TRAVEL_FLIGHT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.TravelFlight", 15);
     RpgStatusProbWeight[RPG_REST] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.Rest", 5);
     RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
+    RpgStatusProbWeight[RPG_GO_WPVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoWpvp", 3);
+
+    // World PvP excursions (RPG_GO_WPVP)
+    wpvpMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpMinBotLevel", 10);
+    wpvpHomeZoneChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpHomeZoneChance", 0.15f);
+    wpvpHomeZoneMinLevelGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpHomeZoneMinLevelGap", 10);
+    wpvpHomeZoneFullChanceGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpHomeZoneFullChanceGap", 30);
+    wpvpLowerBracketChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpLowerBracketChance", 0.15f);
+    wpvpGankerMinLevelGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGankerMinLevelGap", 8);
+    wpvpStealthClassWeightMult = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpStealthClassWeightMult", 1.5f);
+    wpvpStealthClassOverlevelMult = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpStealthClassOverlevelMult", 0.6f);
+    wpvpTeleportOffsetMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpTeleportOffsetMin", 180);
+    wpvpTeleportOffsetMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpTeleportOffsetMax", 280);
+    wpvpAnchorOffsetMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpAnchorOffsetMin", 40);
+    wpvpAnchorOffsetMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpAnchorOffsetMax", 80);
+    wpvpDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDwellMinutesMin", 15);
+    wpvpDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDwellMinutesMax", 30);
+    wpvpDeathCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDeathCap", 2);
+    wpvpGoadCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGoadCooldown", 90);
+    wpvpCalloutEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpCalloutEnabled", true);
+    wpvpCalloutZoneCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutZoneCooldown", 180);
+    wpvpCalloutAttackerCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutAttackerCooldown", 600);
+    wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
 
     syncLevelWithPlayers = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncLevelWithPlayers", false);
     randomBotGroupNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGroupNearby", false);

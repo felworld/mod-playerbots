@@ -11,6 +11,7 @@
 #include "IVMapMgr.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
+#include "NewRpgWpvp.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
 #include "ObjectDefines.h"
@@ -21,6 +22,7 @@
 #include "PlayerbotAI.h"
 #include "QuestDef.h"
 #include "Random.h"
+#include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "TravelMgr.h"
@@ -63,7 +65,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP});
+                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_GO_WPVP});
 
         case RPG_GO_GRIND:
         {
@@ -147,6 +149,48 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             {
                 info.ChangeToIdle();
                 return true;
+            }
+            break;
+        }
+        case RPG_GO_WPVP:
+        {
+            auto& data = std::get<NewRpgInfo::GoWpvp>(info.data);
+            if (!sRandomPlayerbotMgr.IsWpvpExcursionEnabled() || data.deathCount >= sPlayerbotAIConfig.wpvpDeathCap)
+            {
+                EndWpvpExcursion(botAI);
+                return true;
+            }
+
+            if (!data.arrivedT)
+            {
+                // Travel phase: either we make it to the anchor or we give up.
+                if (info.HasStatusPersisted(statusGoWpvpTravelDuration))
+                {
+                    EndWpvpExcursion(botAI);
+                    return true;
+                }
+
+                if (data.teleported && bot->GetMapId() == data.anchorPos.GetMapId() &&
+                    bot->GetExactDist(data.anchorPos) < 20.0f)
+                {
+                    data.arrivedT = getMSTime();
+                    data.dwellDuration = urand(sPlayerbotAIConfig.wpvpDwellMinutesMin,
+                                               sPlayerbotAIConfig.wpvpDwellMinutesMax) *
+                                         MINUTE * IN_MILLISECONDS;
+                }
+            }
+            else
+            {
+                // Dwell phase: go home on expiry, or if something yanked the
+                // bot far away (e.g. the death-count inn teleport).
+                bool expired = GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration;
+                bool yanked = bot->GetMapId() != data.anchorPos.GetMapId() ||
+                              bot->GetExactDist(data.anchorPos) > 3000.0f;
+                if (expired || yanked)
+                {
+                    EndWpvpExcursion(botAI);
+                    return true;
+                }
             }
             break;
         }

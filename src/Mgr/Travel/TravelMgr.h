@@ -861,6 +861,19 @@ public:
         uint32        dbGuid;          // DB spawn GUID (for ObjectGuid construction)
     };
 
+    // Travel hub enriched with the zone facts world-PvP destination selection
+    // needs (which faction the zone belongs to, its level bracket, whether the
+    // hub itself serves both factions).
+    struct WpvpHubInfo
+    {
+        WorldLocation loc;
+        uint32        zoneId;
+        uint32        areaTeam;        // AREATEAM_NONE = contested, AREATEAM_ALLY, AREATEAM_HORDE
+        uint32        bracketLow;
+        uint32        bracketHigh;
+        bool          neutral;         // serves both factions (goblin towns) - never a WPvP target
+    };
+
     static TravelMgr& instance()
     {
         static TravelMgr instance;
@@ -878,6 +891,11 @@ public:
     std::vector<std::vector<uint32>> GetOptimalFlightDestinations(Player* bot);
     const std::vector<WorldLocation> GetTeleportLocations(Player* bot);
     const std::vector<WorldLocation> GetTravelHubs(Player* bot);
+    // All travel hubs owned by (serving) the given team, regardless of level.
+    std::vector<WpvpHubInfo> const& GetWpvpHubs(TeamId hubOwnerTeam) const
+    {
+        return hubOwnerTeam == TEAM_ALLIANCE ? allianceWpvpHubs : hordeWpvpHubs;
+    }
     std::vector<WorldLocation> GetCityLocations(Player* bot);
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
     bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
@@ -996,6 +1014,8 @@ private:
     std::map<uint32, FlightMasterInfo> hordeFlightMasterCache;
     std::map<uint8, std::vector<WorldLocation>> allianceHubsPerLevelCache;
     std::map<uint8, std::vector<WorldLocation>> hordeHubsPerLevelCache;
+    std::vector<WpvpHubInfo> allianceWpvpHubs;
+    std::vector<WpvpHubInfo> hordeWpvpHubs;
     std::map<uint8, std::vector<BankerLocation>> bankerLocsPerLevelCache;
     std::unordered_map<uint32, WorldLocation> bankerEntryToLocation;
     std::map<uint8, std::vector<WorldLocation>> locsPerLevelCache;

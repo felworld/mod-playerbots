@@ -44,6 +44,11 @@ bool UnstealthAction::Execute(Event /*event*/)
 
 bool UnstealthAction::isUseful()
 {
+    // A world-PvP excursion wants the bot stealthed the whole time it walks
+    // in and lurks; EndWpvpExcursion removes the stealth strategy again.
+    if (botAI->rpgInfo.GetStatus() == RPG_GO_WPVP)
+        return false;
+
     // Don't throw away the stealth advantage while enemy players are around
     if (bot->InBattleground() || bot->IsPvP())
     {

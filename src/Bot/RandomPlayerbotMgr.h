@@ -6,6 +6,9 @@
 #ifndef PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 #define PLAYERBOTS_RANDOMPLAYERBOTMGR_H
 
+#include <atomic>
+#include <limits>
+
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
 #include "PlayerbotMgr.h"
@@ -172,6 +175,24 @@ public:
     void AssignAccountTypes();
     bool IsAccountType(uint32 accountId, uint8 accountType);
 
+    // World PvP excursion kill switch. Runtime-only by design: it resets on
+    // restart; the permanent off switch is RpgStatusProbWeight.GoWpvp = 0.
+    // Checked lazily by CheckRpgStatusAvailable and the status update action,
+    // so no update hook is needed. 0 = enabled; time_t max = until restart.
+    bool IsWpvpExcursionEnabled() const
+    {
+        time_t until = wpvpDisabledUntil.load(std::memory_order_relaxed);
+        if (!until)
+            return true;
+
+        if (until == std::numeric_limits<time_t>::max())
+            return false;
+
+        return time(nullptr) >= until;
+    }
+    void SetWpvpDisabledUntil(time_t until) { wpvpDisabledUntil.store(until, std::memory_order_relaxed); }
+    time_t GetWpvpDisabledUntil() const { return wpvpDisabledUntil.load(std::memory_order_relaxed); }
+
 protected:
     void OnBotLoginInternal(Player* const bot) override;
 
@@ -253,6 +274,8 @@ private:
     // Account lists
     std::vector<uint32> rndBotTypeAccounts;             // Accounts marked as RNDbot (type 1)
     std::vector<uint32> addClassTypeAccounts;           // Accounts marked as AddClass (type 2)
+
+    std::atomic<time_t> wpvpDisabledUntil{0};
 
     //void ScaleBotActivity();      // Deprecated function
     static inline uint32 NowSeconds() { return static_cast<uint32>(GameTime::GetGameTime().count()); }

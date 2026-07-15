@@ -66,6 +66,9 @@
 #include "XpGainAction.h"
 #include "NewRpgAction.h"
 #include "NewRpgOutdoorPvP.h"
+#include "NewRpgWpvp.h"
+#include "WpvpActions.h"
+#include "WpvpCallouts.h"
 #include "FishingAction.h"
 #include "CancelChannelAction.h"
 #include "WaitForAttackAction.h"
@@ -285,6 +288,9 @@ public:
         creators["new rpg do quest"] = &ActionContext::new_rpg_do_quest;
         creators["new rpg travel flight"] = &ActionContext::new_rpg_travel_flight;
         creators["new rpg outdoor pvp"] = &ActionContext::new_rpg_outdoor_pvp;
+        creators["new rpg go wpvp"] = &ActionContext::new_rpg_go_wpvp;
+        creators["wpvp goad"] = &ActionContext::wpvp_goad;
+        creators["wpvp defense callout"] = &ActionContext::wpvp_defense_callout;
         creators["wait for attack keep safe distance"] = &ActionContext::wait_for_attack_keep_safe_distance;
     }
 
@@ -499,6 +505,9 @@ private:
     static Action* new_rpg_do_quest(PlayerbotAI* ai) { return new NewRpgDoQuestAction(ai); }
     static Action* new_rpg_travel_flight(PlayerbotAI* ai) { return new NewRpgTravelFlightAction(ai); }
     static Action* new_rpg_outdoor_pvp(PlayerbotAI* ai) { return new NewRpgOutdoorPvpAction(ai); }
+    static Action* new_rpg_go_wpvp(PlayerbotAI* ai) { return new NewRpgGoWpvpAction(ai); }
+    static Action* wpvp_goad(PlayerbotAI* ai) { return new WpvpGoadAction(ai); }
+    static Action* wpvp_defense_callout(PlayerbotAI* ai) { return new WpvpDefenseCalloutAction(ai); }
     static Action* wait_for_attack_keep_safe_distance(PlayerbotAI* ai) { return new WaitForAttackKeepSafeDistanceAction(ai); }
 };
 
