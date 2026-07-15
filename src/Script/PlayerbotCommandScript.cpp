@@ -297,6 +297,7 @@ public:
             return true;
         }
 
+        payload.test = true;
         botAI->rpgInfo.ChangeToGoWpvp(std::move(payload));
 
         char const* categoryName = chosen->category == WpvpZoneCategory::Contested       ? "contested-bracket"

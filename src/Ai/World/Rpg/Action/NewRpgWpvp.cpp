@@ -175,12 +175,25 @@ bool NewRpgGoWpvpAction::GuardedTeleport(NewRpgInfo::GoWpvp& data)
         return false;
 
     bot->SendMovementFlagUpdate();
+    bool test = false;
     if (auto* restored = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data))
+    {
         restored->teleported = true;
+        test = restored->test;
+    }
 
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} starts wpvp excursion to zone {} (arrival map {} {:.1f},{:.1f},{:.1f})",
-              bot->GetName(), zoneId, dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(),
-              dest.GetPositionZ());
+    // Test excursions log at INFO so the port-in is guaranteed to reach the
+    // worldserver console (whose appender typically caps at INFO).
+    if (test)
+        LOG_INFO("playerbots",
+                 "[New RPG] Bot {} (wpvp test) ported in to zone {} (map {} {:.1f},{:.1f},{:.1f}); walking in",
+                 bot->GetName(), zoneId, dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(),
+                 dest.GetPositionZ());
+    else
+        LOG_DEBUG("playerbots",
+                  "[New RPG] Bot {} starts wpvp excursion to zone {} (arrival map {} {:.1f},{:.1f},{:.1f})",
+                  bot->GetName(), zoneId, dest.GetMapId(), dest.GetPositionX(), dest.GetPositionY(),
+                  dest.GetPositionZ());
     return true;
 }
 
