@@ -1072,7 +1072,6 @@ bool NewRpgBaseAction::SelectRandomFlightTaxiNode(uint32& flightMasterEntry, Wor
 bool NewRpgBaseAction::SelectWpvpDestination(NewRpgInfo::GoWpvp& out)
 {
     TeamId enemyTeam = bot->GetTeamId() == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
-    uint32 enemyAreaTeam = enemyTeam == TEAM_ALLIANCE ? AREATEAM_ALLY : AREATEAM_HORDE;
     uint32 level = bot->GetLevel();
     bool stealthy = bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID;
     // Stealth classes prefer fights they can open on their own terms over
@@ -1085,32 +1084,24 @@ bool NewRpgBaseAction::SelectWpvpDestination(NewRpgInfo::GoWpvp& out)
     float homeWeightSum = 0.0f;
     for (TravelMgr::WpvpHubInfo const& hub : sTravelMgr.GetWpvpHubs(enemyTeam))
     {
-        if (hub.neutral || sPlayerbotAIConfig.IsInPvpProhibitedZone(hub.zoneId) || hub.zoneId == bot->GetZoneId())
+        if (hub.neutral)
             continue;
 
-        if (hub.areaTeam == AREATEAM_NONE)
+        float homeWeight = 0.0f;
+        switch (ClassifyWpvpDestination(bot, hub.zoneId, hub.areaTeam, hub.bracketLow, hub.bracketHigh, homeWeight))
         {
-            if (level >= hub.bracketLow && level <= hub.bracketHigh)
+            case WpvpZoneCategory::Contested:
                 contested.push_back(&hub);
-            else if (level >= hub.bracketHigh + sPlayerbotAIConfig.wpvpGankerMinLevelGap)
+                break;
+            case WpvpZoneCategory::LowerBracket:
                 lower.push_back(&hub);
-        }
-        else if (hub.areaTeam == enemyAreaTeam)
-        {
-            // Enemy home zone: only clearly overleveled bots dare, and the
-            // per-hub weight ramps from 25% at the minimum gap to 100% at
-            // the full-chance gap so mid-level gankers show up in low zones
-            // about as often as max-level ones.
-            uint32 minReq = hub.bracketHigh + sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap;
-            if (level < minReq)
-                continue;
-
-            float gapRange = float(sPlayerbotAIConfig.wpvpHomeZoneFullChanceGap) -
-                             float(sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap);
-            float progress = gapRange > 0.0f ? std::min(1.0f, float(level - minReq) / gapRange) : 1.0f;
-            float weight = 0.25f + 0.75f * progress;
-            home.push_back({&hub, weight});
-            homeWeightSum += weight;
+                break;
+            case WpvpZoneCategory::EnemyHomeZone:
+                home.push_back({&hub, homeWeight});
+                homeWeightSum += homeWeight;
+                break;
+            default:
+                break;
         }
     }
 

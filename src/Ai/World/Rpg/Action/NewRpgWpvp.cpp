@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include "DBCStores.h"
 #include "Map.h"
 #include "MapMgr.h"
 #include "Player.h"
@@ -63,6 +64,44 @@ bool ComputeWpvpPositions(WorldLocation const& hubLoc, uint32 zoneId, NewRpgInfo
     out.anchorPos = anchor;
     out.teleportPos = teleport;
     return true;
+}
+
+WpvpZoneCategory ClassifyWpvpDestination(Player* invader, uint32 zoneId, uint32 areaTeam, uint32 bracketLow,
+                                         uint32 bracketHigh, float& homeWeight)
+{
+    homeWeight = 0.0f;
+    if (sPlayerbotAIConfig.IsInPvpProhibitedZone(zoneId) || zoneId == invader->GetZoneId())
+        return WpvpZoneCategory::None;
+
+    uint32 level = invader->GetLevel();
+    if (areaTeam == AREATEAM_NONE)
+    {
+        if (level >= bracketLow && level <= bracketHigh)
+            return WpvpZoneCategory::Contested;
+
+        if (level >= bracketHigh + sPlayerbotAIConfig.wpvpGankerMinLevelGap)
+            return WpvpZoneCategory::LowerBracket;
+
+        return WpvpZoneCategory::None;
+    }
+
+    // A faction-owned zone is only a destination when it's the ENEMY's, and
+    // only for clearly overleveled bots. The weight ramps from 25% at the
+    // minimum gap to 100% at the full-chance gap so mid-level gankers show
+    // up in low zones about as often as max-level ones.
+    uint32 enemyAreaTeam = invader->GetTeamId() == TEAM_ALLIANCE ? AREATEAM_HORDE : AREATEAM_ALLY;
+    if (areaTeam != enemyAreaTeam)
+        return WpvpZoneCategory::None;
+
+    uint32 minReq = bracketHigh + sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap;
+    if (level < minReq)
+        return WpvpZoneCategory::None;
+
+    float gapRange =
+        float(sPlayerbotAIConfig.wpvpHomeZoneFullChanceGap) - float(sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap);
+    float progress = gapRange > 0.0f ? std::min(1.0f, float(level - minReq) / gapRange) : 1.0f;
+    homeWeight = 0.25f + 0.75f * progress;
+    return WpvpZoneCategory::EnemyHomeZone;
 }
 
 void EndWpvpExcursion(PlayerbotAI* botAI)

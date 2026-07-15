@@ -16,6 +16,22 @@ bool ComputeWpvpPositions(WorldLocation const& hubLoc, uint32 zoneId, NewRpgInfo
 // The PvP flag is left to decay naturally.
 void EndWpvpExcursion(PlayerbotAI* botAI);
 
+// How a destination zone reads to an invading bot under the excursion rules.
+enum class WpvpZoneCategory : uint8
+{
+    None,           // ineligible (wrong level, own-faction zone, prohibited, same zone)
+    Contested,      // contested zone within the bot's level bracket
+    LowerBracket,   // contested zone the bot overlevels by WpvpGankerMinLevelGap+
+    EnemyHomeZone,  // enemy home zone the bot overlevels by WpvpHomeZoneMinLevelGap+
+};
+
+// Classify a destination zone for an invading bot - the single source of the
+// eligibility rules, shared by organic destination selection and the
+// "wpvp test" GM command. homeWeight gets the 0.25..1.0 level-gap curve
+// value and is only meaningful for EnemyHomeZone.
+WpvpZoneCategory ClassifyWpvpDestination(Player* invader, uint32 zoneId, uint32 areaTeam, uint32 bracketLow,
+                                         uint32 bracketHigh, float& homeWeight);
+
 class NewRpgGoWpvpAction : public NewRpgBaseAction
 {
 public:

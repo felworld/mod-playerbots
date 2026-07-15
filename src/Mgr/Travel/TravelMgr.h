@@ -896,6 +896,17 @@ public:
     {
         return hubOwnerTeam == TEAM_ALLIANCE ? allianceWpvpHubs : hordeWpvpHubs;
     }
+    // Level bracket for a zone, if PrepareZone2LevelBracket assigned one.
+    bool GetZoneLevelBracket(uint32 zoneId, uint32& low, uint32& high) const
+    {
+        auto it = zone2LevelBracket.find(zoneId);
+        if (it == zone2LevelBracket.end())
+            return false;
+
+        low = it->second.low;
+        high = it->second.high;
+        return true;
+    }
     std::vector<WorldLocation> GetCityLocations(Player* bot);
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
     bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);

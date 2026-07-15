@@ -146,15 +146,23 @@ public:
         return it != classes.end() ? it->second : 0;
     }
 
-    // Send a random opposing-faction bot on an excursion to the requester's
-    // position. The handler only assigns the payload - the bot's own action
-    // performs the guarded teleport and walk-in, so the real path gets
-    // exercised end to end.
+    // Send an opposing-faction bot on an excursion to the requester's
+    // position, picked under the same rules and biases as an organic
+    // excursion targeting this zone: level brackets, ganker/home-zone level
+    // gaps, category chances, and the stealth-class multipliers. The handler
+    // only assigns the payload - the bot's own action performs the guarded
+    // teleport and walk-in, so the real path gets exercised end to end.
     static bool HandleWpvpTestCommand(ChatHandler* handler, char const* args)
     {
         Player* requester = handler->GetSession()->GetPlayer();
         if (!requester)
             return false;
+
+        if (!sRandomPlayerbotMgr.IsWpvpExcursionEnabled())
+        {
+            handler->PSendSysMessage("World PvP excursions are disabled - '.playerbots wpvp on' first.");
+            return true;
+        }
 
         uint8 classFilter = 0;
         std::string arg = args ? args : "";
@@ -168,8 +176,32 @@ public:
             }
         }
 
-        std::vector<Player*> candidates;
-        std::vector<Player*> preferred;
+        // The requester's zone plays the role of the destination hub's zone.
+        uint32 zoneId = requester->GetZoneId();
+        AreaTableEntry const* zone = sAreaTableStore.LookupEntry(zoneId);
+        uint32 areaTeam = zone ? zone->team : uint32(AREATEAM_NONE);
+        uint32 bracketLow = 0;
+        uint32 bracketHigh = 0;
+        if (!sTravelMgr.GetZoneLevelBracket(zoneId, bracketLow, bracketHigh))
+        {
+            handler->PSendSysMessage("This zone has no level bracket - bots never pick it as a wpvp destination.");
+            return true;
+        }
+
+        if (sPlayerbotAIConfig.IsInPvpProhibitedZone(zoneId))
+        {
+            handler->PSendSysMessage("This zone is PvP-prohibited - bots never pick it as a wpvp destination.");
+            return true;
+        }
+
+        struct Candidate
+        {
+            Player* bot;
+            float weight;
+            WpvpZoneCategory category;
+        };
+        std::vector<Candidate> candidates;
+        float weightSum = 0.0f;
         for (auto const& [guid, bot] : sRandomPlayerbotMgr.GetAllBots())
         {
             if (!bot || !bot->IsInWorld() || !bot->IsAlive())
@@ -190,34 +222,89 @@ public:
             if (!GET_PLAYERBOT_AI(bot))
                 continue;
 
-            candidates.push_back(bot);
-            if (std::abs(int32(bot->GetLevel()) - int32(requester->GetLevel())) <= 10)
-                preferred.push_back(bot);
+            // Same gates an organic roll applies.
+            if (bot->GetLevel() < sPlayerbotAIConfig.wpvpMinBotLevel)
+                continue;
+
+            float homeWeight = 0.0f;
+            WpvpZoneCategory category =
+                ClassifyWpvpDestination(bot, zoneId, areaTeam, bracketLow, bracketHigh, homeWeight);
+            if (category == WpvpZoneCategory::None)
+                continue;
+
+            // Mirror the organic roll's biases: category chances scaled by
+            // the stealth-class overlevel multiplier, the home-zone gap
+            // curve, and the stealth-class excursion-start bias.
+            bool stealthy = bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID;
+            float overlevelMult = stealthy ? sPlayerbotAIConfig.wpvpStealthClassOverlevelMult : 1.0f;
+            float weight = 0.0f;
+            switch (category)
+            {
+                case WpvpZoneCategory::Contested:
+                    weight = std::max(0.0f, 1.0f - sPlayerbotAIConfig.wpvpHomeZoneChance * overlevelMult -
+                                                sPlayerbotAIConfig.wpvpLowerBracketChance * overlevelMult);
+                    break;
+                case WpvpZoneCategory::LowerBracket:
+                    weight = sPlayerbotAIConfig.wpvpLowerBracketChance * overlevelMult;
+                    break;
+                case WpvpZoneCategory::EnemyHomeZone:
+                    weight = sPlayerbotAIConfig.wpvpHomeZoneChance * overlevelMult * homeWeight;
+                    break;
+                default:
+                    break;
+            }
+            if (stealthy)
+                weight *= sPlayerbotAIConfig.wpvpStealthClassWeightMult;
+
+            if (weight <= 0.0f)
+                continue;
+
+            candidates.push_back({bot, weight, category});
+            weightSum += weight;
         }
 
-        std::vector<Player*>& pool = preferred.empty() ? candidates : preferred;
-        if (pool.empty())
+        if (candidates.empty())
         {
-            handler->PSendSysMessage("No eligible opposing-faction bot found{}.",
-                                     classFilter ? " for that class" : "");
+            handler->PSendSysMessage(
+                "No opposing bot passes the wpvp selection rules for this zone (bracket {}-{}, ganker gap {}+, "
+                "home-zone gap {}+{}).",
+                bracketLow, bracketHigh, sPlayerbotAIConfig.wpvpGankerMinLevelGap,
+                sPlayerbotAIConfig.wpvpHomeZoneMinLevelGap, classFilter ? ", class-filtered" : "");
             return true;
         }
 
-        Player* bot = pool[urand(0, pool.size() - 1)];
-        PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot);
+        Candidate const* chosen = &candidates.back();
+        float pick = frand(0.0f, weightSum);
+        float acc = 0.0f;
+        for (Candidate const& candidate : candidates)
+        {
+            acc += candidate.weight;
+            if (acc >= pick)
+            {
+                chosen = &candidate;
+                break;
+            }
+        }
+
+        PlayerbotAI* botAI = GET_PLAYERBOT_AI(chosen->bot);
 
         NewRpgInfo::GoWpvp payload;
         WorldLocation here(requester->GetMapId(), requester->GetPositionX(), requester->GetPositionY(),
                            requester->GetPositionZ(), requester->GetOrientation());
-        if (!ComputeWpvpPositions(here, requester->GetZoneId(), payload))
+        if (!ComputeWpvpPositions(here, zoneId, payload))
         {
             handler->PSendSysMessage("Failed to compute excursion positions around you.");
             return true;
         }
 
         botAI->rpgInfo.ChangeToGoWpvp(std::move(payload));
-        handler->PSendSysMessage("Sent {} (level {} {}) on a wpvp excursion to your position.", bot->GetName(),
-                                 bot->GetLevel(), ChatHelper::FormatClass(bot->getClass()));
+
+        char const* categoryName = chosen->category == WpvpZoneCategory::Contested       ? "contested-bracket"
+                                   : chosen->category == WpvpZoneCategory::LowerBracket  ? "overleveled ganker"
+                                                                                         : "enemy home zone";
+        handler->PSendSysMessage("Sent {} (level {} {}) on a wpvp excursion to your position ({} pick, {} eligible).",
+                                 chosen->bot->GetName(), chosen->bot->GetLevel(),
+                                 ChatHelper::FormatClass(chosen->bot->getClass()), categoryName, candidates.size());
         handler->PSendSysMessage(
             "Note: stay more than 150yd from the arrival point or the nearby-player teleport guard will stall it.");
         return true;
