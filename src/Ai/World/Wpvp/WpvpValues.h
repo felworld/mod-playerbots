@@ -4,9 +4,9 @@
 #include "PossibleTargetsValue.h"
 
 // Nearby opposing-faction players who are NOT PvP-flagged - the goad targets
-// for stealthed excursion bots. Same grid-scan family as
-// NearestEnemyPlayersValue, and keeps the parent's level-difference filter:
-// don't goad someone the bot wouldn't actually fight.
+// for excursion bots. Same grid-scan family as NearestEnemyPlayersValue, but
+// with its own acceptance filter (the shared one rejects unflagged players
+// outright).
 class NearestUnflaggedEnemyPlayersValue : public PossibleTargetsValue
 {
 public:

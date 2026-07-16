@@ -94,6 +94,13 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         if (levelDifference >= EXTREME_LEVEL_DIFF)
             return false;
 
+        // A world-pvp excursion bot came specifically to pick fights, so no
+        // reluctance toward lower-level targets - ganking is the point (the
+        // excursion's destination selection already level-gap-curved who goes
+        // where). The suicide cap above still applies.
+        if (levelDifference <= 0 && botAI->rpgInfo.GetStatus() == RPG_GO_WPVP)
+            return true;
+
         // Calculate attack chance based on level difference
         uint32 attackChance = 100; // Default 100%: Bot and target's levels are very close
 

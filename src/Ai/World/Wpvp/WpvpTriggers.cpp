@@ -7,11 +7,27 @@
 #include "Playerbots.h"
 #include "Timer.h"
 
+Unit* WpvpGoadTrigger::FindMark(PlayerbotAI* botAI, Player* bot)
+{
+    // Stealthers sneak up close before revealing; everyone else taunts from
+    // wherever the emote can be seen.
+    bool stealther = bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID;
+    float range = stealther ? STEALTH_GOAD_RANGE : OPEN_GOAD_RANGE;
+
+    GuidVector targets =
+        botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest unflagged enemy players")->Get();
+    for (ObjectGuid const guid : targets)
+    {
+        Unit* enemy = botAI->GetUnit(guid);
+        if (enemy && enemy->IsAlive() && bot->GetDistance(enemy) < range)
+            return enemy;
+    }
+
+    return nullptr;
+}
+
 bool WpvpGoadTrigger::IsActive()
 {
-    if (bot->getClass() != CLASS_ROGUE && bot->getClass() != CLASS_DRUID)
-        return false;
-
     auto* data = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data);
     if (!data || !data->arrivedT)
         return false;
@@ -19,9 +35,17 @@ bool WpvpGoadTrigger::IsActive()
     if (bot->IsInCombat())
         return false;
 
-    // Goading only makes sense from stealth - the reveal IS the provocation.
-    if (!botAI->HasAura("stealth", bot) && !botAI->HasAura("prowl", bot))
+    if (bot->getClass() == CLASS_ROGUE || bot->getClass() == CLASS_DRUID)
+    {
+        // Goading from stealth - the reveal IS the provocation.
+        if (!botAI->HasAura("stealth", bot) && !botAI->HasAura("prowl", bot))
+            return false;
+    }
+    else if (bot->HasStealthAura())
+    {
+        // Shadowmelded: staying hidden for the ambush beats taunting.
         return false;
+    }
 
     if (data->lastGoadT &&
         GetMSTimeDiffToNow(data->lastGoadT) < sPlayerbotAIConfig.wpvpGoadCooldown * IN_MILLISECONDS)
@@ -31,15 +55,7 @@ bool WpvpGoadTrigger::IsActive()
     if (AI_VALUE(Unit*, "enemy player target"))
         return false;
 
-    GuidVector targets = AI_VALUE(GuidVector, "nearest unflagged enemy players");
-    for (ObjectGuid const guid : targets)
-    {
-        Unit* enemy = botAI->GetUnit(guid);
-        if (enemy && enemy->IsAlive() && bot->GetDistance(enemy) < GOAD_RANGE)
-            return true;
-    }
-
-    return false;
+    return FindMark(botAI, bot) != nullptr;
 }
 
 bool WpvpShadowmeldTrigger::IsActive()

@@ -68,10 +68,13 @@ is forked from — the two move together.
   minutes picking fights, then go home. The trip teleports the bot to a spot
   a couple hundred yards out (guarded so no real player sees the blink) and
   walks it in PvP-flagged; the regular reactive PvP strategy produces the
-  actual fights. All levels participate — overleveled "gankers" follow a
-  level-gap curve rather than being all 80s — and rogues/druids both go more
-  often and stay stealthed to goad unflagged enemies into attacking (Night
-  Elves of other classes Shadowmeld while lurking). Defender bots call out
+  actual fights — with none of the usual reluctance toward much lower-level
+  targets, since on an excursion ganking is the point. All levels
+  participate — overleveled "gankers" follow a level-gap curve rather than
+  being all 80s. Invaders goad unflagged enemies into attacking with rude
+  emotes; rogues/druids both go more often and deliver theirs by dropping
+  stealth right next to the mark, while Night Elves of other classes
+  Shadowmeld and hold the ambush instead. Defender bots call out
   invaders in LocalDefense ("Bloguk is attacking Goldshire!"), throttled per
   zone and per attacker. `AiPlayerbot.RpgStatusProbWeight.GoWpvp` sets the
   frequency (0 disables); `AiPlayerbot.Wpvp*` knobs cover the rest; GM

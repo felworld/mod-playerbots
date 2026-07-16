@@ -15,17 +15,7 @@ bool WpvpGoadAction::Execute(Event /*event*/)
     if (!data)
         return false;
 
-    Unit* mark = nullptr;
-    GuidVector targets = AI_VALUE(GuidVector, "nearest unflagged enemy players");
-    for (ObjectGuid const guid : targets)
-    {
-        Unit* enemy = botAI->GetUnit(guid);
-        if (enemy && enemy->IsAlive() && bot->GetDistance(enemy) < WpvpGoadTrigger::GOAD_RANGE)
-        {
-            mark = enemy;
-            break;
-        }
-    }
+    Unit* mark = WpvpGoadTrigger::FindMark(botAI, bot);
     if (!mark)
         return false;
 

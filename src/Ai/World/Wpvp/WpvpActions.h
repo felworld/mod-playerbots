@@ -5,9 +5,9 @@
 
 class PlayerbotAI;
 
-// Drop stealth right next to an unflagged enemy, face them and throw a rude
-// emote. The bot is PvP-flagged, so if the mark takes the bait the regular
-// reactive PvP strategy handles the fight.
+// Face an unflagged enemy and throw a rude emote - stealthers drop stealth
+// right next to the mark first. The bot is PvP-flagged, so if the mark takes
+// the bait the regular reactive PvP strategy handles the fight.
 class WpvpGoadAction : public Action
 {
 public:
