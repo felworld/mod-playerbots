@@ -3032,6 +3032,25 @@ bool PlayerbotAI::TellMasterNoFacing(std::string const text, PlayerbotSecurityLe
         if (currentChat.second - time(nullptr) >= 1)
             type = currentChat.first;
 
+        // Grouped bots report status (quest progress, drinking, ...) in
+        // party/raid chat like a real player would, instead of whispering
+        // the master. SayToParty/SayToRaid hand the packet straight to the
+        // real players' sessions - the session chat handler never runs, so
+        // mod-llm's chat hooks never see these mechanical lines and can't
+        // roll a reply against them.
+        if (type == CHAT_MSG_WHISPER || type == CHAT_MSG_PARTY || type == CHAT_MSG_RAID)
+        {
+            if (Group* group = bot->GetGroup(); group && group->IsMember(master->GetGUID()))
+            {
+                if (group->isRaidGroup())
+                    SayToRaid(text);
+                else
+                    SayToParty(text);
+
+                return true;
+            }
+        }
+
         WorldPacket data;
         ChatHandler::BuildChatPacket(data, type == CHAT_MSG_ADDON ? CHAT_MSG_PARTY : type,
                                      type == CHAT_MSG_ADDON ? LANG_ADDON : LANG_UNIVERSAL, bot, nullptr, text.c_str());
