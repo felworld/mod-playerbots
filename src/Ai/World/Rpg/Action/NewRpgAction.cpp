@@ -9,6 +9,7 @@
 #include "G3D/Vector2.h"
 #include "GossipDef.h"
 #include "IVMapMgr.h"
+#include "NewRpgDuelSpot.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "NewRpgWpvp.h"
@@ -65,7 +66,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     {
         case RPG_IDLE:
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_GO_WPVP});
+                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_GO_WPVP, RPG_DUEL_SPOT});
 
         case RPG_GO_GRIND:
         {
@@ -201,6 +202,51 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                 if (bot->GetMapId() != data.anchorPos.GetMapId() || bot->GetExactDist(data.anchorPos) > 3000.0f)
                 {
                     EndWpvpExcursion(botAI, "yanked far from the dwell anchor");
+                    return true;
+                }
+            }
+            break;
+        }
+        case RPG_DUEL_SPOT:
+        {
+            auto& data = std::get<NewRpgInfo::DuelSpot>(info.data);
+            if (!sPlayerbotAIConfig.enableBotDuels)
+            {
+                EndDuelSpotHangout(botAI, "bot duels are disabled");
+                return true;
+            }
+
+            if (!data.arrivedT)
+            {
+                // Travel phase: either we make it to the anchor or we give up.
+                if (info.HasStatusPersisted(statusDuelSpotTravelDuration))
+                {
+                    EndDuelSpotHangout(botAI, "travel phase timed out");
+                    return true;
+                }
+
+                if (data.teleported && bot->GetMapId() == data.anchorPos.GetMapId() &&
+                    bot->GetExactDist(data.anchorPos) < 20.0f)
+                {
+                    data.arrivedT = getMSTime();
+                    data.dwellDuration = urand(sPlayerbotAIConfig.duelSpotDwellMinutesMin,
+                                               sPlayerbotAIConfig.duelSpotDwellMinutesMax) *
+                                         MINUTE * IN_MILLISECONDS;
+                }
+            }
+            else
+            {
+                // Dwell phase: go home on expiry, or if something yanked the
+                // bot far away.
+                if (GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration)
+                {
+                    EndDuelSpotHangout(botAI, "dwell time expired");
+                    return true;
+                }
+
+                if (bot->GetMapId() != data.anchorPos.GetMapId() || bot->GetExactDist(data.anchorPos) > 3000.0f)
+                {
+                    EndDuelSpotHangout(botAI, "yanked far from the dwell anchor");
                     return true;
                 }
             }

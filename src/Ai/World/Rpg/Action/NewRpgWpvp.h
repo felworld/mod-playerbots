@@ -3,6 +3,18 @@
 
 #include "NewRpgBaseAction.h"
 
+// Sample a ground position distMin..distMax yards from the hub at
+// bearing +/- bearingSpread, rejecting spots whose ground height differs
+// from the hub's by more than zTolerance (roofs, cliffs, cellars).
+bool SampleGroundNear(Map* map, WorldLocation const& hub, float bearing, float bearingSpread, float distMin,
+                      float distMax, float zTolerance, WorldPosition& out);
+
+// Unlike PlayerbotAI::HasPlayerNearby, which only considers real players on
+// the bot's CURRENT map, this checks against the position's own map - needed
+// for pre-teleport guards, where the arrival point is usually far from the
+// bot.
+bool RealPlayerNear(WorldPosition& pos, float range);
+
 // Compute the dwell anchor (WpvpAnchorOffset yards off the hub) and the
 // teleport arrival point (WpvpTeleportOffset yards out on the same bearing)
 // for a world-PvP excursion. hubPos/zoneId/anchorPos/teleportPos are filled

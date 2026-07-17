@@ -1061,6 +1061,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # Rest          (Default: 5   Take a break for a while and do nothing)
 # OutdoorPvp    (Default: 10  Participate in outdoor PvP capture points if already in an outdoor PvP zone)
 # GoWpvp        (Default: 3   Travel to an enemy/contested town for world PvP, lurk a while, then go home)
+# DuelSpot      (Default: 2   Hang out at the faction capital's gate duel spot and solicit duels)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
 AiPlayerbot.RpgStatusProbWeight.GoGrind = 15
@@ -1070,6 +1071,7 @@ AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
 AiPlayerbot.RpgStatusProbWeight.GoWpvp = 3
+AiPlayerbot.RpgStatusProbWeight.DuelSpot = 2
 
 #
 # World PvP excursions (GoWpvp): a random bot occasionally teleports to a spot
@@ -1141,6 +1143,40 @@ AiPlayerbot.WpvpCalloutAttackerCooldown = 600
 # given. 0 passed to the command means "until server restart".
 # Default: 60
 AiPlayerbot.WpvpKillSwitchDefaultMinutes = 60
+
+#
+# Bot duels: bots with the "start duel" strategy (25% of free randombots, plus
+# everyone dwelling at a duel spot) occasionally challenge a nearby player -
+# bot or real - to a duel when both are healthy, close in level, and in an
+# area that allows dueling. DuelSpot trips (see RpgStatusProbWeight.DuelSpot)
+# send a bot to the classic duel field outside Stormwind's or Orgrimmar's
+# gates to loiter, solicit duels with emotes and chat, and take on all comers.
+
+# Master switch for bot-initiated duels (accepting duels is unaffected).
+# Default: 1 (enabled)
+AiPlayerbot.EnableBotDuels = 1
+
+# How far (yards) a bot looks for someone to challenge.
+# Default: 25
+AiPlayerbot.DuelChallengeRange = 25
+
+# Cooldown (seconds) between duel challenges: while roaming / while dwelling
+# at a duel spot.
+# Default: 600 / 60
+AiPlayerbot.DuelChallengeCooldown = 600
+AiPlayerbot.DuelSpotChallengeCooldown = 60
+
+# Cooldown (seconds) between "anyone up for a duel?" solicitations at a duel
+# spot.
+# Default: 120
+AiPlayerbot.DuelSpotSolicitCooldown = 120
+
+# Minimum bot level to make a duel-spot trip, and how long (minutes) the bot
+# hangs out once there.
+# Default: 5 / 20-45
+AiPlayerbot.DuelSpotMinBotLevel = 5
+AiPlayerbot.DuelSpotDwellMinutesMin = 20
+AiPlayerbot.DuelSpotDwellMinutesMax = 45
 
 # Bots' minimum and maximum level when teleporting in and out of a zone, according to the new RPG strategy
 # Format: AiPlayerbot.ZoneBracket.zoneID = minLevel,maxLevel

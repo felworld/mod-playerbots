@@ -10,6 +10,7 @@
 #include "IVMapMgr.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
+#include "NewRpgDuelSpot.h"
 #include "NewRpgWpvp.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
@@ -1297,6 +1298,16 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             }
             return false;
         }
+        case RPG_DUEL_SPOT:
+        {
+            NewRpgInfo::DuelSpot spot;
+            if (ComputeDuelSpotPositions(bot, spot))
+            {
+                botAI->rpgInfo.ChangeToDuelSpot(std::move(spot));
+                return true;
+            }
+            return false;
+        }
         default:
         {
             botAI->rpgInfo.ChangeToRest();
@@ -1383,6 +1394,24 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
 
             TeamId enemyTeam = bot->GetTeamId() == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
             return !sTravelMgr.GetWpvpHubs(enemyTeam).empty();
+        }
+        case RPG_DUEL_SPOT:
+        {
+            if (!sPlayerbotAIConfig.enableBotDuels)
+                return false;
+
+            if (bot->GetLevel() < sPlayerbotAIConfig.duelSpotMinBotLevel)
+                return false;
+
+            if (bot->GetGroup())
+                return false;
+
+            // Already hanging around the gates: no trip to make.
+            WorldLocation const& hub = GetDuelSpotHub(bot->GetTeamId());
+            if (bot->GetMapId() == hub.GetMapId() && bot->GetExactDist(hub) < 500.0f)
+                return false;
+
+            return true;
         }
         default:
             return false;

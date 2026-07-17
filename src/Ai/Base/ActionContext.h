@@ -64,7 +64,9 @@
 #include "VehicleActions.h"
 #include "WorldBuffAction.h"
 #include "XpGainAction.h"
+#include "DuelChallenge.h"
 #include "NewRpgAction.h"
+#include "NewRpgDuelSpot.h"
 #include "NewRpgOutdoorPvP.h"
 #include "NewRpgWpvp.h"
 #include "WpvpActions.h"
@@ -289,6 +291,8 @@ public:
         creators["new rpg travel flight"] = &ActionContext::new_rpg_travel_flight;
         creators["new rpg outdoor pvp"] = &ActionContext::new_rpg_outdoor_pvp;
         creators["new rpg go wpvp"] = &ActionContext::new_rpg_go_wpvp;
+        creators["new rpg duel spot"] = &ActionContext::new_rpg_duel_spot;
+        creators["start duel"] = &ActionContext::start_duel;
         creators["wpvp goad"] = &ActionContext::wpvp_goad;
         creators["wpvp defense callout"] = &ActionContext::wpvp_defense_callout;
         creators["wait for attack keep safe distance"] = &ActionContext::wait_for_attack_keep_safe_distance;
@@ -506,6 +510,8 @@ private:
     static Action* new_rpg_travel_flight(PlayerbotAI* ai) { return new NewRpgTravelFlightAction(ai); }
     static Action* new_rpg_outdoor_pvp(PlayerbotAI* ai) { return new NewRpgOutdoorPvpAction(ai); }
     static Action* new_rpg_go_wpvp(PlayerbotAI* ai) { return new NewRpgGoWpvpAction(ai); }
+    static Action* new_rpg_duel_spot(PlayerbotAI* ai) { return new NewRpgDuelSpotAction(ai); }
+    static Action* start_duel(PlayerbotAI* ai) { return new StartDuelAction(ai); }
     static Action* wpvp_goad(PlayerbotAI* ai) { return new WpvpGoadAction(ai); }
     static Action* wpvp_defense_callout(PlayerbotAI* ai) { return new WpvpDefenseCalloutAction(ai); }
     static Action* wait_for_attack_keep_safe_distance(PlayerbotAI* ai) { return new WaitForAttackKeepSafeDistanceAction(ai); }

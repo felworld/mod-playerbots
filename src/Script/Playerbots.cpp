@@ -22,6 +22,7 @@
 #include "Config.h"
 #include "DatabaseEnv.h"
 #include "DatabaseLoader.h"
+#include "DuelChallenge.h"
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
@@ -92,8 +93,14 @@ public:
         PLAYERHOOK_CAN_PLAYER_USE_CHANNEL_CHAT,
         PLAYERHOOK_ON_GIVE_EXP,
         PLAYERHOOK_ON_BEFORE_TELEPORT,
-        PLAYERHOOK_ON_UPDATE_ZONE
+        PLAYERHOOK_ON_UPDATE_ZONE,
+        PLAYERHOOK_ON_DUEL_END
     }) {}
+
+    void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type) override
+    {
+        OnBotDuelEnded(winner, loser, type);
+    }
 
     void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 /*newArea*/) override
     {

@@ -66,7 +66,9 @@ enum NewRpgStatus : int
     RPG_OUTDOOR_PVP = 8,
     // World PvP excursion into enemy/contested territory
     RPG_GO_WPVP = 9,
-    RPG_STATUS_END = 10
+    // Hang out at the faction capital's gate duel spot and solicit duels
+    RPG_DUEL_SPOT = 10,
+    RPG_STATUS_END = 11
 };
 
 #define MAX_SPECNO 20
@@ -411,6 +413,13 @@ public:
     uint32 wpvpCalloutZoneCooldown;
     uint32 wpvpCalloutAttackerCooldown;
     uint32 wpvpKillSwitchDefaultMinutes;
+    bool enableBotDuels;
+    uint32 duelChallengeRange;
+    uint32 duelChallengeCooldown;
+    uint32 duelSpotChallengeCooldown;
+    uint32 duelSpotSolicitCooldown;
+    uint32 duelSpotMinBotLevel;
+    uint32 duelSpotDwellMinutesMin, duelSpotDwellMinutesMax;
     bool syncLevelWithPlayers;
     bool autoLearnQuestSpells;
     bool autoTeleportForLevel;

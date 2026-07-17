@@ -80,11 +80,28 @@ struct NewRpgInfo
         bool test{false};             // started by "wpvp test": progress logs at INFO
         uint32 lastTestLogT{0};       // throttles repeated test-mode "waiting" logs
     };
+    // RPG_DUEL_SPOT
+    struct DuelSpot
+    {
+        WorldPosition hubPos{};       // the classic duel field outside the capital gates
+        WorldPosition anchorPos{};    // dwell spot sampled a few yards off the hub
+        WorldPosition teleportPos{};  // arrival spot ~150yd out; bot walks the last leg
+        bool teleported{false};
+        uint32 arrivedT{0};           // timestamp of reaching the anchor (0 = still travelling)
+        uint32 dwellDuration{0};      // ms to loiter once arrived
+        uint32 lastSolicitT{0};       // last "anyone up for a duel?" emote/line
+        bool addedStartDuel{false};   // whether WE added "start duel" (vs the AiFactory 25% roll)
+    };
     struct Idle
     {
     };
 
     uint32 startT{0};  // start timestamp of the current status
+
+    // Duel-challenge throttling, independent of the current status (the
+    // "start duel" strategy fires while roaming as well as at duel spots).
+    uint32 lastDuelChallengeT{0};
+    ObjectGuid lastDuelChallengeTarget{};
 
     // MOVE_FAR
     float nearestMoveFarDis{FLT_MAX};
@@ -103,7 +120,8 @@ struct NewRpgInfo
         Rest,
         TravelFlight,
         OutdoorPvP,
-        GoWpvp
+        GoWpvp,
+        DuelSpot
     >;
     RpgData data;
 
@@ -117,6 +135,7 @@ struct NewRpgInfo
     void ChangeToTravelFlight(uint32 flightMasterEntry, WorldPosition flightMasterPos, std::vector<uint32> path);
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToGoWpvp(GoWpvp&& wpvp);
+    void ChangeToDuelSpot(DuelSpot&& spot);
     void ChangeToRest();
     void ChangeToIdle();
     bool CanChangeTo(NewRpgStatus status);

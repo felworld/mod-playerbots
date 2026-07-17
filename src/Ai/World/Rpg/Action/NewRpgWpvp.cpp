@@ -13,11 +13,6 @@
 #include "SharedDefines.h"
 #include "Timer.h"
 
-namespace
-{
-// Sample a ground position distMin..distMax yards from the hub at
-// bearing +/- bearingSpread, rejecting spots whose ground height differs
-// from the hub's by more than zTolerance (roofs, cliffs, cellars).
 bool SampleGroundNear(Map* map, WorldLocation const& hub, float bearing, float bearingSpread, float distMin,
                       float distMax, float zTolerance, WorldPosition& out)
 {
@@ -37,10 +32,6 @@ bool SampleGroundNear(Map* map, WorldLocation const& hub, float bearing, float b
     return false;
 }
 
-// Unlike PlayerbotAI::HasPlayerNearby, which only considers real players on
-// the bot's CURRENT map, this checks against the position's own map - needed
-// for the pre-teleport guard, where the arrival point is usually on another
-// continent than the bot.
 bool RealPlayerNear(WorldPosition& pos, float range)
 {
     float sqRange = range * range;
@@ -57,7 +48,6 @@ bool RealPlayerNear(WorldPosition& pos, float range)
     }
     return false;
 }
-}  // namespace
 
 bool ComputeWpvpPositions(WorldLocation const& hubLoc, uint32 zoneId, NewRpgInfo::GoWpvp& out)
 {

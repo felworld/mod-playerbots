@@ -62,6 +62,12 @@ void NewRpgInfo::ChangeToGoWpvp(GoWpvp&& wpvp)
     data = std::move(wpvp);
 }
 
+void NewRpgInfo::ChangeToDuelSpot(DuelSpot&& spot)
+{
+    startT = getMSTime();
+    data = std::move(spot);
+}
+
 void NewRpgInfo::ChangeToRest()
 {
     startT = getMSTime();
@@ -107,6 +113,7 @@ NewRpgStatus NewRpgInfo::GetStatus()
         if constexpr (std::is_same_v<T, TravelFlight>) return RPG_TRAVEL_FLIGHT;
         if constexpr (std::is_same_v<T, OutdoorPvP>) return RPG_OUTDOOR_PVP;
         if constexpr (std::is_same_v<T, GoWpvp>) return RPG_GO_WPVP;
+        if constexpr (std::is_same_v<T, DuelSpot>) return RPG_DUEL_SPOT;
         return RPG_IDLE;
     }, data);
 }
@@ -195,6 +202,22 @@ std::string NewRpgInfo::ToString()
                             : 0)
                     << "s";
             out << "\ndeathCount: " << uint32(arg.deathCount);
+        }
+        else if constexpr (std::is_same_v<T, DuelSpot>)
+        {
+            out << "DUEL_SPOT";
+            out << "\nhubPos: " << arg.hubPos.GetMapId() << " " << arg.hubPos.GetPositionX() << " "
+                << arg.hubPos.GetPositionY() << " " << arg.hubPos.GetPositionZ();
+            out << "\nanchorPos: " << arg.anchorPos.GetMapId() << " " << arg.anchorPos.GetPositionX() << " "
+                << arg.anchorPos.GetPositionY() << " " << arg.anchorPos.GetPositionZ();
+            out << "\nteleported: " << arg.teleported;
+            out << "\ndwelling: " << (arg.arrivedT != 0);
+            if (arg.arrivedT)
+                out << "\ndwellRemaining: "
+                    << (GetMSTimeDiffToNow(arg.arrivedT) < arg.dwellDuration
+                            ? (arg.dwellDuration - GetMSTimeDiffToNow(arg.arrivedT)) / IN_MILLISECONDS
+                            : 0)
+                    << "s";
         }
         else
             out << "UNKNOWN";

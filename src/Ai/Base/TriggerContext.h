@@ -8,6 +8,7 @@
 
 #include "BystanderTriggers.h"
 #include "CureTriggers.h"
+#include "DuelChallenge.h"
 #include "FishingTriggers.h"
 #include "GenericTriggers.h"
 #include "GuildTriggers.h"
@@ -248,6 +249,8 @@ public:
         creators["travel flight status"] = &TriggerContext::travel_flight_status;
         creators["outdoor pvp status"] = &TriggerContext::outdoor_pvp_status;
         creators["go wpvp status"] = &TriggerContext::go_wpvp_status;
+        creators["duel spot status"] = &TriggerContext::duel_spot_status;
+        creators["start duel possible"] = &TriggerContext::start_duel_possible;
         creators["wpvp goad"] = &TriggerContext::wpvp_goad;
         creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
         creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
@@ -471,6 +474,8 @@ private:
     static Trigger* travel_flight_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_TRAVEL_FLIGHT); }
     static Trigger* outdoor_pvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_OUTDOOR_PVP); }
     static Trigger* go_wpvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_WPVP); }
+    static Trigger* duel_spot_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_DUEL_SPOT); }
+    static Trigger* start_duel_possible(PlayerbotAI* botAI) { return new StartDuelPossibleTrigger(botAI); }
     static Trigger* wpvp_goad(PlayerbotAI* botAI) { return new WpvpGoadTrigger(botAI); }
     static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
     static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }

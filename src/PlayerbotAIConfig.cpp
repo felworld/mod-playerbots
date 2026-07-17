@@ -707,6 +707,7 @@ bool PlayerbotAIConfig::Initialize()
     RpgStatusProbWeight[RPG_REST] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.Rest", 5);
     RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
     RpgStatusProbWeight[RPG_GO_WPVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoWpvp", 3);
+    RpgStatusProbWeight[RPG_DUEL_SPOT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.DuelSpot", 2);
 
     // World PvP excursions (RPG_GO_WPVP)
     wpvpMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpMinBotLevel", 10);
@@ -729,6 +730,15 @@ bool PlayerbotAIConfig::Initialize()
     wpvpCalloutZoneCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutZoneCooldown", 180);
     wpvpCalloutAttackerCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutAttackerCooldown", 600);
     wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
+
+    enableBotDuels = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBotDuels", true);
+    duelChallengeRange = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelChallengeRange", 25);
+    duelChallengeCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelChallengeCooldown", 600);
+    duelSpotChallengeCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotChallengeCooldown", 60);
+    duelSpotSolicitCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotSolicitCooldown", 120);
+    duelSpotMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotMinBotLevel", 5);
+    duelSpotDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMin", 20);
+    duelSpotDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMax", 45);
 
     syncLevelWithPlayers = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncLevelWithPlayers", false);
     randomBotGroupNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGroupNearby", false);

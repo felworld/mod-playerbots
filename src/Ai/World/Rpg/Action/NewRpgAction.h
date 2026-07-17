@@ -54,6 +54,8 @@ protected:
     const int32 statusOutDoorPvPDuration = HOUR * IN_MILLISECONDS ;
     // Travel phase cap for a wpvp excursion (dwell time is rolled per trip)
     const int32 statusGoWpvpTravelDuration = 20 * MINUTE * IN_MILLISECONDS ;
+    // Travel phase cap for a duel-spot hangout (dwell time is rolled per trip)
+    const int32 statusDuelSpotTravelDuration = 20 * MINUTE * IN_MILLISECONDS ;
 };
 
 class NewRpgGoGrindAction : public NewRpgBaseAction

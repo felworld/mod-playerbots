@@ -17,6 +17,12 @@ void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 DuelStrategy::DuelStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}
 
-void StartDuelStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/) {}
+void StartDuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
+{
+    // Above the "new rpg status update" default action (11.0f) so a bot
+    // that can challenge does so before wandering off to a new status.
+    triggers.push_back(
+        new TriggerNode("start duel possible", { NextAction("start duel", 12.0f) }));
+}
 
 StartDuelStrategy::StartDuelStrategy(PlayerbotAI* botAI) : Strategy(botAI) {}
