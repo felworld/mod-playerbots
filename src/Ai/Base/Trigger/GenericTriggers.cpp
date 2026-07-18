@@ -9,6 +9,7 @@
 
 #include "GenericBuffUtils.h"
 #include "CreatureAI.h"
+#include "NonCombatActions.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
 #include "ObjectGuid.h"
@@ -271,6 +272,15 @@ bool NoDrinkTrigger::IsActive()
         return false;
 
     return AI_VALUE2(std::vector<Item*>, "inventory items", "conjured water").empty();
+}
+
+bool ConsumingFoodOrDrinkTrigger::IsActive()
+{
+    if (!bot->InBattleground() || bot->IsInCombat())
+        return false;
+
+    return (BotConsumables::IsEatingFood(bot) && bot->GetHealthPct() < 100.0f) ||
+           (BotConsumables::IsDrinking(bot) && bot->GetPowerPct(POWER_MANA) < 100.0f);
 }
 
 bool TargetInSightTrigger::IsActive() { return AI_VALUE(Unit*, "grind target"); }

@@ -5,8 +5,11 @@
 
 #include "NonCombatActions.h"
 
+#include "Battleground.h"
 #include "Event.h"
 #include "Playerbots.h"
+#include "SpellAuraEffects.h"
+#include "SpellDefines.h"
 
 namespace
 {
@@ -30,6 +33,53 @@ bool IsDisallowedShapeshiftForm(Player* bot)
     }
 
     return false;
+}
+}
+
+namespace BotConsumables
+{
+namespace
+{
+constexpr float SAFE_CONSUME_ENEMY_RANGE = 40.0f;
+
+bool HasSeatedRegenAura(Player* bot, AuraType auraType)
+{
+    for (AuraEffect const* effect : bot->GetAuraEffectsByType(auraType))
+        if (effect->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_NOT_SEATED)
+            return true;
+
+    return false;
+}
+}
+
+bool IsEatingFood(Player* bot)
+{
+    return HasSeatedRegenAura(bot, SPELL_AURA_MOD_REGEN) || HasSeatedRegenAura(bot, SPELL_AURA_OBS_MOD_HEALTH);
+}
+
+bool IsDrinking(Player* bot)
+{
+    return HasSeatedRegenAura(bot, SPELL_AURA_MOD_POWER_REGEN) || HasSeatedRegenAura(bot, SPELL_AURA_OBS_MOD_POWER);
+}
+
+bool IsSafeToConsumeInBattleground(PlayerbotAI* botAI, Player* bot)
+{
+    if (!bot->InBattleground())
+        return true;
+
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetStatus() == STATUS_WAIT_LEAVE)
+        return true;
+
+    GuidVector enemies = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest enemy players")->Get();
+    for (ObjectGuid const& guid : enemies)
+    {
+        Unit* enemy = botAI->GetUnit(guid);
+        if (enemy && enemy->IsAlive() && bot->IsWithinDistInMap(enemy, SAFE_CONSUME_ENEMY_RANGE))
+            return false;
+    }
+
+    return true;
 }
 }
 
@@ -75,7 +125,8 @@ bool DrinkAction::Execute(Event event)
 bool DrinkAction::isUseful()
 {
     return UseItemAction::isUseful() && AI_VALUE2(bool, "has mana", "self target") &&
-           AI_VALUE2(uint8, "mana", "self target") < 100;
+           AI_VALUE2(uint8, "mana", "self target") < 100 && !BotConsumables::IsDrinking(bot) &&
+           BotConsumables::IsSafeToConsumeInBattleground(botAI, bot);
 }
 
 bool DrinkAction::isPossible()
@@ -91,6 +142,19 @@ bool DrinkAction::isPossible()
 
     return botAI->HasCheat(BotCheatMask::food) || UseItemAction::isPossible();
 }
+
+bool ContinueEatingAction::Execute(Event event)
+{
+    if (!bot->IsSitState())
+        bot->SetStandState(UNIT_STAND_STATE_SIT);
+
+    // PlayerbotAI::DoNextAction force-stands a sitting bot once the check delay drops below
+    // 1000ms, which breaks the regen aura — the hold must be at least that long.
+    botAI->SetNextCheckDelay(1000);
+    return true;
+}
+
+bool ContinueEatingAction::isUseful() { return BotConsumables::IsSafeToConsumeInBattleground(botAI, bot); }
 
 bool EatAction::Execute(Event event)
 {
@@ -131,7 +195,11 @@ bool EatAction::Execute(Event event)
     return UseItemAction::Execute(event);
 }
 
-bool EatAction::isUseful() { return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 100; }
+bool EatAction::isUseful()
+{
+    return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 100 &&
+           !BotConsumables::IsEatingFood(bot) && BotConsumables::IsSafeToConsumeInBattleground(botAI, bot);
+}
 
 bool EatAction::isPossible()
 {

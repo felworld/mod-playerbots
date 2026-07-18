@@ -125,6 +125,7 @@ public:
         creators["mana potion"] = &ActionContext::mana_potion;
         creators["food"] = &ActionContext::food;
         creators["drink"] = &ActionContext::drink;
+        creators["continue eating"] = &ActionContext::continue_eating;
         creators["tank assist"] = &ActionContext::tank_assist;
         creators["dps assist"] = &ActionContext::dps_assist;
         creators["dps aoe"] = &ActionContext::dps_aoe;
@@ -382,6 +383,7 @@ private:
     static Action* tank_assist(PlayerbotAI* botAI) { return new TankAssistAction(botAI); }
     static Action* drink(PlayerbotAI* botAI) { return new DrinkAction(botAI); }
     static Action* food(PlayerbotAI* botAI) { return new EatAction(botAI); }
+    static Action* continue_eating(PlayerbotAI* botAI) { return new ContinueEatingAction(botAI); }
     static Action* mana_potion(PlayerbotAI* botAI) { return new UseManaPotion(botAI); }
     static Action* healing_potion(PlayerbotAI* botAI) { return new UseHealingPotion(botAI); }
     static Action* healthstone(PlayerbotAI* botAI) { return new UseItemAction(botAI, "healthstone"); }

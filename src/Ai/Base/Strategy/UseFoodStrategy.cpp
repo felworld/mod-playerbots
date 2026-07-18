@@ -21,4 +21,9 @@ void UseFoodStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode("low health", { NextAction("food", 3.0f) }));
         triggers.push_back(new TriggerNode("low mana", { NextAction("drink", 3.0f) }));
     }
+
+    // In battlegrounds eating runs on short AI ticks instead of one long sleep; this hold keeps
+    // the bot seated while it is safe, and simply not firing lets higher-priority actions
+    // (objectives, combat) stand the bot up and break the regen aura.
+    triggers.push_back(new TriggerNode("consuming food or drink", { NextAction("continue eating", 3.5f) }));
 }

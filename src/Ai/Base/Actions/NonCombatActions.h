@@ -8,7 +8,15 @@
 
 #include "UseItemAction.h"
 
+class Player;
 class PlayerbotAI;
+
+namespace BotConsumables
+{
+bool IsEatingFood(Player* bot);
+bool IsDrinking(Player* bot);
+bool IsSafeToConsumeInBattleground(PlayerbotAI* botAI, Player* bot);
+}
 
 class DrinkAction : public UseItemAction
 {
@@ -28,6 +36,15 @@ public:
     bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;
+};
+
+class ContinueEatingAction : public Action
+{
+public:
+    ContinueEatingAction(PlayerbotAI* botAI) : Action(botAI, "continue eating") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 #endif

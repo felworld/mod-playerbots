@@ -296,8 +296,10 @@ bool UseItemAction::UseItem(Item* item, ObjectGuid goGuid, Item* itemTarget, Uni
         if (!bot->IsInCombat() && !bot->InBattleground())
             botAI->SetNextCheckDelay(std::max(10000.0f, 27000.0f * (100 - p) / 100.0f));
 
+        // In battlegrounds, re-evaluate every second so eating can be interrupted; the
+        // "continue eating" hold keeps the bot seated while it remains safe.
         if (!bot->IsInCombat() && bot->InBattleground())
-            botAI->SetNextCheckDelay(std::max(10000.0f, 20000.0f * (100 - p) / 100.0f));
+            botAI->SetNextCheckDelay(1000);
 
         // botAI->SetNextCheckDelay(27000.0f * (100 - p) / 100.0f);
         //  botAI->SetNextCheckDelay(20000);

@@ -289,6 +289,14 @@ public:
     bool IsActive() override;
 };
 
+class ConsumingFoodOrDrinkTrigger : public Trigger
+{
+public:
+    ConsumingFoodOrDrinkTrigger(PlayerbotAI* botAI) : Trigger(botAI, "consuming food or drink") {}
+
+    bool IsActive() override;
+};
+
 class LightAoeTrigger : public AoeTrigger
 {
 public:
