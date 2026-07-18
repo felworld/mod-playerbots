@@ -716,6 +716,7 @@ bool PlayerbotAIConfig::Initialize()
     wpvpHomeZoneFullChanceGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpHomeZoneFullChanceGap", 30);
     wpvpLowerBracketChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpLowerBracketChance", 0.15f);
     wpvpGankerMinLevelGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGankerMinLevelGap", 8);
+    wpvpVisionDistance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpVisionDistance", 100.0f);
     wpvpStealthClassWeightMult = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpStealthClassWeightMult", 1.5f);
     wpvpStealthClassOverlevelMult = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpStealthClassOverlevelMult", 0.6f);
     wpvpTeleportOffsetMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpTeleportOffsetMin", 180);

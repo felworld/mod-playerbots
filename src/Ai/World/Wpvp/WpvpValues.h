@@ -10,7 +10,7 @@
 class NearestUnflaggedEnemyPlayersValue : public PossibleTargetsValue
 {
 public:
-    NearestUnflaggedEnemyPlayersValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.grindDistance)
+    NearestUnflaggedEnemyPlayersValue(PlayerbotAI* botAI, float range = sPlayerbotAIConfig.wpvpVisionDistance)
         : PossibleTargetsValue(botAI, "nearest unflagged enemy players", range)
     {
     }

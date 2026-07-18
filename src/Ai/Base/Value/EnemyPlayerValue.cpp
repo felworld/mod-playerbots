@@ -82,6 +82,7 @@ Unit* EnemyPlayerValue::Calculate()
 
     GuidVector players = AI_VALUE(GuidVector, "nearest enemy players");
     float const maxAggroDistance = GetMaxAttackDistance();
+    bool const onWpvpExcursion = botAI->rpgInfo.GetStatus() == RPG_GO_WPVP;
     for (auto const& gTarget : players)
     {
         Unit* pUnit = botAI->GetUnit(gTarget);
@@ -106,11 +107,14 @@ Unit* EnemyPlayerValue::Calculate()
                 return pTarget;
         }
 
-        // Aggro weak enemies from further away.
+        // Aggro weak enemies from further away; excursion bots came to pick fights,
+        // so they commit at full range regardless of the health comparison.
         // If controlling mobile vehicle only agro close enemies (otherwise will never reach objective)
-        uint32 const aggroDistance = controllingVehicle                                               ? 5.0f
-                                     : (controllingCannon || bot->GetHealth() > pTarget->GetHealth()) ? maxAggroDistance
-                                                                                                      : 20.0f;
+        float const aggroDistance = controllingVehicle ? 5.0f
+                                    : (controllingCannon || onWpvpExcursion ||
+                                       bot->GetHealth() > pTarget->GetHealth())
+                                        ? maxAggroDistance
+                                        : 20.0f;
         if (!bot->IsWithinDist(pTarget, aggroDistance))
             continue;
 
@@ -147,7 +151,7 @@ Unit* EnemyPlayerValue::Calculate()
 float EnemyPlayerValue::GetMaxAttackDistance()
 {
     if (!bot->GetBattleground())
-        return 60.0f;
+        return botAI->rpgInfo.GetStatus() == RPG_GO_WPVP ? sPlayerbotAIConfig.wpvpVisionDistance : 60.0f;
 
     Battleground* bg = bot->GetBattleground();
     if (!bg)

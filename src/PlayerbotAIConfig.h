@@ -402,6 +402,7 @@ public:
     uint32 wpvpHomeZoneFullChanceGap;
     float wpvpLowerBracketChance;
     uint32 wpvpGankerMinLevelGap;
+    float wpvpVisionDistance;
     float wpvpStealthClassWeightMult;
     float wpvpStealthClassOverlevelMult;
     uint32 wpvpTeleportOffsetMin, wpvpTeleportOffsetMax;

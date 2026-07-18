@@ -1111,6 +1111,14 @@ AiPlayerbot.WpvpGankerMinLevelGap = 8
 AiPlayerbot.WpvpStealthClassWeightMult = 1.5
 AiPlayerbot.WpvpStealthClassOverlevelMult = 0.6
 
+# Radius (yards) within which bots notice enemy players, and the distance at
+# which a bot on a WPvP excursion opens an attack in the open world.
+# Non-excursion bots still only commit at 60yd (20yd against a healthier
+# target). 100 matches the server's default player visibility on continents
+# (Visibility.Distance.Continents), i.e. excursion bots attack on sight.
+# Default: 100
+AiPlayerbot.WpvpVisionDistance = 100.0
+
 # Distance bands (yards) around the destination hub: the bot teleports in at
 # Teleport offset and walks to a dwell anchor at Anchor offset.
 # Default: 180-280 / 40-80
