@@ -1842,7 +1842,7 @@ bool PlayerbotAI::PlayEmote(uint32 emote)
                                                                                             : ObjectGuid::Empty);
     bot->GetSession()->HandleTextEmoteOpcode(data);
 
-    return false;
+    return true;
 }
 
 bool PlayerbotAI::ContainsStrategy(StrategyType type)
