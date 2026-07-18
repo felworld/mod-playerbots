@@ -15,6 +15,7 @@
 #include "BattleGroundTactics.h"
 #include "BuyAction.h"
 #include "BystanderAssistActions.h"
+#include "SocialBuffActions.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -170,6 +171,9 @@ public:
         creators["delay"] = &ActionContext::delay;
         creators["greet"] = &ActionContext::greet;
         creators["bystander heal"] = &ActionContext::bystander_heal;
+        creators["buff passerby"] = &ActionContext::buff_passerby;
+        creators["buff back"] = &ActionContext::buff_back;
+        creators["thank healer"] = &ActionContext::thank_healer;
         creators["reach bystander to assist"] = &ActionContext::reach_bystander_to_assist;
         creators["attack bystander attacker"] = &ActionContext::attack_bystander_attacker;
         creators["check values"] = &ActionContext::check_values;
@@ -317,6 +321,9 @@ private:
     static Action* check_values(PlayerbotAI* botAI) { return new CheckValuesAction(botAI); }
     static Action* greet(PlayerbotAI* botAI) { return new GreetAction(botAI); }
     static Action* bystander_heal(PlayerbotAI* botAI) { return new BystanderHealAction(botAI); }
+    static Action* buff_passerby(PlayerbotAI* botAI) { return new BuffPasserbyAction(botAI); }
+    static Action* buff_back(PlayerbotAI* botAI) { return new BuffBackAction(botAI); }
+    static Action* thank_healer(PlayerbotAI* botAI) { return new ThankHealerAction(botAI); }
     static Action* reach_bystander_to_assist(PlayerbotAI* botAI) { return new ReachBystanderToAssistAction(botAI); }
     static Action* attack_bystander_attacker(PlayerbotAI* botAI) { return new AttackBystanderAttackerAction(botAI); }
     static Action* check_mail(PlayerbotAI* botAI) { return new CheckMailAction(botAI); }

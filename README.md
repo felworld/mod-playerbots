@@ -62,6 +62,16 @@ is forked from — the two move together.
   take an assistive action
   that would newly PvP-flag them. `AiPlayerbot.EnableBystanderAssist`
   (default on) plus threshold knobs in `playerbots.conf.dist`.
+- Social buffing: idle ungrouped mages, priests, druids, and paladins cast
+  their signature class buff (Arcane Intellect, Fortitude, Mark of the Wild,
+  a fitting Blessing) on nearby friendly players — real players and bots —
+  who lack it, and buff-capable bots return the favor when someone buffs
+  them. Bots also answer a stranger's heal with a targeted /thank emote
+  (mod-llm supplies the spoken "thx"). Like bystander assist, no action is
+  ever taken that would newly PvP-flag the bot: flagged targets are only
+  buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and
+  `AiPlayerbot.EnableHealThanks` (both default on) plus radius/cooldown
+  knobs in `playerbots.conf.dist`.
 - World PvP excursions: random bots occasionally travel to enemy or contested
   towns (Southshore/Tarren Mill, the Crossroads, Stranglethorn — rarely even
   enemy home zones like Goldshire) on purpose, lurk near town for 15-30

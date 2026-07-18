@@ -180,6 +180,14 @@ public:
     uint32 bystanderAssistSelfHealth;
     uint32 bystanderAssistSelfMana;
 
+    // social buffing (Felworld)
+    bool enableSocialBuffing;
+    float socialBuffRadius;
+    uint32 socialBuffCooldown;
+    uint32 socialBuffSelfMana;
+    bool enableHealThanks;
+    uint32 socialThankCooldown;
+
     // chat
     bool randomBotTalk;
     bool randomBotEmote;

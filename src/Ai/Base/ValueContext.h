@@ -17,6 +17,7 @@
 #include "AvailableLootValue.h"
 #include "BudgetValues.h"
 #include "BystanderValues.h"
+#include "SocialBuffValues.h"
 #include "CcTargetValue.h"
 #include "ChatValue.h"
 #include "CollisionValue.h"
@@ -118,6 +119,9 @@ public:
         creators["nearest friendly players"] = &ValueContext::nearest_friendly_players;
         creators["bystander to assist"] = &ValueContext::bystander_to_assist;
         creators["bystander attacker"] = &ValueContext::bystander_attacker;
+        creators["passerby to buff"] = &ValueContext::passerby_to_buff;
+        creators["pending buff back"] = &ValueContext::pending_buff_back;
+        creators["pending thank"] = &ValueContext::pending_thank;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
         creators["nearest unflagged enemy players"] = &ValueContext::nearest_unflagged_enemy_players;
@@ -436,6 +440,15 @@ private:
     static UntypedValue* nearest_friendly_players(PlayerbotAI* botAI) { return new NearestFriendlyPlayersValue(botAI); }
     static UntypedValue* bystander_to_assist(PlayerbotAI* botAI) { return new BystanderToAssistValue(botAI); }
     static UntypedValue* bystander_attacker(PlayerbotAI* botAI) { return new BystanderAttackerValue(botAI); }
+    static UntypedValue* passerby_to_buff(PlayerbotAI* botAI) { return new PasserbyToBuffValue(botAI); }
+    static UntypedValue* pending_buff_back(PlayerbotAI* botAI)
+    {
+        return new ManualSetValue<SocialReactionEvent>(botAI, SocialReactionEvent(), "pending buff back");
+    }
+    static UntypedValue* pending_thank(PlayerbotAI* botAI)
+    {
+        return new ManualSetValue<SocialReactionEvent>(botAI, SocialReactionEvent(), "pending thank");
+    }
     static UntypedValue* closest_friendly_players(PlayerbotAI* botAI)
     {
         return new NearestFriendlyPlayersValue(botAI, INTERACTION_DISTANCE);

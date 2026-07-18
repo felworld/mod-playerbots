@@ -614,6 +614,9 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
             if (sPlayerbotAIConfig.enableBystanderAssist)
                 nonCombatEngine->addStrategy("bystander assist", false);
 
+            if (sPlayerbotAIConfig.enableSocialBuffing || sPlayerbotAIConfig.enableHealThanks)
+                nonCombatEngine->addStrategy("social buff", false);
+
             if (sPlayerbotAIConfig.enableNewRpgStrategy)
                 nonCombatEngine->addStrategy("new rpg", false);
             else if (sPlayerbotAIConfig.autoDoQuests)

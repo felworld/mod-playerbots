@@ -7,6 +7,7 @@
 #define PLAYERBOTS_TRIGGERCONTEXT_H
 
 #include "BystanderTriggers.h"
+#include "SocialBuffTriggers.h"
 #include "CureTriggers.h"
 #include "DuelChallenge.h"
 #include "FishingTriggers.h"
@@ -173,6 +174,9 @@ public:
         creators["no non bot players around"] = &TriggerContext::no_non_bot_players_around;
         creators["new player nearby"] = &TriggerContext::new_player_nearby;
         creators["bystander in distress"] = &TriggerContext::bystander_in_distress;
+        creators["passerby to buff"] = &TriggerContext::passerby_to_buff;
+        creators["buffed by friendly"] = &TriggerContext::buffed_by_friendly;
+        creators["healed by friendly"] = &TriggerContext::healed_by_friendly;
         creators["no rpg target"] = &TriggerContext::no_rpg_target;
         creators["has rpg target"] = &TriggerContext::has_rpg_target;
         creators["far from rpg target"] = &TriggerContext::far_from_rpg_target;
@@ -417,6 +421,9 @@ private:
     static Trigger* no_non_bot_players_around(PlayerbotAI* botAI) { return new NoNonBotPlayersAroundTrigger(botAI); }
     static Trigger* new_player_nearby(PlayerbotAI* botAI) { return new NewPlayerNearbyTrigger(botAI); }
     static Trigger* bystander_in_distress(PlayerbotAI* botAI) { return new BystanderInDistressTrigger(botAI); }
+    static Trigger* passerby_to_buff(PlayerbotAI* botAI) { return new PasserbyToBuffTrigger(botAI); }
+    static Trigger* buffed_by_friendly(PlayerbotAI* botAI) { return new BuffedByFriendlyTrigger(botAI); }
+    static Trigger* healed_by_friendly(PlayerbotAI* botAI) { return new HealedByFriendlyTrigger(botAI); }
     static Trigger* bg_waiting(PlayerbotAI* botAI) { return new BgWaitingTrigger(botAI); }
     static Trigger* bg_active(PlayerbotAI* botAI) { return new BgActiveTrigger(botAI); }
     static Trigger* bg_invite_active(PlayerbotAI* botAI) { return new BgInviteActiveTrigger(botAI); }

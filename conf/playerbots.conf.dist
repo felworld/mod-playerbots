@@ -2390,6 +2390,24 @@ AiPlayerbot.BystanderAssistCooldown = 30
 AiPlayerbot.BystanderAssistSelfHealth = 50
 AiPlayerbot.BystanderAssistSelfMana = 30
 
+# Social buffing (Felworld): idle ungrouped buff-capable bots (mage/priest/
+# druid/paladin) cast their signature class buff on nearby friendly players
+# who lack it, and any such bot buffs back whoever buffs it. A bot never
+# buffs a PvP-flagged target unless it is already flagged itself.
+AiPlayerbot.EnableSocialBuffing = 1
+# Radius (yards) within which a bot offers walk-up buffs.
+AiPlayerbot.SocialBuffRadius = 30
+# Per-target cooldown (seconds) after buffing (or trying to), so a bot
+# doesn't court the same stranger every scan.
+AiPlayerbot.SocialBuffCooldown = 600
+# A bot only volunteers buffs while its own mana is above this percent.
+AiPlayerbot.SocialBuffSelfMana = 40
+# Bots respond to a stranger's heal with a targeted /thank emote (the LLM
+# module adds the spoken thanks).
+AiPlayerbot.EnableHealThanks = 1
+# Per-healer cooldown (seconds) between thank-yous.
+AiPlayerbot.SocialThankCooldown = 180
+
 #
 #
 ####################################################################################################

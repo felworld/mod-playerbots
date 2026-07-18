@@ -10,6 +10,7 @@
 #include "AttackEnemyPlayersStrategy.h"
 #include "BattlegroundStrategy.h"
 #include "BystanderAssistStrategy.h"
+#include "SocialBuffStrategy.h"
 #include "CastTimeStrategy.h"
 #include "ChatCommandHandlerStrategy.h"
 #include "ConserveManaStrategy.h"
@@ -66,6 +67,7 @@ public:
         creators["gather"] = &StrategyContext::gather;
         creators["emote"] = &StrategyContext::emote;
         creators["bystander assist"] = &StrategyContext::bystander_assist;
+        creators["social buff"] = &StrategyContext::social_buff;
         creators["passive"] = &StrategyContext::passive;
         creators["aggressive"] = &StrategyContext::aggressive;
         creators["save mana"] = &StrategyContext::auto_save_mana;
@@ -156,6 +158,7 @@ private:
     static Strategy* gather(PlayerbotAI* botAI) { return new GatherStrategy(botAI); }
     static Strategy* emote(PlayerbotAI* botAI) { return new EmoteStrategy(botAI); }
     static Strategy* bystander_assist(PlayerbotAI* botAI) { return new BystanderAssistStrategy(botAI); }
+    static Strategy* social_buff(PlayerbotAI* botAI) { return new SocialBuffStrategy(botAI); }
     static Strategy* passive(PlayerbotAI* botAI) { return new PassiveStrategy(botAI); }
     static Strategy* aggressive(PlayerbotAI* botAI) { return new AggressiveStrategy(botAI); }
     // static Strategy* conserve_mana(PlayerbotAI* botAI) { return new ConserveManaStrategy(botAI); }

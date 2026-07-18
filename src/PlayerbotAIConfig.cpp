@@ -592,6 +592,14 @@ bool PlayerbotAIConfig::Initialize()
     bystanderAssistSelfHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistSelfHealth", 50);
     bystanderAssistSelfMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistSelfMana", 30);
 
+    // social buffing (Felworld)
+    enableSocialBuffing = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableSocialBuffing", true);
+    socialBuffRadius = sConfigMgr->GetOption<float>("AiPlayerbot.SocialBuffRadius", 30.0f);
+    socialBuffCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialBuffCooldown", 600);
+    socialBuffSelfMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialBuffSelfMana", 40);
+    enableHealThanks = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableHealThanks", true);
+    socialThankCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialThankCooldown", 180);
+
     // SPP switches
     enableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);
     summonWhenGroup = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonWhenGroup", true);
