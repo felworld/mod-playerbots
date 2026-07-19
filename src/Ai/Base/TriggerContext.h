@@ -20,6 +20,7 @@
 #include "NewRpgTriggers.h"
 #include "PvpTriggers.h"
 #include "WpvpCallouts.h"
+#include "WpvpDefense.h"
 #include "WpvpTriggers.h"
 #include "PullTriggers.h"
 #include "RpgTriggers.h"
@@ -259,6 +260,8 @@ public:
         creators["wpvp goad"] = &TriggerContext::wpvp_goad;
         creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
         creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
+        creators["wpvp escalation callout"] = &TriggerContext::wpvp_escalation_callout;
+        creators["wpvp defense response"] = &TriggerContext::wpvp_defense_response;
         creators["can self resurrect"] = &TriggerContext::can_self_resurrect;
         creators["can fish"] = &TriggerContext::can_fish;
         creators["can use fishing bobber"] = &TriggerContext::can_use_fishing_bobber;
@@ -488,6 +491,8 @@ private:
     static Trigger* wpvp_goad(PlayerbotAI* botAI) { return new WpvpGoadTrigger(botAI); }
     static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
     static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }
+    static Trigger* wpvp_escalation_callout(PlayerbotAI* botAI) { return new WpvpEscalationCalloutTrigger(botAI); }
+    static Trigger* wpvp_defense_response(PlayerbotAI* botAI) { return new WpvpDefenseResponseTrigger(botAI); }
     static Trigger* can_self_resurrect(PlayerbotAI* ai) { return new SelfResurrectTrigger(ai); }
     static Trigger* can_fish(PlayerbotAI* ai) { return new CanFishTrigger(ai); }
     static Trigger* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberTrigger(ai); }

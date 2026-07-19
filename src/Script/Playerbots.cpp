@@ -558,6 +558,7 @@ public:
 
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSocialScripts();
+void AddPlayerbotsWpvpScripts();
 
 void AddSC_TempestKeepBotScripts();
 void AddSC_IcecrownBotScripts();
@@ -576,6 +577,7 @@ void AddPlayerbotsScripts()
     new PlayerBotsBGScript();
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsSocialScripts();
+    AddPlayerbotsWpvpScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
     AddSC_TempestKeepBotScripts();

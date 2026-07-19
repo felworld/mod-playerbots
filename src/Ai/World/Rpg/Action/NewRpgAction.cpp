@@ -181,9 +181,17 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                     bot->GetExactDist(data.anchorPos) < 20.0f)
                 {
                     data.arrivedT = getMSTime();
-                    data.dwellDuration = urand(sPlayerbotAIConfig.wpvpDwellMinutesMin,
-                                               sPlayerbotAIConfig.wpvpDwellMinutesMax) *
-                                         MINUTE * IN_MILLISECONDS;
+                    // Defense responses are a quick answer to a callout, not
+                    // a full patrol shift.
+                    data.dwellDuration = data.defend
+                                             ? urand(sPlayerbotAIConfig.wpvpDefenseDwellMinutesMin,
+                                                     sPlayerbotAIConfig.wpvpDefenseDwellMinutesMax) *
+                                                   MINUTE * IN_MILLISECONDS
+                                             : urand(sPlayerbotAIConfig.wpvpDwellMinutesMin,
+                                                     sPlayerbotAIConfig.wpvpDwellMinutesMax) *
+                                                   MINUTE * IN_MILLISECONDS;
+                    if (data.defend)
+                        data.defendLastSeenT = data.arrivedT;
                     if (data.test)
                         LOG_INFO("playerbots", "[New RPG] Bot {} (wpvp test) reached the dwell anchor; dwelling {} min",
                                  bot->GetName(), data.dwellDuration / (MINUTE * IN_MILLISECONDS));
@@ -203,6 +211,23 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                 {
                     EndWpvpExcursion(botAI, "yanked far from the dwell anchor");
                     return true;
+                }
+
+                // Defenders go home early once the reported ganker has been
+                // dead or gone for a while (a short grace covers a corpse
+                // run or a brief chase out of the zone).
+                if (data.defend && data.defendTarget)
+                {
+                    Player* attacker = ObjectAccessor::FindPlayer(data.defendTarget);
+                    bool present = attacker && attacker->IsAlive() && attacker->GetMapId() == bot->GetMapId() &&
+                                   attacker->GetZoneId() == data.zoneId;
+                    if (present)
+                        data.defendLastSeenT = getMSTime();
+                    else if (GetMSTimeDiffToNow(data.defendLastSeenT) > 90 * IN_MILLISECONDS)
+                    {
+                        EndWpvpExcursion(botAI, "defense target is gone");
+                        return true;
+                    }
                 }
             }
             break;

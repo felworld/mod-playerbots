@@ -1147,6 +1147,40 @@ AiPlayerbot.WpvpCalloutEnabled = 1
 AiPlayerbot.WpvpCalloutZoneCooldown = 180
 AiPlayerbot.WpvpCalloutAttackerCooldown = 600
 
+# Whether playerbots itself says the prebaked defense-callout lines (first
+# LocalDefense callouts, WorldDefense escalations, "wpvp defend" command
+# acks). The callout system - defense board, kill tracking, speech
+# notifications - runs either way; another module (mod-llm) can listen to
+# the notifications and provide its own wording instead.
+# Default: 1 (enabled)
+AiPlayerbot.WpvpCallouts = 1
+
+# A ganker on an uncontested killing spree earns one WorldDefense shout:
+# after EscalationKills world-PvP kills within EscalationWindow seconds
+# without dying, a bot in the zone escalates. The tally resets whenever the
+# ganker dies.
+# Default: 3 / 600
+AiPlayerbot.WpvpEscalationKills = 3
+AiPlayerbot.WpvpEscalationWindow = 600
+
+# Reactive defense: idle bots that hear a defense callout may travel in to
+# hunt the reported ganker. Each eligible bot (same faction, level within
+# LevelSlack below the attacker, not busy) rolls ResponseChance percent once
+# per ganker - no responder cap, so a big spree can draw a posse.
+# Default: 1 (enabled) / 10 / 3
+AiPlayerbot.WpvpDefenseEnabled = 1
+AiPlayerbot.WpvpDefenseResponseChance = 10
+AiPlayerbot.WpvpDefenseLevelSlack = 3
+
+# Travel realism for defense responses: departure is held for a rough
+# ride-there estimate scaled by DelayFactor (1.0 = full estimate, 0 = leave
+# at once; clamped to 10s-4min). Once there, defenders dwell only a few
+# minutes (DwellMinutes) and go home early if the ganker is dead or gone.
+# Default: 0.5 / 3-8
+AiPlayerbot.WpvpDefenseDelayFactor = 0.5
+AiPlayerbot.WpvpDefenseDwellMinutesMin = 3
+AiPlayerbot.WpvpDefenseDwellMinutesMax = 8
+
 # Default duration (minutes) for ".playerbots wpvp off" when no duration is
 # given. 0 passed to the command means "until server restart".
 # Default: 60

@@ -421,6 +421,14 @@ public:
     bool wpvpCalloutEnabled;
     uint32 wpvpCalloutZoneCooldown;
     uint32 wpvpCalloutAttackerCooldown;
+    bool wpvpCallouts;
+    bool wpvpDefenseEnabled;
+    float wpvpDefenseResponseChance;
+    float wpvpDefenseDelayFactor;
+    uint32 wpvpDefenseDwellMinutesMin, wpvpDefenseDwellMinutesMax;
+    uint32 wpvpDefenseLevelSlack;
+    uint32 wpvpEscalationKills;
+    uint32 wpvpEscalationWindow;
     uint32 wpvpKillSwitchDefaultMinutes;
     bool enableBotDuels;
     uint32 duelChallengeRange;

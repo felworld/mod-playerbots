@@ -738,6 +738,18 @@ bool PlayerbotAIConfig::Initialize()
     wpvpCalloutEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpCalloutEnabled", true);
     wpvpCalloutZoneCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutZoneCooldown", 180);
     wpvpCalloutAttackerCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutAttackerCooldown", 600);
+    // Whether playerbots itself SAYS the prebaked defense-callout lines. The
+    // callout system (board, notifications, escalation tracking) runs either
+    // way; mod-llm listens to the notifications and can supply the words.
+    wpvpCallouts = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpCallouts", true);
+    wpvpDefenseEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpDefenseEnabled", true);
+    wpvpDefenseResponseChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseResponseChance", 10.0f);
+    wpvpDefenseDelayFactor = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseDelayFactor", 0.5f);
+    wpvpDefenseDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMin", 3);
+    wpvpDefenseDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMax", 8);
+    wpvpDefenseLevelSlack = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseLevelSlack", 3);
+    wpvpEscalationKills = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationKills", 3);
+    wpvpEscalationWindow = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationWindow", 600);
     wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
 
     enableBotDuels = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBotDuels", true);

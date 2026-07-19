@@ -155,7 +155,14 @@ bool NewRpgGoWpvpAction::Execute(Event /*event*/)
         bot->SetPvP(true);
 
     if (!data->teleported)
+    {
+        // Defense responses hold departure for a simulated travel delay -
+        // the cavalry shouldn't blink in the moment the callout lands.
+        if (data->departT && getMSTime() < data->departT)
+            return ForceToWait(3000);
+
         return GuardedTeleport(*data);
+    }
 
     if (!data->arrivedT)
     {

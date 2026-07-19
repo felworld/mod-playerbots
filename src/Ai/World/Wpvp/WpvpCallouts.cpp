@@ -1,6 +1,7 @@
 #include "WpvpCallouts.h"
 
 #include "DBCStores.h"
+#include "WpvpDefense.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
@@ -143,6 +144,27 @@ bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
             msg = Acore::StringFormat("{} needs defenders - {} is here!", areaName, name);
             break;
     }
+
+    // The callout puts the invader on the defense board (so responders have
+    // somewhere to go) and always fires the speech notification; whether WE
+    // say the prebaked line is a separate gate, so mod-llm can supply the
+    // words instead.
+    WpvpDefenseBoard::instance().PostCallout(intruder, bot->GetTeamId());
+
+    WpvpCalloutNotification notification;
+    notification.kind = WpvpCalloutKind::FirstCallout;
+    notification.speaker = bot;
+    notification.zoneId = bot->GetZoneId();
+    notification.areaName = areaName;
+    notification.attackerName = name;
+    notification.attackerRace = intruder->getRace();
+    notification.attackerClass = intruder->getClass();
+    notification.attackerLevel = intruder->GetLevel();
+    notification.prebakedLine = msg;
+    FireWpvpCalloutNotification(notification);
+
+    if (!sPlayerbotAIConfig.wpvpCallouts)
+        return true;
 
     return botAI->SayToChannel(msg, ChatChannelId::LOCAL_DEFENSE);
 }

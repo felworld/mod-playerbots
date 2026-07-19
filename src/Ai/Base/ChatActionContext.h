@@ -16,6 +16,7 @@
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
 #include "ChatShortcutActions.h"
+#include "WpvpDefense.h"
 #include "CheatAction.h"
 #include "CustomStrategyEditAction.h"
 #include "DebugAction.h"
@@ -106,6 +107,7 @@ public:
         creators["log"] = &ChatActionContext::log;
         creators["los"] = &ChatActionContext::los;
         creators["rpg status"] = &ChatActionContext::rpg_status;
+        creators["wpvp defend"] = &ChatActionContext::wpvp_defend;
         creators["rpg do quest"] = &ChatActionContext::rpg_do_quest;
         creators["aura"] = &ChatActionContext::aura;
         creators["drop"] = &ChatActionContext::drop;
@@ -300,6 +302,7 @@ private:
     static Action* log(PlayerbotAI* botAI) { return new LogLevelAction(botAI); }
     static Action* los(PlayerbotAI* botAI) { return new TellLosAction(botAI); }
     static Action* rpg_status(PlayerbotAI* botAI) { return new TellRpgStatusAction(botAI); }
+    static Action* wpvp_defend(PlayerbotAI* botAI) { return new WpvpDefendCommandAction(botAI); }
     static Action* rpg_do_quest(PlayerbotAI* botAI) { return new StartRpgDoQuestAction(botAI); }
     static Action* aura(PlayerbotAI* ai) { return new TellAuraAction(ai); }
     static Action* ll(PlayerbotAI* botAI) { return new LootStrategyAction(botAI); }

@@ -32,6 +32,10 @@ bool WpvpGoadTrigger::IsActive()
     if (!data || !data->arrivedT)
         return false;
 
+    // Defenders came for the reported ganker, not to taunt bystanders.
+    if (data->defend)
+        return false;
+
     if (bot->IsInCombat())
         return false;
 

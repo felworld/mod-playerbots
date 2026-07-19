@@ -15,4 +15,11 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     // invaders in LocalDefense (heavily throttled in WpvpCalloutThrottle).
     triggers.push_back(new TriggerNode("wpvp defense callout",
                                        { NextAction("wpvp defense callout", 40.0f) }));
+    // Uncontested killing sprees get one WorldDefense shout, claimed by a
+    // bot in the ganker's zone.
+    triggers.push_back(new TriggerNode("wpvp escalation callout",
+                                       { NextAction("wpvp escalation callout", 39.0f) }));
+    // Idle bots elsewhere may answer a callout and travel in to defend.
+    triggers.push_back(new TriggerNode("wpvp defense response",
+                                       { NextAction("wpvp defense response", 38.0f) }));
 }

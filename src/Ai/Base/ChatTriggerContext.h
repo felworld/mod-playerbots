@@ -28,6 +28,7 @@ public:
         creators["log"] = &ChatTriggerContext::log;
         creators["los"] = &ChatTriggerContext::los;
         creators["rpg status"] = &ChatTriggerContext::rpg_status;
+        creators["wpvp defend"] = &ChatTriggerContext::wpvp_defend;
         creators["rpg do quest"] = &ChatTriggerContext::rpg_do_quest;
         creators["aura"] = &ChatTriggerContext::aura;
         creators["drop"] = &ChatTriggerContext::drop;
@@ -256,6 +257,7 @@ private:
     static Trigger* log(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "log"); }
     static Trigger* los(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "los"); }
     static Trigger* rpg_status(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rpg status"); }
+    static Trigger* wpvp_defend(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wpvp defend"); }
     static Trigger* rpg_do_quest(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "rpg do quest"); }
     static Trigger* aura(PlayerbotAI* ai) { return new ChatCommandTrigger(ai, "aura"); }
     static Trigger* loot_all(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "add all loot"); }

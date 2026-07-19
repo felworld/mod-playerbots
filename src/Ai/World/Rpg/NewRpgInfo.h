@@ -79,6 +79,10 @@ struct NewRpgInfo
         bool strategiesApplied{false};
         bool test{false};             // started by "wpvp test": progress logs at INFO
         uint32 lastTestLogT{0};       // throttles repeated test-mode "waiting" logs
+        bool defend{false};           // defense response to a callout, not an invasion
+        ObjectGuid defendTarget{};    // the reported ganker to hunt (may be empty for hub anchors)
+        uint32 departT{0};            // simulated-travel-delay end; 0 = leave immediately
+        uint32 defendLastSeenT{0};    // last time the defend target was seen alive in the zone
     };
     // RPG_DUEL_SPOT
     struct DuelSpot
