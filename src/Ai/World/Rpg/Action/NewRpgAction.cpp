@@ -213,13 +213,15 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                     return true;
                 }
 
-                // Defenders go home early once the reported ganker has been
-                // dead or gone for a while (a short grace covers a corpse
-                // run or a brief chase out of the zone).
+                // Defenders (and reinforcers, whose "target" is their own
+                // faction-mate) go home early once that player has been gone
+                // for a while. Dead-but-in-zone still counts as present: a
+                // ghost jogging back to their corpse is a fight that isn't
+                // over yet.
                 if (data.defend && data.defendTarget)
                 {
                     Player* attacker = ObjectAccessor::FindPlayer(data.defendTarget);
-                    bool present = attacker && attacker->IsAlive() && attacker->GetMapId() == bot->GetMapId() &&
+                    bool present = attacker && attacker->IsInWorld() && attacker->GetMapId() == bot->GetMapId() &&
                                    attacker->GetZoneId() == data.zoneId;
                     if (present)
                         data.defendLastSeenT = getMSTime();

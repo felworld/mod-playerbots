@@ -1168,10 +1168,28 @@ AiPlayerbot.WpvpEscalationWindow = 600
 # hunt the reported ganker. Each eligible bot (same faction, level within
 # LevelSlack below the attacker, not busy) rolls ResponseChance percent once
 # per ganker - no responder cap, so a big spree can draw a posse.
-# Default: 1 (enabled) / 10 / 3
+# An attacker who preys on players GankLevelGap or more levels below them
+# rolls at the full ResponseChance; an evenly matched attacker (as brawl
+# participants are) draws only EvenFightChance - stopping a lowbie ganker
+# rallies people, a fair fight far away mostly doesn't.
+# Default: 1 (enabled) / 10 / 3 / 3 / 5
 AiPlayerbot.WpvpDefenseEnabled = 1
 AiPlayerbot.WpvpDefenseResponseChance = 10
 AiPlayerbot.WpvpDefenseLevelSlack = 3
+AiPlayerbot.WpvpDefenseEvenFightChance = 3
+AiPlayerbot.WpvpGankLevelGap = 5
+
+# Reinforcements: when a tracked ganker dies ReinforcementDeaths times to
+# outside help (killers who were never among their victims - bot defenders
+# or a real player riding in), their faction sends one reinforcement wave:
+# idle same-faction bots each roll ReinforcementChance percent once to
+# travel in and back them up. No chat is involved - the ask is assumed to
+# happen over a backchannel. Travel delay, dwell and level slack reuse the
+# defense-response settings.
+# Default: 1 (enabled) / 2 / 15
+AiPlayerbot.WpvpReinforcementEnabled = 1
+AiPlayerbot.WpvpReinforcementDeaths = 2
+AiPlayerbot.WpvpReinforcementChance = 15
 
 # Travel realism for defense responses: departure is held for a rough
 # ride-there estimate scaled by DelayFactor (1.0 = full estimate, 0 = leave

@@ -68,8 +68,11 @@ struct WpvpDefenseEntry
     uint32 kills{0};              // uncontested kills in the current window
     uint32 firstKillMs{0};        // start of the current kill window
     std::vector<ObjectGuid> victims;  // players this attacker killed (capped, oldest dropped)
+    uint8 maxVictimLevel{0};      // highest-level victim so far (gank-vs-even-fight classifier)
     bool escalationPending{false};
     bool escalated{false};        // the one WorldDefense shout has been made
+    uint32 avengedDeaths{0};      // deaths to someone who was NOT one of their victims
+    uint32 reinforceArmedMs{0};   // 0 until the attacker's faction gets its one reinforcement wave
 };
 
 // Shared bulletin board of active gankers, keyed by attacker. Producers:
@@ -96,8 +99,11 @@ public:
     void RecordKill(Player* attacker, Player* victim);
 
     // A tracked ganker died: the spree is contested, the tally resets and
-    // any not-yet-claimed escalation is cancelled.
-    void RecordAttackerDeath(ObjectGuid attacker);
+    // any not-yet-claimed escalation is cancelled. Deaths to someone who was
+    // never one of their victims (outside help - bot defenders or a real
+    // player riding in) count toward arming the one reinforcement wave from
+    // the ganker's own faction.
+    void RecordAttackerDeath(Player* attacker, ObjectGuid killer);
 
     // Escalation is claimed only by an eyewitness - a victim of the spree or
     // a bot with the ganker on its screen (the trigger checks that); the
@@ -110,6 +116,12 @@ public:
     // and is not hopelessly outleveled by (level + slack >= attacker level).
     bool FindRespondable(TeamId team, uint8 botLevel, ObjectGuid botGuid, WpvpDefenseEntry& out);
     bool FindByZone(TeamId team, uint32 zoneId, WpvpDefenseEntry& out);
+
+    // A tracked attacker on THIS bot's team whose reinforcement wave is armed
+    // and fresh - the backchannel "friends, I'm getting swarmed" ask. Same
+    // one-roll-per-bot-per-attacker dice set as defense responses (a bot is
+    // only ever on one side of a given ganker).
+    bool FindReinforceable(TeamId team, uint8 botLevel, ObjectGuid botGuid, WpvpDefenseEntry& out);
 
     // One response roll per bot per attacker, ever: whether the dice pass or
     // fail, the bot doesn't roll for this ganker again.
@@ -165,6 +177,25 @@ class WpvpDefenseResponseAction : public Action
 {
 public:
     WpvpDefenseResponseAction(PlayerbotAI* botAI) : Action(botAI, "wpvp defense response") {}
+
+    bool Execute(Event event) override;
+};
+
+// A faction-mate's gank went sideways - defenders keep killing them - and
+// this idle bot may decide (one dice roll per ganker) to ride in and back
+// them up. No chat: we assume the ask happened over some backchannel.
+class WpvpReinforceTrigger : public Trigger
+{
+public:
+    WpvpReinforceTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wpvp reinforce", 10) {}
+
+    bool IsActive() override;
+};
+
+class WpvpReinforceAction : public Action
+{
+public:
+    WpvpReinforceAction(PlayerbotAI* botAI) : Action(botAI, "wpvp reinforce") {}
 
     bool Execute(Event event) override;
 };

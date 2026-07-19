@@ -262,6 +262,7 @@ public:
         creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
         creators["wpvp escalation callout"] = &TriggerContext::wpvp_escalation_callout;
         creators["wpvp defense response"] = &TriggerContext::wpvp_defense_response;
+        creators["wpvp reinforce"] = &TriggerContext::wpvp_reinforce;
         creators["can self resurrect"] = &TriggerContext::can_self_resurrect;
         creators["can fish"] = &TriggerContext::can_fish;
         creators["can use fishing bobber"] = &TriggerContext::can_use_fishing_bobber;
@@ -493,6 +494,7 @@ private:
     static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }
     static Trigger* wpvp_escalation_callout(PlayerbotAI* botAI) { return new WpvpEscalationCalloutTrigger(botAI); }
     static Trigger* wpvp_defense_response(PlayerbotAI* botAI) { return new WpvpDefenseResponseTrigger(botAI); }
+    static Trigger* wpvp_reinforce(PlayerbotAI* botAI) { return new WpvpReinforceTrigger(botAI); }
     static Trigger* can_self_resurrect(PlayerbotAI* ai) { return new SelfResurrectTrigger(ai); }
     static Trigger* can_fish(PlayerbotAI* ai) { return new CanFishTrigger(ai); }
     static Trigger* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberTrigger(ai); }

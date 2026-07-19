@@ -11,7 +11,9 @@
 
 // Feeds the wpvp defense board: world PvP kills bump the killer's
 // uncontested-kill tally (arming the WorldDefense escalation shout), and a
-// tracked ganker's own death marks the spree contested.
+// tracked ganker's own death marks the spree contested - and, if the killer
+// was outside help rather than a victim, counts toward the ganker's own
+// faction sending a reinforcement wave.
 class PlayerbotsWpvpScript : public PlayerScript
 {
 public:
@@ -19,7 +21,8 @@ public:
 
     void OnPlayerPVPKill(Player* killer, Player* killed) override
     {
-        if (!sPlayerbotAIConfig.wpvpCalloutEnabled && !sPlayerbotAIConfig.wpvpDefenseEnabled)
+        if (!sPlayerbotAIConfig.wpvpCalloutEnabled && !sPlayerbotAIConfig.wpvpDefenseEnabled &&
+            !sPlayerbotAIConfig.wpvpReinforcementEnabled)
             return;
 
         if (!killer || !killed || killer == killed)
@@ -32,7 +35,7 @@ public:
             return;
 
         WpvpDefenseBoard::instance().RecordKill(killer, killed);
-        WpvpDefenseBoard::instance().RecordAttackerDeath(killed->GetGUID());
+        WpvpDefenseBoard::instance().RecordAttackerDeath(killed, killer->GetGUID());
     }
 };
 

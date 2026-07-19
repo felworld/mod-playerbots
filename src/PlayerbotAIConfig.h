@@ -424,11 +424,16 @@ public:
     bool wpvpCallouts;
     bool wpvpDefenseEnabled;
     float wpvpDefenseResponseChance;
+    float wpvpDefenseEvenFightChance;
+    uint32 wpvpGankLevelGap;
     float wpvpDefenseDelayFactor;
     uint32 wpvpDefenseDwellMinutesMin, wpvpDefenseDwellMinutesMax;
     uint32 wpvpDefenseLevelSlack;
     uint32 wpvpEscalationKills;
     uint32 wpvpEscalationWindow;
+    bool wpvpReinforcementEnabled;
+    uint32 wpvpReinforcementDeaths;
+    float wpvpReinforcementChance;
     uint32 wpvpKillSwitchDefaultMinutes;
     bool enableBotDuels;
     uint32 duelChallengeRange;

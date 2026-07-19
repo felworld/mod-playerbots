@@ -744,12 +744,17 @@ bool PlayerbotAIConfig::Initialize()
     wpvpCallouts = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpCallouts", true);
     wpvpDefenseEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpDefenseEnabled", true);
     wpvpDefenseResponseChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseResponseChance", 10.0f);
+    wpvpDefenseEvenFightChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseEvenFightChance", 3.0f);
+    wpvpGankLevelGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGankLevelGap", 5);
     wpvpDefenseDelayFactor = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseDelayFactor", 0.5f);
     wpvpDefenseDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMin", 3);
     wpvpDefenseDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMax", 8);
     wpvpDefenseLevelSlack = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseLevelSlack", 3);
     wpvpEscalationKills = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationKills", 3);
     wpvpEscalationWindow = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationWindow", 600);
+    wpvpReinforcementEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpReinforcementEnabled", true);
+    wpvpReinforcementDeaths = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementDeaths", 2);
+    wpvpReinforcementChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpReinforcementChance", 15.0f);
     wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
 
     enableBotDuels = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBotDuels", true);

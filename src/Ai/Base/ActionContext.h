@@ -303,6 +303,7 @@ public:
         creators["wpvp defense callout"] = &ActionContext::wpvp_defense_callout;
         creators["wpvp escalation callout"] = &ActionContext::wpvp_escalation_callout;
         creators["wpvp defense response"] = &ActionContext::wpvp_defense_response;
+        creators["wpvp reinforce"] = &ActionContext::wpvp_reinforce;
         creators["wait for attack keep safe distance"] = &ActionContext::wait_for_attack_keep_safe_distance;
     }
 
@@ -528,6 +529,7 @@ private:
     static Action* wpvp_defense_callout(PlayerbotAI* ai) { return new WpvpDefenseCalloutAction(ai); }
     static Action* wpvp_escalation_callout(PlayerbotAI* ai) { return new WpvpEscalationCalloutAction(ai); }
     static Action* wpvp_defense_response(PlayerbotAI* ai) { return new WpvpDefenseResponseAction(ai); }
+    static Action* wpvp_reinforce(PlayerbotAI* ai) { return new WpvpReinforceAction(ai); }
     static Action* wait_for_attack_keep_safe_distance(PlayerbotAI* ai) { return new WaitForAttackKeepSafeDistanceAction(ai); }
 };
 

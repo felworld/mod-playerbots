@@ -174,24 +174,42 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
             entry.victims.erase(entry.victims.begin());
     }
 
+    // Who this attacker preys on decides how urgent defense feels: lowbie
+    // ganking pulls the full response chance, an even brawl much less.
+    entry.maxVictimLevel = std::max(entry.maxVictimLevel, static_cast<uint8>(victim->GetLevel()));
+
     if (!entry.escalated && entry.kills >= sPlayerbotAIConfig.wpvpEscalationKills)
         entry.escalationPending = true;
 
     Prune(now);
 }
 
-void WpvpDefenseBoard::RecordAttackerDeath(ObjectGuid attacker)
+void WpvpDefenseBoard::RecordAttackerDeath(Player* attacker, ObjectGuid killer)
 {
     std::lock_guard<std::mutex> lock(_mutex);
-    auto it = _entries.find(attacker);
+    auto it = _entries.find(attacker->GetGUID());
     if (it == _entries.end())
         return;
 
+    WpvpDefenseEntry& entry = it->second;
+
     // The spree is contested: the tally starts over, and a shout that hasn't
-    // been claimed yet would already be stale news.
-    it->second.kills = 0;
-    it->second.firstKillMs = 0;
-    it->second.escalationPending = false;
+    // been claimed yet would already be stale news. The death spot is the
+    // freshest intel on where the fight is.
+    RefreshAttackerFacts(entry, attacker, getMSTime());
+    entry.kills = 0;
+    entry.firstKillMs = 0;
+    entry.escalationPending = false;
+
+    // A victim getting their own revenge settles the score quietly; dying
+    // repeatedly to OUTSIDE help - defenders who were never on the menu -
+    // is when the ganker backchannels their friends. One wave, ever.
+    if (killer && std::find(entry.victims.begin(), entry.victims.end(), killer) == entry.victims.end())
+    {
+        ++entry.avengedDeaths;
+        if (!entry.reinforceArmedMs && entry.avengedDeaths >= sPlayerbotAIConfig.wpvpReinforcementDeaths)
+            entry.reinforceArmedMs = getMSTime();
+    }
 }
 
 std::vector<WpvpDefenseEntry> WpvpDefenseBoard::PendingEscalations(TeamId team)
@@ -272,6 +290,38 @@ bool WpvpDefenseBoard::FindByZone(TeamId team, uint32 zoneId, WpvpDefenseEntry& 
             continue;
 
         if (getMSTimeDiff(entry.updatedMs, now) >= RESPONDABLE_WINDOW_MS)
+            continue;
+
+        if (!best || entry.updatedMs > best->updatedMs)
+            best = &entry;
+    }
+
+    if (!best)
+        return false;
+
+    out = *best;
+    return true;
+}
+
+bool WpvpDefenseBoard::FindReinforceable(TeamId team, uint8 botLevel, ObjectGuid botGuid, WpvpDefenseEntry& out)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    uint32 now = getMSTime();
+    WpvpDefenseEntry const* best = nullptr;
+    for (auto const& [guid, entry] : _entries)
+    {
+        // The attacker's team is the one facing the defenders - i.e. NOT the
+        // entry's defending team.
+        if (entry.defendingTeam == team || entry.defendingTeam == TEAM_NEUTRAL)
+            continue;
+
+        if (!entry.reinforceArmedMs || getMSTimeDiff(entry.reinforceArmedMs, now) >= RESPONDABLE_WINDOW_MS)
+            continue;
+
+        if (botLevel + sPlayerbotAIConfig.wpvpDefenseLevelSlack < entry.attackerLevel)
+            continue;
+
+        if (_responseRolls.count(RollKey(botGuid, entry.attacker)))
             continue;
 
         if (!best || entry.updatedMs > best->updatedMs)
@@ -465,9 +515,67 @@ bool WpvpDefenseResponseAction::Execute(Event /*event*/)
     if (!WpvpDefenseBoard::instance().TryClaimResponseRoll(bot->GetGUID(), entry.attacker))
         return false;
 
-    if (frand(0.0f, 100.0f) >= sPlayerbotAIConfig.wpvpDefenseResponseChance)
+    // Everyone drops what they're doing to stop a lowbie ganker; an evenly
+    // matched brawl (which is what reinforcement fights look like from the
+    // other side) draws far fewer volunteers. No victims yet means a fresh
+    // sighting callout - treat it as worth answering.
+    float chance = sPlayerbotAIConfig.wpvpDefenseResponseChance;
+    if (entry.maxVictimLevel &&
+        entry.attackerLevel < uint32(entry.maxVictimLevel) + sPlayerbotAIConfig.wpvpGankLevelGap)
+        chance = sPlayerbotAIConfig.wpvpDefenseEvenFightChance;
+
+    if (frand(0.0f, 100.0f) >= chance)
         return false;
 
+    return StartWpvpDefenseResponse(botAI, entry.zoneId, entry.pos, entry.attacker);
+}
+
+bool WpvpReinforceTrigger::IsActive()
+{
+    if (!sPlayerbotAIConfig.wpvpReinforcementEnabled)
+        return false;
+
+    if (bot->InBattleground() || bot->InArena() || bot->GetGroup() || bot->IsInCombat())
+        return false;
+
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot))
+        return false;
+
+    if (bot->GetLevel() < sPlayerbotAIConfig.wpvpMinBotLevel)
+        return false;
+
+    switch (botAI->rpgInfo.GetStatus())
+    {
+        case RPG_IDLE:
+        case RPG_REST:
+        case RPG_WANDER_RANDOM:
+        case RPG_WANDER_NPC:
+        case RPG_GO_GRIND:
+        case RPG_GO_CAMP:
+            break;
+        default:
+            return false;
+    }
+
+    WpvpDefenseEntry entry;
+    return WpvpDefenseBoard::instance().FindReinforceable(bot->GetTeamId(), bot->GetLevel(), bot->GetGUID(), entry);
+}
+
+bool WpvpReinforceAction::Execute(Event /*event*/)
+{
+    WpvpDefenseEntry entry;
+    if (!WpvpDefenseBoard::instance().FindReinforceable(bot->GetTeamId(), bot->GetLevel(), bot->GetGUID(), entry))
+        return false;
+
+    if (!WpvpDefenseBoard::instance().TryClaimResponseRoll(bot->GetGUID(), entry.attacker))
+        return false;
+
+    if (frand(0.0f, 100.0f) >= sPlayerbotAIConfig.wpvpReinforcementChance)
+        return false;
+
+    // Same travel machinery as a defense response, but the "defend target"
+    // is our own faction-mate: stick around while they're still in the
+    // fight, drift home once they're gone for good.
     return StartWpvpDefenseResponse(botAI, entry.zoneId, entry.pos, entry.attacker);
 }
 
