@@ -1157,8 +1157,9 @@ AiPlayerbot.WpvpCallouts = 1
 
 # A ganker on an uncontested killing spree earns one WorldDefense shout:
 # after EscalationKills world-PvP kills within EscalationWindow seconds
-# without dying, a bot in the zone escalates. The tally resets whenever the
-# ganker dies.
+# without dying, an eyewitness escalates - one of the ganker's victims, or
+# a bot that has them on its screen. The tally resets whenever the ganker
+# dies.
 # Default: 3 / 600
 AiPlayerbot.WpvpEscalationKills = 3
 AiPlayerbot.WpvpEscalationWindow = 600

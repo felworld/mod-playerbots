@@ -6,6 +6,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 #include "Action.h"
 #include "ObjectGuid.h"
@@ -66,6 +67,7 @@ struct WpvpDefenseEntry
     uint32 calledOutMs{0};        // 0 until some channel callout mentioned this attacker
     uint32 kills{0};              // uncontested kills in the current window
     uint32 firstKillMs{0};        // start of the current kill window
+    std::vector<ObjectGuid> victims;  // players this attacker killed (capped, oldest dropped)
     bool escalationPending{false};
     bool escalated{false};        // the one WorldDefense shout has been made
 };
@@ -97,10 +99,12 @@ public:
     // any not-yet-claimed escalation is cancelled.
     void RecordAttackerDeath(ObjectGuid attacker);
 
-    // Escalation is claimed by a bot in the ganker's zone (it plausibly saw
-    // the LocalDefense traffic). Claim is atomic: exactly one bot shouts.
-    bool HasPendingEscalation(TeamId team, uint32 zoneId);
-    bool ClaimEscalation(TeamId team, uint32 zoneId, WpvpDefenseEntry& out);
+    // Escalation is claimed only by an eyewitness - a victim of the spree or
+    // a bot with the ganker on its screen (the trigger checks that); the
+    // board just hands out pending entries and takes the atomic claim, so
+    // exactly one bot shouts.
+    std::vector<WpvpDefenseEntry> PendingEscalations(TeamId team);
+    bool ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDefenseEntry& out);
 
     // A fresh, called-out entry this bot hasn't rolled response dice for yet
     // and is not hopelessly outleveled by (level + slack >= attacker level).
@@ -128,8 +132,9 @@ private:
 // bots wait out a distance-scaled travel delay, then guarded-teleport in.
 bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker);
 
-// A ganker's spree crossed the escalation threshold and this bot is in the
-// zone: claim the one WorldDefense shout.
+// A ganker's spree crossed the escalation threshold and this bot knows it
+// first-hand (it died to them, or can see them right now): claim the one
+// WorldDefense shout.
 class WpvpEscalationCalloutTrigger : public Trigger
 {
 public:

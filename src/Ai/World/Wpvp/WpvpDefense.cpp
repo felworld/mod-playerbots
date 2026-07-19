@@ -83,6 +83,20 @@ void RefreshAttackerFacts(WpvpDefenseEntry& entry, Player* attacker, uint32 now)
     entry.updatedMs = now;
 }
 
+// First-hand knowledge only: an escalation shout comes from a victim of the
+// spree or a bot that has the ganker on its screen right now - never from a
+// stranger across the zone relaying news it couldn't know. (A victim may
+// shout from anywhere: being corpse-camped follows you home.)
+bool IsEscalationEyewitness(Player* bot, WpvpDefenseEntry const& entry)
+{
+    if (std::find(entry.victims.begin(), entry.victims.end(), bot->GetGUID()) != entry.victims.end())
+        return true;
+
+    Player* attacker = ObjectAccessor::FindPlayer(entry.attacker);
+    return attacker && attacker->IsInWorld() && attacker->GetMapId() == bot->GetMapId() &&
+           bot->IsWithinDist(attacker, sPlayerbotAIConfig.wpvpVisionDistance);
+}
+
 // Top-level zone whose enUS name matches (exactly first, then substring, so
 // "redridge" finds Redridge Mountains).
 uint32 ResolveZoneIdByName(std::string const& name)
@@ -151,6 +165,15 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     else
         ++entry.kills;
 
+    // Victims are the natural escalation shouters ("keeps killing me!"), so
+    // remember who this ganker got - even across tally resets.
+    if (std::find(entry.victims.begin(), entry.victims.end(), victim->GetGUID()) == entry.victims.end())
+    {
+        entry.victims.push_back(victim->GetGUID());
+        if (entry.victims.size() > 16)
+            entry.victims.erase(entry.victims.begin());
+    }
+
     if (!entry.escalated && entry.kills >= sPlayerbotAIConfig.wpvpEscalationKills)
         entry.escalationPending = true;
 
@@ -171,36 +194,37 @@ void WpvpDefenseBoard::RecordAttackerDeath(ObjectGuid attacker)
     it->second.escalationPending = false;
 }
 
-bool WpvpDefenseBoard::HasPendingEscalation(TeamId team, uint32 zoneId)
+std::vector<WpvpDefenseEntry> WpvpDefenseBoard::PendingEscalations(TeamId team)
 {
     std::lock_guard<std::mutex> lock(_mutex);
+    std::vector<WpvpDefenseEntry> pending;
     for (auto const& [guid, entry] : _entries)
-        if (entry.escalationPending && entry.defendingTeam == team && entry.zoneId == zoneId)
-            return true;
+        if (entry.escalationPending && entry.defendingTeam == team)
+            pending.push_back(entry);
 
-    return false;
+    return pending;
 }
 
-bool WpvpDefenseBoard::ClaimEscalation(TeamId team, uint32 zoneId, WpvpDefenseEntry& out)
+bool WpvpDefenseBoard::ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDefenseEntry& out)
 {
     std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _entries.find(attacker);
+    if (it == _entries.end())
+        return false;
+
+    WpvpDefenseEntry& entry = it->second;
+    if (!entry.escalationPending || entry.defendingTeam != team)
+        return false;
+
     uint32 now = getMSTime();
-    for (auto& [guid, entry] : _entries)
-    {
-        if (!entry.escalationPending || entry.defendingTeam != team || entry.zoneId != zoneId)
-            continue;
-
-        entry.escalationPending = false;
-        entry.escalated = true;
-        // A WorldDefense shout reaches the whole faction: it counts as the
-        // callout that makes the entry respondable.
-        entry.calledOutMs = now;
-        entry.updatedMs = now;
-        out = entry;
-        return true;
-    }
-
-    return false;
+    entry.escalationPending = false;
+    entry.escalated = true;
+    // A WorldDefense shout reaches the whole faction: it counts as the
+    // callout that makes the entry respondable.
+    entry.calledOutMs = now;
+    entry.updatedMs = now;
+    out = entry;
+    return true;
 }
 
 bool WpvpDefenseBoard::IsRespondable(WpvpDefenseEntry const& entry, uint32 now) const
@@ -327,13 +351,30 @@ bool WpvpEscalationCalloutTrigger::IsActive()
     if (!sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
 
-    return WpvpDefenseBoard::instance().HasPendingEscalation(bot->GetTeamId(), bot->GetZoneId());
+    for (WpvpDefenseEntry const& entry : WpvpDefenseBoard::instance().PendingEscalations(bot->GetTeamId()))
+        if (IsEscalationEyewitness(bot, entry))
+            return true;
+
+    return false;
 }
 
 bool WpvpEscalationCalloutAction::Execute(Event /*event*/)
 {
     WpvpDefenseEntry entry;
-    if (!WpvpDefenseBoard::instance().ClaimEscalation(bot->GetTeamId(), bot->GetZoneId(), entry))
+    bool claimed = false;
+    for (WpvpDefenseEntry const& pending : WpvpDefenseBoard::instance().PendingEscalations(bot->GetTeamId()))
+    {
+        if (!IsEscalationEyewitness(bot, pending))
+            continue;
+
+        if (WpvpDefenseBoard::instance().ClaimEscalation(bot->GetTeamId(), pending.attacker, entry))
+        {
+            claimed = true;
+            break;
+        }
+    }
+
+    if (!claimed)
         return false;
 
     AreaTableEntry const* area = sAreaTableStore.LookupEntry(entry.zoneId);
