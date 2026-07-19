@@ -1164,6 +1164,9 @@ AiPlayerbot.WpvpCallouts = 1
 # a bot that has them on its screen and doesn't outlevel them by
 # WpvpGankLevelGap (an outclassing bystander doesn't plead for help - it IS
 # the help; victims may shout at any level, their grievance is first-hand).
+# The shout is also held entirely while an outclassing defender is in the
+# zone with the ganker - once help has arrived, even a victim's plea would
+# ring false - and frees up again if that defender dies or leaves.
 # The tally resets whenever the ganker dies.
 # Default: 3 / 600
 AiPlayerbot.WpvpEscalationKills = 3

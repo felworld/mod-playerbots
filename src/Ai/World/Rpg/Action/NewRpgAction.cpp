@@ -27,6 +27,7 @@
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "TravelMgr.h"
+#include "WpvpDefense.h"
 
 bool TellRpgStatusAction::Execute(Event event)
 {
@@ -224,7 +225,17 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                     bool present = attacker && attacker->IsInWorld() && attacker->GetMapId() == bot->GetMapId() &&
                                    attacker->GetZoneId() == data.zoneId;
                     if (present)
+                    {
                         data.defendLastSeenT = getMSTime();
+                        // Help has arrived: while a live defender who
+                        // outclasses the attacker shares the zone, the board
+                        // holds WorldDefense escalation pleas (the board
+                        // itself screens out reinforcers, who dwell on the
+                        // attacker's own side, and even-fight arrivals).
+                        if (bot->IsAlive())
+                            WpvpDefenseBoard::instance().NoteDefenderOnScene(data.defendTarget, bot->GetTeamId(),
+                                                                             bot->GetLevel());
+                    }
                     else if (GetMSTimeDiffToNow(data.defendLastSeenT) > 90 * IN_MILLISECONDS)
                     {
                         EndWpvpExcursion(botAI, "defense target is gone");

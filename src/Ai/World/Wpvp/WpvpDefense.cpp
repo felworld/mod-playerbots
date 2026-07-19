@@ -25,6 +25,12 @@ namespace
 constexpr uint32 ENTRY_TTL_MS = 30 * MINUTE * IN_MILLISECONDS;
 constexpr uint32 RESPONDABLE_WINDOW_MS = 10 * MINUTE * IN_MILLISECONDS;
 
+// How long after an outclassing defender was last seen with the attacker the
+// escalation shout stays held. The dwell loop re-stamps every AI update, so
+// this only needs to outlive that cadence; when the defender dies or leaves,
+// the plea for help becomes honest again about this fast.
+constexpr uint32 DEFENDER_ON_SCENE_WINDOW_MS = 30 * IN_MILLISECONDS;
+
 uint64 RollKey(ObjectGuid bot, ObjectGuid attacker) { return bot.GetRawValue() ^ (attacker.GetRawValue() << 1); }
 
 std::string ToLower(std::string s)
@@ -220,12 +226,38 @@ void WpvpDefenseBoard::RecordAttackerDeath(Player* attacker, ObjectGuid killer)
     }
 }
 
+void WpvpDefenseBoard::NoteDefenderOnScene(ObjectGuid attacker, TeamId team, uint8 defenderLevel)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _entries.find(attacker);
+    if (it == _entries.end())
+        return;
+
+    WpvpDefenseEntry& entry = it->second;
+    if (entry.defendingTeam != team)
+        return;
+
+    // Only an outclassing defender holds the shout: an evenly matched
+    // arrival is joining a fight, not ending one, and more help is still a
+    // reasonable ask.
+    if (defenderLevel < entry.attackerLevel + sPlayerbotAIConfig.wpvpGankLevelGap)
+        return;
+
+    entry.defenderOnSceneMs = getMSTime();
+}
+
+bool WpvpDefenseBoard::HelpOnScene(WpvpDefenseEntry const& entry, uint32 now) const
+{
+    return entry.defenderOnSceneMs && getMSTimeDiff(entry.defenderOnSceneMs, now) < DEFENDER_ON_SCENE_WINDOW_MS;
+}
+
 std::vector<WpvpDefenseEntry> WpvpDefenseBoard::PendingEscalations(TeamId team)
 {
     std::lock_guard<std::mutex> lock(_mutex);
+    uint32 now = getMSTime();
     std::vector<WpvpDefenseEntry> pending;
     for (auto const& [guid, entry] : _entries)
-        if (entry.escalationPending && entry.defendingTeam == team)
+        if (entry.escalationPending && entry.defendingTeam == team && !HelpOnScene(entry, now))
             pending.push_back(entry);
 
     return pending;
@@ -239,10 +271,10 @@ bool WpvpDefenseBoard::ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDef
         return false;
 
     WpvpDefenseEntry& entry = it->second;
-    if (!entry.escalationPending || entry.defendingTeam != team)
+    uint32 now = getMSTime();
+    if (!entry.escalationPending || entry.defendingTeam != team || HelpOnScene(entry, now))
         return false;
 
-    uint32 now = getMSTime();
     entry.escalationPending = false;
     entry.escalated = true;
     // A WorldDefense shout reaches the whole faction: it counts as the

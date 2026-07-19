@@ -73,6 +73,7 @@ struct WpvpDefenseEntry
     bool escalated{false};        // the one WorldDefense shout has been made
     uint32 avengedDeaths{0};      // deaths to someone who was NOT one of their victims
     uint32 reinforceArmedMs{0};   // 0 until the attacker's faction gets its one reinforcement wave
+    uint32 defenderOnSceneMs{0};  // last time an OUTCLASSING defender was in the zone with them
 };
 
 // Shared bulletin board of active gankers, keyed by attacker. Producers:
@@ -105,10 +106,20 @@ public:
     // the ganker's own faction.
     void RecordAttackerDeath(Player* attacker, ObjectGuid killer);
 
+    // From the defend-mode dwell loop: a live defender is in the zone with
+    // the tracked attacker. Stamps the entry only when the defender is on
+    // the defending team (reinforcers dwell on the attacker's side) and
+    // outlevels the attacker by the gank gap - the mark of "this is
+    // handled" that holds WorldDefense escalations below.
+    void NoteDefenderOnScene(ObjectGuid attacker, TeamId team, uint8 defenderLevel);
+
     // Escalation is claimed only by an eyewitness - a victim of the spree or
     // an on-screen bystander the ganker plausibly threatens (the trigger
     // checks that); the board just hands out pending entries and takes the
-    // atomic claim, so exactly one bot shouts.
+    // atomic claim, so exactly one bot shouts. While an outclassing defender
+    // is freshly on the scene, the shout is held - help already arrived, so
+    // even a victim's plea would ring false - and it becomes claimable again
+    // once that defender dies or leaves.
     std::vector<WpvpDefenseEntry> PendingEscalations(TeamId team);
     bool ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDefenseEntry& out);
 
@@ -131,6 +142,7 @@ private:
     WpvpDefenseBoard() = default;
 
     bool IsRespondable(WpvpDefenseEntry const& entry, uint32 now) const;
+    bool HelpOnScene(WpvpDefenseEntry const& entry, uint32 now) const;
     void Prune(uint32 now);
 
     std::mutex _mutex;

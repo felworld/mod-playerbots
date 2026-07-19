@@ -96,7 +96,9 @@ is forked from — the two move together.
   The alarm voice stays with the threatened: a bot that outlevels the
   ganker by the gank gap never calls out or pleads for help (it *is* the
   help), so arriving high-level defenders fight instead of shouting about
-  an enemy they could squash.
+  an enemy they could squash — and once such a defender is on the scene,
+  the escalation is held entirely: with help visibly arrived, even the
+  victims stop pleading, until that defender dies or leaves.
   Behind the chat, idle bots across the faction may answer the call: each
   rolls a small once-per-ganker chance to drop what it's doing, travel in
   (arriving out of sight and walking the last stretch), and hunt the
