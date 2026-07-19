@@ -577,6 +577,10 @@ bool PlayerbotAIConfig::Initialize()
     randomBotShowCloak = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowCloak", true);
     randomBotShowHelmet = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotShowHelmet", true);
 
+    // quest competition groups (Felworld)
+    questCompetitionInvite = sConfigMgr->GetOption<bool>("AiPlayerbot.QuestCompetitionInvite", true);
+    questCompetitionInviteCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.QuestCompetitionInviteCooldown", 600);
+
     // bystander assist (Felworld)
     enableBystanderAssist = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBystanderAssist", true);
     bystanderAssistRadius = sConfigMgr->GetOption<float>("AiPlayerbot.BystanderAssistRadius", 40.0f);

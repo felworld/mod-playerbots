@@ -189,6 +189,11 @@ bool GrindTargetValue::groupNeedForQuest(Unit* target)
 
 bool GrindTargetValue::needForQuest(Player* player, Unit* target)
 {
+    return PlayerNeedsCreatureForQuest(player, target->GetEntry());
+}
+
+bool GrindTargetValue::PlayerNeedsCreatureForQuest(Player* player, uint32 creatureEntry)
+{
     QuestStatusMap& questMap = player->getQuestStatusMap();
     for (auto& quest : questMap)
     {
@@ -218,14 +223,14 @@ bool GrindTargetValue::needForQuest(Player* player, Unit* target)
                     int required = questTemplate->RequiredNpcOrGoCount[j];
                     int available = questStatus->CreatureOrGOCount[j];
 
-                    if (required && available < required && target->GetEntry() == uint32(entry))
+                    if (required && available < required && creatureEntry == uint32(entry))
                         return true;
                 }
             }
         }
     }
 
-    if (CreatureTemplate const* data = sObjectMgr->GetCreatureTemplate(target->GetEntry()))
+    if (CreatureTemplate const* data = sObjectMgr->GetCreatureTemplate(creatureEntry))
     {
         if (uint32 lootId = data->lootid)
         {

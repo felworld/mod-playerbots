@@ -20,6 +20,10 @@ public:
 
     Unit* Calculate() override;
 
+    // Does <player> still need creatures of this entry for an in-progress
+    // quest, either as an unfinished kill objective or as a quest-item drop?
+    static bool PlayerNeedsCreatureForQuest(Player* player, uint32 creatureEntry);
+
 protected:
     virtual bool QuestTargetsOnly() const { return false; }
 

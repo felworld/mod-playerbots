@@ -7,6 +7,8 @@
 #define PLAYERBOTS_PLAYERBOTAI_H
 
 #include <stack>
+#include <unordered_map>
+#include <unordered_set>
 
 #include "Chat.h"
 #include "ChatFilter.h"
@@ -379,6 +381,36 @@ private:
     time_t time;
 };
 
+// Quest-competition groups (Felworld): a solo random bot that sees a nearby
+// player fighting a mob it still needs invites them to a temporary group,
+// grinds the shared objectives, and leaves with a thank-you once nobody in
+// the group needs the mobs the group has been fighting. Lifecycle in
+// PlayerbotAI::UpdateQuestCompetition.
+struct QuestCompetitionInfo
+{
+    ObjectGuid pendingInvite;                            // invited player, not yet in the group
+    time_t pendingSince = 0;
+    bool active = false;                                 // a group formed from our invite
+    std::unordered_set<uint32> entries;                  // creature entries the group formed around
+    std::unordered_map<ObjectGuid, time_t> inviteCooldowns;
+    ObjectGuid candidate;                                // scratch: trigger -> action handoff
+    uint32 candidateEntry = 0;
+    time_t lastUpkeep = 0;
+
+    // Ends the current invite/group episode; invite cooldowns survive so a
+    // just-disbanded partner isn't immediately re-invited.
+    void EndEpisode()
+    {
+        pendingInvite.Clear();
+        pendingSince = 0;
+        active = false;
+        entries.clear();
+        candidate.Clear();
+        candidateEntry = 0;
+        lastUpkeep = 0;
+    }
+};
+
 class PlayerbotAI : public PlayerbotAIBase
 {
 public:
@@ -620,6 +652,7 @@ public:
     NewRpgStatistic rpgStatistic;
     std::unordered_set<uint32> lowPriorityQuest;
     time_t bgReleaseAttemptTime = 0;
+    QuestCompetitionInfo questCompetitionInfo;
 
     // Schedules a callback to run once after <delayMs> milliseconds.
     void AddTimedEvent(std::function<void()> callback, uint32 delayMs);
@@ -630,6 +663,7 @@ private:
     uint32 _channelZoneId = 0;
     bool IsTellAllowed(PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     void UpdateAIGroupMaster();
+    void UpdateQuestCompetition();
     Item* FindItemInInventory(std::function<bool(ItemTemplate const*)> checkItem) const;
     void HandleCommands();
     void HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang = LANG_UNIVERSAL);

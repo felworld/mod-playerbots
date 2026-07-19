@@ -26,6 +26,7 @@
 #include "ExternalEventHelper.h"
 #include "GameObjectData.h"
 #include "GameTime.h"
+#include "GrindTargetValue.h"
 #include "GuildMgr.h"
 #include "LFGMgr.h"
 #include "LastMovementValue.h"
@@ -400,6 +401,9 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     // Update the bot's group status (moved to helper function)
     UpdateAIGroupMaster();
 
+    // Advance any quest-competition group episode (invite pending / active)
+    UpdateQuestCompetition();
+
     // Update internal AI
     UpdateAIInternal(elapsed, minimal);
     YieldThread(bot, GetReactDelay());
@@ -451,14 +455,24 @@ void PlayerbotAI::UpdateAIGroupMaster()
 
             if (!bot->InBattleground())
             {
-                botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
-
-                if (botAI->GetMaster() == botAI->GetGroupLeader())
-                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                        "hello_follow", "Hello, I follow you!", {}));
+                if (questCompetitionInfo.pendingInvite == newMaster->GetGUID())
+                {
+                    // Our quest-competition invite was accepted: stay a peer
+                    // grinding the shared objectives instead of a follower.
+                    botAI->ChangeStrategy("+grind quests,-grind,-follow,-new rpg,-rpg,-move random",
+                                          BOT_STATE_NON_COMBAT);
+                }
                 else
-                    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                        "hello", "Hello!", {}));
+                {
+                    botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
+
+                    if (botAI->GetMaster() == botAI->GetGroupLeader())
+                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "hello_follow", "Hello, I follow you!", {}));
+                    else
+                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                            "hello", "Hello!", {}));
+                }
             }
             else
             {
@@ -467,6 +481,117 @@ void PlayerbotAI::UpdateAIGroupMaster()
             }
         }
     }
+}
+
+// Quest-competition group state machine: activates an episode once the invited
+// player joins, grows the shared-objective set from what the bot actually
+// fights, and thanks + leaves once nobody in the group needs those mobs.
+void PlayerbotAI::UpdateQuestCompetition()
+{
+    QuestCompetitionInfo& info = questCompetitionInfo;
+    if (info.pendingInvite.IsEmpty() && !info.active)
+        return;
+
+    if (!sPlayerbotAIConfig.questCompetitionInvite)
+    {
+        info.EndEpisode();
+        return;
+    }
+
+    time_t now = time(nullptr);
+    Group* group = bot->GetGroup();
+
+    if (!info.pendingInvite.IsEmpty())
+    {
+        if (group && group->IsMember(info.pendingInvite))
+        {
+            info.active = true;
+            info.pendingInvite.Clear();
+            info.pendingSince = 0;
+            info.lastUpkeep = now;
+            // A real-player partner also triggers this switch via
+            // UpdateAIGroupMaster's master adoption; repeating it here covers
+            // bot partners, where no master is ever assigned.
+            ChangeStrategy("+grind quests,-grind,-follow,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
+        }
+        else if (now - info.pendingSince > 90)
+            info.EndEpisode();
+
+        return;
+    }
+
+    if (!group)
+    {
+        info.EndEpisode();
+        return;
+    }
+
+    if (now - info.lastUpkeep < 3)
+        return;
+
+    info.lastUpkeep = now;
+
+    std::vector<Player*> others;
+    bool anyoneNear = false;
+    for (auto const& slot : group->GetMemberSlots())
+    {
+        if (slot.guid == bot->GetGUID())
+            continue;
+
+        Player* member = ObjectAccessor::FindPlayer(slot.guid);
+        if (!member)
+            continue;
+
+        others.push_back(member);
+        if (member->GetMapId() == bot->GetMapId() &&
+            bot->GetDistance2d(member) < 2 * sPlayerbotAIConfig.rpgDistance)
+            anyoneNear = true;
+    }
+
+    // Everyone logged off or wandered far away: nothing left to stay for.
+    if (others.empty() || !anyoneNear)
+    {
+        LeaveOrDisbandGroup();
+        info.EndEpisode();
+        return;
+    }
+
+    auto neededByGroup = [&](uint32 entry)
+    {
+        if (GrindTargetValue::PlayerNeedsCreatureForQuest(bot, entry))
+            return true;
+
+        for (Player* member : others)
+            if (GrindTargetValue::PlayerNeedsCreatureForQuest(member, entry))
+                return true;
+
+        return false;
+    };
+
+    // The group naturally migrates between camps: mob types the bot actively
+    // fights while a member needs them join the shared-objective set.
+    Unit* victim = bot->GetVictim();
+    if (victim && victim->IsCreature() && !info.entries.count(victim->GetEntry()) &&
+        neededByGroup(victim->GetEntry()))
+        info.entries.insert(victim->GetEntry());
+
+    if (bot->IsInCombat())
+        return;
+
+    // Hold on while anyone is mid-fight with a mob the group still needs.
+    for (Player* member : others)
+        if (Unit* memberVictim = member->GetVictim())
+            if (memberVictim->IsCreature() && neededByGroup(memberVictim->GetEntry()))
+                return;
+
+    for (uint32 entry : info.entries)
+        if (neededByGroup(entry))
+            return;
+
+    SayToParty(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "quest_competition_thanks", "Thanks for the group, that's everything I needed!", {}));
+    LeaveOrDisbandGroup();
+    info.EndEpisode();
 }
 
 void PlayerbotAI::UpdateAIInternal([[maybe_unused]] uint32 elapsed, bool minimal)

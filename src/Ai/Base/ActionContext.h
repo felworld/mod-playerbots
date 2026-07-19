@@ -15,6 +15,7 @@
 #include "BattleGroundTactics.h"
 #include "BuyAction.h"
 #include "BystanderAssistActions.h"
+#include "QuestCompetitionActions.h"
 #include "SocialBuffActions.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
@@ -172,6 +173,7 @@ public:
         creators["delay"] = &ActionContext::delay;
         creators["greet"] = &ActionContext::greet;
         creators["bystander heal"] = &ActionContext::bystander_heal;
+        creators["quest competition invite"] = &ActionContext::quest_competition_invite;
         creators["buff passerby"] = &ActionContext::buff_passerby;
         creators["buff back"] = &ActionContext::buff_back;
         creators["thank healer"] = &ActionContext::thank_healer;
@@ -325,6 +327,7 @@ private:
     static Action* check_values(PlayerbotAI* botAI) { return new CheckValuesAction(botAI); }
     static Action* greet(PlayerbotAI* botAI) { return new GreetAction(botAI); }
     static Action* bystander_heal(PlayerbotAI* botAI) { return new BystanderHealAction(botAI); }
+    static Action* quest_competition_invite(PlayerbotAI* botAI) { return new QuestCompetitionInviteAction(botAI); }
     static Action* buff_passerby(PlayerbotAI* botAI) { return new BuffPasserbyAction(botAI); }
     static Action* buff_back(PlayerbotAI* botAI) { return new BuffBackAction(botAI); }
     static Action* thank_healer(PlayerbotAI* botAI) { return new ThankHealerAction(botAI); }

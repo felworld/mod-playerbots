@@ -2471,6 +2471,21 @@ AiPlayerbot.EnableHealThanks = 1
 # Per-healer cooldown (seconds) between thank-yous.
 AiPlayerbot.SocialThankCooldown = 180
 
+# Quest competition groups (Felworld): a solo random bot that sees a nearby
+# ungrouped same-faction player (real or bot, within 4 levels) fighting a
+# creature the bot still needs for an in-progress quest silently invites
+# them to a group, the way real players resolve spawn competition. While
+# grouped the bot keeps grinding the shared objectives as a peer ("grind
+# quests") instead of following. Mob types the bot fights that a member
+# still needs join the shared-objective set, so the group survives moving
+# to the next camp; once nobody in the group needs any of those mobs, the
+# bot says thanks in party chat and leaves. Distant shared quests never
+# hold the group together.
+AiPlayerbot.QuestCompetitionInvite = 1
+# Per-player cooldown (seconds) between invite attempts, so a decline
+# isn't followed by pestering.
+AiPlayerbot.QuestCompetitionInviteCooldown = 600
+
 #
 #
 ####################################################################################################

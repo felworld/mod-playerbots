@@ -165,6 +165,10 @@ public:
     uint32 classMatchingProfessionChance;
     float fishingDistanceFromMaster, fishingDistance, endFishingWithMaster;
 
+    // quest competition groups (Felworld)
+    bool questCompetitionInvite;
+    uint32 questCompetitionInviteCooldown;
+
     // bystander assist (Felworld)
     bool enableBystanderAssist;
     float bystanderAssistRadius;

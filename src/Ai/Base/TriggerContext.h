@@ -7,6 +7,7 @@
 #define PLAYERBOTS_TRIGGERCONTEXT_H
 
 #include "BystanderTriggers.h"
+#include "QuestCompetitionTriggers.h"
 #include "SocialBuffTriggers.h"
 #include "CureTriggers.h"
 #include "DuelChallenge.h"
@@ -175,6 +176,7 @@ public:
         creators["no non bot players around"] = &TriggerContext::no_non_bot_players_around;
         creators["new player nearby"] = &TriggerContext::new_player_nearby;
         creators["bystander in distress"] = &TriggerContext::bystander_in_distress;
+        creators["quest competition invite"] = &TriggerContext::quest_competition_invite;
         creators["passerby to buff"] = &TriggerContext::passerby_to_buff;
         creators["buffed by friendly"] = &TriggerContext::buffed_by_friendly;
         creators["healed by friendly"] = &TriggerContext::healed_by_friendly;
@@ -425,6 +427,7 @@ private:
     static Trigger* no_non_bot_players_around(PlayerbotAI* botAI) { return new NoNonBotPlayersAroundTrigger(botAI); }
     static Trigger* new_player_nearby(PlayerbotAI* botAI) { return new NewPlayerNearbyTrigger(botAI); }
     static Trigger* bystander_in_distress(PlayerbotAI* botAI) { return new BystanderInDistressTrigger(botAI); }
+    static Trigger* quest_competition_invite(PlayerbotAI* botAI) { return new QuestCompetitionInviteTrigger(botAI); }
     static Trigger* passerby_to_buff(PlayerbotAI* botAI) { return new PasserbyToBuffTrigger(botAI); }
     static Trigger* buffed_by_friendly(PlayerbotAI* botAI) { return new BuffedByFriendlyTrigger(botAI); }
     static Trigger* healed_by_friendly(PlayerbotAI* botAI) { return new HealedByFriendlyTrigger(botAI); }
