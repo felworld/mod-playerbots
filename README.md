@@ -28,9 +28,8 @@ is forked from — the two move together.
   target"), but the bot only engages mobs that someone in its group still
   needs for an incomplete quest — kill credit or a quest-item drop —
   including neutral and gray ones. The result is a bot that pulls and fights
-  like a questing partner instead of slaughtering everything in sight. Say
-  `!grind quests` to the bot in chat to enable it (`grind` and `grind quests`
-  replace each other; `!nc -grind quests` turns it off).
+  like a questing partner instead of slaughtering everything in sight.
+  Toggled with the `!grind quests` chat command (below).
 - Warsong Gulch bots play the objective like a team. Upstream's
   "protect the flag carrier" behavior never actually ran (the trigger was
   never registered); on top of fixing that, our fork adds dedicated escorts
@@ -84,12 +83,30 @@ is forked from — the two move together.
   being all 80s. Invaders goad unflagged enemies into attacking with rude
   emotes; rogues/druids both go more often and deliver theirs by dropping
   stealth right next to the mark, while Night Elves of other classes
-  Shadowmeld and hold the ambush instead. Defender bots call out
-  invaders in LocalDefense ("Bloguk is attacking Goldshire!"), throttled per
-  zone and per attacker. `AiPlayerbot.RpgStatusProbWeight.GoWpvp` sets the
-  frequency (0 disables); `AiPlayerbot.Wpvp*` knobs cover the rest; GM
-  commands `.playerbots wpvp test [class] | status | off [minutes] | on`
-  provide a test hook, observability, and a runtime kill switch.
+  Shadowmeld and hold the ambush instead.
+  `AiPlayerbot.RpgStatusProbWeight.GoWpvp` sets the frequency (0 disables);
+  `AiPlayerbot.Wpvp*` knobs cover the rest; the `.playerbots wpvp` GM
+  commands (listed below) provide a test hook, observability, and a runtime
+  kill switch.
+- World PvP defense and reinforcements: ganking has consequences, on both
+  sides. Defender bots call out invaders in LocalDefense ("Bloguk is
+  attacking Goldshire!"), throttled per zone and per attacker, and an
+  uncontested killing spree earns one WorldDefense shout from an eyewitness.
+  Behind the chat, idle bots across the faction may answer the call: each
+  rolls a small once-per-ganker chance to drop what it's doing, travel in
+  (arriving out of sight and walking the last stretch), and hunt the
+  attacker — staying on scene while the attacker is around, drifting home
+  once they're gone. Preying on much lower-level victims draws a stronger
+  response than an evenly matched brawl (`AiPlayerbot.WpvpGankLevelGap`
+  draws that line). The other side answers back too: a ganker who dies a
+  couple of times to outside help — killers who weren't among their victims
+  — may pull a one-time wave of faction allies as reinforcements, with no
+  chat involved (we assume the ask happened over some backchannel). All of
+  it keys off actual PvP kills, so a real player ganking lowbies is called
+  out, hunted, and — if the tables turn — reinforced exactly like a bot.
+  `AiPlayerbot.WpvpDefense*` and `AiPlayerbot.WpvpReinforcement*` knobs;
+  the `!wpvp defend` chat command (below) lets you order a defense
+  yourself.
 - Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting
   to each other's emotes could ping-pong forever: a reply aimed at the other
   bot was always answered, and replying left the responder targeting the
@@ -124,6 +141,40 @@ is forked from — the two move together.
   refills the population automatically. This is a runtime override — a config
   reload or restart reverts to `AiPlayerbot.Enabled` (which Felworld drives
   per session mode via the `AC_AI_PLAYERBOT_ENABLED` env var).
+
+## Commands added in this fork
+
+Bot chat commands — spoken to a bot like any command from the
+[upstream command list](https://github.com/mod-playerbots/mod-playerbots/wiki/Playerbot-Commands),
+with the `!` prefix described above:
+
+- `!grind quests` — switch the bot to the quest-aware grind strategy
+  (replaces plain `grind` and vice versa; `!nc -grind quests` turns it
+  off).
+- `!wpvp defend [zone]` — order a random bot to travel in and defend a
+  zone; with no argument, the zone *you* are standing in. The bot heads for
+  the last reported attacker position there if defenders have called one
+  in, otherwise for the zone's own gathering spot, and whispers back an "On
+  my way" (or a refusal if it doesn't recognize the zone). Any player can
+  issue it, but only world (random) bots accept — your own alt bots ignore
+  it. This is also the hook behind mod-llm's `go_defend` tool, so in LLM
+  mode you can simply ask a bot in plain language to go help.
+
+GM / console commands:
+
+- `.playerbots enable | disable | status` — the runtime random-bot toggle
+  described above (administrator).
+- `.playerbots wpvp test [class]` — send an opposing-faction bot on a
+  world-PvP excursion to your position, optionally filtered by class
+  (in-game GM only).
+- `.playerbots wpvp off [minutes] | on` — excursion kill switch: `off`
+  disables new excursions for the given minutes (no argument uses
+  `AiPlayerbot.WpvpKillSwitchDefaultMinutes`; `0` means until restart) and
+  immediately sends every bot currently out on one home; `on` re-enables
+  early.
+- `.playerbots wpvp status` — whether excursions are enabled, plus one line
+  per bot currently out: destination, travelling or dwelling, and deaths so
+  far.
 
 ## Tests
 
