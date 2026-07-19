@@ -71,6 +71,21 @@ is forked from — the two move together.
   buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and
   `AiPlayerbot.EnableHealThanks` (both default on) plus radius/cooldown
   knobs in `playerbots.conf.dist`.
+- Quest-competition groups: a solo random bot that sees a nearby ungrouped
+  same-faction player — real player or bot, within 4 levels — fighting a
+  creature the bot still needs for an in-progress quest silently invites
+  them to a group, the way real players resolve spawn competition. While
+  grouped the bot keeps grinding as a peer rather than trailing its new
+  partner: it targets whatever mobs anyone in the group still needs, so
+  the pair naturally splits a camp and shares kill credit. Mob types the
+  bot fights that a member still needs extend the group's shared
+  objectives, so migrating to the next camp together keeps the group
+  alive — but unrelated shared quests two zones away never hold it
+  together. Once nobody in the group needs any of those mobs, the bot
+  says thanks in party chat and leaves. Declined invites go on a
+  per-player cooldown so nobody gets pestered.
+  `AiPlayerbot.QuestCompetitionInvite` (default on) and
+  `AiPlayerbot.QuestCompetitionInviteCooldown` in `playerbots.conf.dist`.
 - World PvP excursions: random bots occasionally travel to enemy or contested
   towns (Southshore/Tarren Mill, the Crossroads, Stranglethorn — rarely even
   enemy home zones like Goldshire) on purpose, lurk near town for 15-30
