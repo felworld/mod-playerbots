@@ -1141,7 +1141,10 @@ AiPlayerbot.WpvpGoadCooldown = 90
 
 # Defender bots call out invaders in the LocalDefense channel. Zone cooldown
 # throttles messages per zone+faction; attacker cooldown throttles repeat
-# callouts about the same invader (seconds).
+# callouts about the same invader (seconds). Only bots the invader plausibly
+# threatens raise the alarm: a bot that outlevels them by WpvpGankLevelGap
+# or more says nothing (real players squash grey-con enemies, they don't
+# announce them).
 # Default: 1 (enabled) / 180 / 600
 AiPlayerbot.WpvpCalloutEnabled = 1
 AiPlayerbot.WpvpCalloutZoneCooldown = 180
@@ -1158,8 +1161,10 @@ AiPlayerbot.WpvpCallouts = 1
 # A ganker on an uncontested killing spree earns one WorldDefense shout:
 # after EscalationKills world-PvP kills within EscalationWindow seconds
 # without dying, an eyewitness escalates - one of the ganker's victims, or
-# a bot that has them on its screen. The tally resets whenever the ganker
-# dies.
+# a bot that has them on its screen and doesn't outlevel them by
+# WpvpGankLevelGap (an outclassing bystander doesn't plead for help - it IS
+# the help; victims may shout at any level, their grievance is first-hand).
+# The tally resets whenever the ganker dies.
 # Default: 3 / 600
 AiPlayerbot.WpvpEscalationKills = 3
 AiPlayerbot.WpvpEscalationWindow = 600
@@ -1171,7 +1176,9 @@ AiPlayerbot.WpvpEscalationWindow = 600
 # An attacker who preys on players GankLevelGap or more levels below them
 # rolls at the full ResponseChance; an evenly matched attacker (as brawl
 # participants are) draws only EvenFightChance - stopping a lowbie ganker
-# rallies people, a fair fight far away mostly doesn't.
+# rallies people, a fair fight far away mostly doesn't. The same gap draws
+# the too-strong-to-shout line for the callout and escalation speakers
+# above.
 # Default: 1 (enabled) / 10 / 3 / 3 / 5
 AiPlayerbot.WpvpDefenseEnabled = 1
 AiPlayerbot.WpvpDefenseResponseChance = 10

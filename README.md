@@ -91,7 +91,12 @@ is forked from — the two move together.
 - World PvP defense and reinforcements: ganking has consequences, on both
   sides. Defender bots call out invaders in LocalDefense ("Bloguk is
   attacking Goldshire!"), throttled per zone and per attacker, and an
-  uncontested killing spree earns one WorldDefense shout from an eyewitness.
+  uncontested killing spree earns one WorldDefense shout from an eyewitness
+  — a victim of the spree, or a bystander the ganker plausibly threatens.
+  The alarm voice stays with the threatened: a bot that outlevels the
+  ganker by the gank gap never calls out or pleads for help (it *is* the
+  help), so arriving high-level defenders fight instead of shouting about
+  an enemy they could squash.
   Behind the chat, idle bots across the faction may answer the call: each
   rolls a small once-per-ganker chance to drop what it's doing, travel in
   (arriving out of sight and walking the last stretch), and hunt the

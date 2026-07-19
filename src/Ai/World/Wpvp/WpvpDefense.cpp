@@ -92,6 +92,14 @@ bool IsEscalationEyewitness(Player* bot, WpvpDefenseEntry const& entry)
     if (std::find(entry.victims.begin(), entry.victims.end(), bot->GetGUID()) != entry.victims.end())
         return true;
 
+    // A bystander who outlevels the ganker by the gank gap doesn't plead for
+    // help - they ARE the help (defense responses recruit exactly these
+    // bots, and arrivals parked in vision range would otherwise claim the
+    // shout). Victims are exempt above: their grievance is first-hand at
+    // any level.
+    if (bot->GetLevel() >= entry.attackerLevel + sPlayerbotAIConfig.wpvpGankLevelGap)
+        return false;
+
     Player* attacker = ObjectAccessor::FindPlayer(entry.attacker);
     return attacker && attacker->IsInWorld() && attacker->GetMapId() == bot->GetMapId() &&
            bot->IsWithinDist(attacker, sPlayerbotAIConfig.wpvpVisionDistance);

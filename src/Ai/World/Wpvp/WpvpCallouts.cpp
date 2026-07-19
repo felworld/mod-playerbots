@@ -68,9 +68,14 @@ Player* FindWpvpIntruder(PlayerbotAI* botAI)
 {
     Player* bot = botAI->GetBot();
 
+    // An enemy the bot outlevels by the gank gap is prey, not peril: real
+    // players squash those, they don't announce them to the zone.
+    auto alarmWorthy = [&](Player* enemy)
+    { return bot->GetLevel() < enemy->GetLevel() + sPlayerbotAIConfig.wpvpGankLevelGap; };
+
     if (Unit* attacker = bot->getAttackerForHelper())
         if (Player* enemy = attacker->ToPlayer())
-            if (botAI->IsOpposing(enemy))
+            if (botAI->IsOpposing(enemy) && alarmWorthy(enemy))
                 return enemy;
 
     // "nearest enemy players" is IsPvP-gated, which is exactly right:
@@ -83,7 +88,8 @@ Player* FindWpvpIntruder(PlayerbotAI* botAI)
             continue;
 
         if (Player* enemy = unit->ToPlayer())
-            return enemy;
+            if (alarmWorthy(enemy))
+                return enemy;
     }
 
     return nullptr;

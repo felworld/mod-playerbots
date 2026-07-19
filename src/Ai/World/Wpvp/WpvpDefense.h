@@ -106,9 +106,9 @@ public:
     void RecordAttackerDeath(Player* attacker, ObjectGuid killer);
 
     // Escalation is claimed only by an eyewitness - a victim of the spree or
-    // a bot with the ganker on its screen (the trigger checks that); the
-    // board just hands out pending entries and takes the atomic claim, so
-    // exactly one bot shouts.
+    // an on-screen bystander the ganker plausibly threatens (the trigger
+    // checks that); the board just hands out pending entries and takes the
+    // atomic claim, so exactly one bot shouts.
     std::vector<WpvpDefenseEntry> PendingEscalations(TeamId team);
     bool ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDefenseEntry& out);
 
@@ -145,8 +145,8 @@ private:
 bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker);
 
 // A ganker's spree crossed the escalation threshold and this bot knows it
-// first-hand (it died to them, or can see them right now): claim the one
-// WorldDefense shout.
+// first-hand (it died to them, or can see them right now and doesn't
+// outclass them): claim the one WorldDefense shout.
 class WpvpEscalationCalloutTrigger : public Trigger
 {
 public:

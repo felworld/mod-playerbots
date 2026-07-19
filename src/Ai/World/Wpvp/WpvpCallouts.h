@@ -42,7 +42,9 @@ private:
 
 // The PvP-flagged opposing player this bot would report: whoever is attacking
 // it, else the nearest flagged enemy (invaders on excursion are always
-// flagged). Returns nullptr when there is nothing to report.
+// flagged) - skipping enemies the bot outlevels by the gank gap, which are
+// nothing to raise an alarm over. Returns nullptr when there is nothing to
+// report.
 Player* FindWpvpIntruder(PlayerbotAI* botAI);
 
 // A random defender bot (not itself on an excursion) sees an invader and the
