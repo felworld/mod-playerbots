@@ -91,8 +91,9 @@ void RefreshAttackerFacts(WpvpDefenseEntry& entry, Player* attacker, uint32 now)
 
 // First-hand knowledge only: an escalation shout comes from a victim of the
 // spree or a bot that has the ganker on its screen right now - never from a
-// stranger across the zone relaying news it couldn't know. (A victim may
-// shout from anywhere: being corpse-camped follows you home.)
+// stranger relaying news it couldn't know. Victims count only while they're
+// still in the ganker's zone: a live plea comes from where the trouble is,
+// and a victim who released and moved on is out of the story.
 bool IsEscalationEyewitness(Player* bot, WpvpDefenseEntry const& entry)
 {
     // Only the genuinely outmatched plead in WorldDefense: anyone within the
@@ -103,7 +104,8 @@ bool IsEscalationEyewitness(Player* bot, WpvpDefenseEntry const& entry)
     if (bot->GetLevel() + sPlayerbotAIConfig.wpvpGankLevelGap > entry.attackerLevel)
         return false;
 
-    if (std::find(entry.victims.begin(), entry.victims.end(), bot->GetGUID()) != entry.victims.end())
+    if (bot->GetMapId() == entry.pos.GetMapId() && bot->GetZoneId() == entry.zoneId &&
+        std::find(entry.victims.begin(), entry.victims.end(), bot->GetGUID()) != entry.victims.end())
         return true;
 
     Player* attacker = ObjectAccessor::FindPlayer(entry.attacker);

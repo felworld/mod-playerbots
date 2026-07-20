@@ -109,9 +109,11 @@ is forked from — the two move together.
   uncontested *gank* spree — kills of victims at least the gank gap below
   the ganker; even fights never escalate, no matter how many times somebody
   loses one — earns one WorldDefense shout from an eyewitness: a victim of
-  the spree, or a bystander with the ganker on their screen, either way
-  themselves a full gank gap below the ganker (a faction-wide plea belongs
-  to the genuinely outmatched). The zone-local callouts follow a softer
+  the spree still in the ganker's zone, or a bystander with the ganker on
+  their screen, either way themselves a full gank gap below the ganker (a
+  faction-wide plea belongs to the genuinely outmatched, and it comes from
+  where the trouble is — a victim who released and left the zone is out of
+  the story). The zone-local callouts follow a softer
   version of the same rule: a bot that outlevels the ganker by the gank gap
   never calls out or pleads for help (it *is* the help), so arriving
   high-level defenders fight instead of shouting about an enemy they could
