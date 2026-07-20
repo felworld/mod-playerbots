@@ -95,16 +95,16 @@ void RefreshAttackerFacts(WpvpDefenseEntry& entry, Player* attacker, uint32 now)
 // shout from anywhere: being corpse-camped follows you home.)
 bool IsEscalationEyewitness(Player* bot, WpvpDefenseEntry const& entry)
 {
+    // Only the genuinely outmatched plead in WorldDefense: anyone within the
+    // gank gap of the ganker's level - victims included - is expected to
+    // handle it, not broadcast it (defense responses recruit exactly these
+    // bots, and arrivals parked in vision range would otherwise claim the
+    // shout).
+    if (bot->GetLevel() + sPlayerbotAIConfig.wpvpGankLevelGap > entry.attackerLevel)
+        return false;
+
     if (std::find(entry.victims.begin(), entry.victims.end(), bot->GetGUID()) != entry.victims.end())
         return true;
-
-    // A bystander who outlevels the ganker by the gank gap doesn't plead for
-    // help - they ARE the help (defense responses recruit exactly these
-    // bots, and arrivals parked in vision range would otherwise claim the
-    // shout). Victims are exempt above: their grievance is first-hand at
-    // any level.
-    if (bot->GetLevel() >= entry.attackerLevel + sPlayerbotAIConfig.wpvpGankLevelGap)
-        return false;
 
     Player* attacker = ObjectAccessor::FindPlayer(entry.attacker);
     return attacker && attacker->IsInWorld() && attacker->GetMapId() == bot->GetMapId() &&
@@ -170,17 +170,27 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     RefreshAttackerFacts(entry, attacker, now);
     entry.defendingTeam = victim->GetTeamId();
 
-    if (!entry.firstKillMs ||
-        getMSTimeDiff(entry.firstKillMs, now) > sPlayerbotAIConfig.wpvpEscalationWindow * IN_MILLISECONDS)
+    // Only genuine gank kills - victim a full gank gap below the attacker -
+    // feed the spree tally: no number of even fights lost fair and square
+    // warrants a WorldDefense plea.
+    if (uint32(victim->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= attacker->GetLevel())
     {
-        entry.firstKillMs = now;
-        entry.kills = 1;
-    }
-    else
-        ++entry.kills;
+        if (!entry.firstKillMs ||
+            getMSTimeDiff(entry.firstKillMs, now) > sPlayerbotAIConfig.wpvpEscalationWindow * IN_MILLISECONDS)
+        {
+            entry.firstKillMs = now;
+            entry.kills = 1;
+        }
+        else
+            ++entry.kills;
 
-    // Victims are the natural escalation shouters ("keeps killing me!"), so
-    // remember who this ganker got - even across tally resets.
+        if (!entry.escalated && entry.kills >= sPlayerbotAIConfig.wpvpEscalationKills)
+            entry.escalationPending = true;
+    }
+
+    // Remember who this ganker got - even across tally resets: outmatched
+    // victims are the natural escalation shouters ("keeps killing me!"),
+    // and deaths to non-victims are what arm reinforcements.
     if (std::find(entry.victims.begin(), entry.victims.end(), victim->GetGUID()) == entry.victims.end())
     {
         entry.victims.push_back(victim->GetGUID());
@@ -191,9 +201,6 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     // Who this attacker preys on decides how urgent defense feels: lowbie
     // ganking pulls the full response chance, an even brawl much less.
     entry.maxVictimLevel = std::max(entry.maxVictimLevel, static_cast<uint8>(victim->GetLevel()));
-
-    if (!entry.escalated && entry.kills >= sPlayerbotAIConfig.wpvpEscalationKills)
-        entry.escalationPending = true;
 
     Prune(now);
 }

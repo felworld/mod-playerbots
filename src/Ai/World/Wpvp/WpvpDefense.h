@@ -96,7 +96,9 @@ public:
     void PostCallout(Player* attacker, TeamId defendingTeam);
 
     // From the PVP-kill hook: bump the attacker's uncontested-kill tally,
-    // arming a WorldDefense escalation at the configured threshold.
+    // arming a WorldDefense escalation at the configured threshold. Only
+    // genuine gank kills (victim a full gank gap below the attacker) feed
+    // the tally - even fights never escalate.
     void RecordKill(Player* attacker, Player* victim);
 
     // A tracked ganker died: the spree is contested, the tally resets and
@@ -113,9 +115,10 @@ public:
     // handled" that holds WorldDefense escalations below.
     void NoteDefenderOnScene(ObjectGuid attacker, TeamId team, uint8 defenderLevel);
 
-    // Escalation is claimed only by an eyewitness - a victim of the spree or
-    // an on-screen bystander the ganker plausibly threatens (the trigger
-    // checks that); the board just hands out pending entries and takes the
+    // Escalation is claimed only by an outmatched eyewitness - a victim of
+    // the spree or an on-screen bystander, either way a full gank gap below
+    // the ganker (the trigger checks that); the board just hands out pending
+    // entries and takes the
     // atomic claim, so exactly one bot shouts. While an outclassing defender
     // is freshly on the scene, the shout is held - help already arrived, so
     // even a victim's plea would ring false - and it becomes claimable again
@@ -157,8 +160,8 @@ private:
 bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker);
 
 // A ganker's spree crossed the escalation threshold and this bot knows it
-// first-hand (it died to them, or can see them right now and doesn't
-// outclass them): claim the one WorldDefense shout.
+// first-hand (it died to them, or can see them right now) while sitting a
+// full gank gap below their level: claim the one WorldDefense shout.
 class WpvpEscalationCalloutTrigger : public Trigger
 {
 public:

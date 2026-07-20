@@ -718,7 +718,7 @@ bool PlayerbotAIConfig::Initialize()
     RpgStatusProbWeight[RPG_TRAVEL_FLIGHT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.TravelFlight", 15);
     RpgStatusProbWeight[RPG_REST] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.Rest", 5);
     RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
-    RpgStatusProbWeight[RPG_GO_WPVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoWpvp", 3);
+    RpgStatusProbWeight[RPG_GO_WPVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoWpvp", 1);
     RpgStatusProbWeight[RPG_DUEL_SPOT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.DuelSpot", 2);
 
     // World PvP excursions (RPG_GO_WPVP)

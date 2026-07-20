@@ -1060,7 +1060,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # TravelFlight  (Default: 15  Go to the nearest flightmaster and fly to a level-appropriate area)
 # Rest          (Default: 5   Take a break for a while and do nothing)
 # OutdoorPvp    (Default: 10  Participate in outdoor PvP capture points if already in an outdoor PvP zone)
-# GoWpvp        (Default: 3   Travel to an enemy/contested town for world PvP, lurk a while, then go home)
+# GoWpvp        (Default: 1   Travel to an enemy/contested town for world PvP, lurk a while, then go home)
 # DuelSpot      (Default: 2   Hang out at the faction capital's gate duel spot and solicit duels)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
@@ -1070,7 +1070,7 @@ AiPlayerbot.RpgStatusProbWeight.DoQuest = 60
 AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
-AiPlayerbot.RpgStatusProbWeight.GoWpvp = 3
+AiPlayerbot.RpgStatusProbWeight.GoWpvp = 1
 AiPlayerbot.RpgStatusProbWeight.DuelSpot = 2
 
 #
@@ -1158,12 +1158,14 @@ AiPlayerbot.WpvpCalloutAttackerCooldown = 600
 # Default: 1 (enabled)
 AiPlayerbot.WpvpCallouts = 1
 
-# A ganker on an uncontested killing spree earns one WorldDefense shout:
-# after EscalationKills world-PvP kills within EscalationWindow seconds
-# without dying, an eyewitness escalates - one of the ganker's victims, or
-# a bot that has them on its screen and doesn't outlevel them by
-# WpvpGankLevelGap (an outclassing bystander doesn't plead for help - it IS
-# the help; victims may shout at any level, their grievance is first-hand).
+# A ganker on an uncontested gank spree earns one WorldDefense shout: after
+# EscalationKills world-PvP kills of victims at least WpvpGankLevelGap
+# levels below them within EscalationWindow seconds, without dying, an
+# eyewitness escalates - one of the ganker's victims, or a bot that has
+# them on its screen, either way themselves a full gank gap below the
+# ganker (anyone stronger than that doesn't plead for help in a
+# faction-wide channel - they ARE the help; even fights never escalate at
+# all, no matter how many times somebody loses one).
 # The shout is also held entirely while an outclassing defender is in the
 # zone with the ganker - once help has arrived, even a victim's plea would
 # ring false - and frees up again if that defender dies or leaves.
@@ -1180,8 +1182,8 @@ AiPlayerbot.WpvpEscalationWindow = 600
 # rolls at the full ResponseChance; an evenly matched attacker (as brawl
 # participants are) draws only EvenFightChance - stopping a lowbie ganker
 # rallies people, a fair fight far away mostly doesn't. The same gap draws
-# the too-strong-to-shout line for the callout and escalation speakers
-# above.
+# the too-strong-to-shout line for the callout speakers and the
+# outmatched-eyewitness line for escalations above.
 # Default: 1 (enabled) / 10 / 3 / 3 / 5
 AiPlayerbot.WpvpDefenseEnabled = 1
 AiPlayerbot.WpvpDefenseResponseChance = 10
