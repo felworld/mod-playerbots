@@ -1,7 +1,8 @@
 # mod-playerbots (Felworld fork)
 
-Part of [Felworld](https://github.com/felworld/azerothcore) — an AI-populated,
-(mostly) single-player WoW 3.3.5a world. This is Felworld's fork of
+Part of [Felworld](https://github.com/felworld/azerothcore) — a tech demo of
+AI "players" (LLM agents + classical game AI) populating and interacting in
+an MMO world. This is Felworld's fork of
 [mod-playerbots/mod-playerbots](https://github.com/mod-playerbots/mod-playerbots),
 the AzerothCore module that fills the world with bot "players" that level,
 quest, group, run dungeons, and fight in battlegrounds. It does what it says
@@ -219,3 +220,10 @@ playtested `playerbots.conf` lives in
 
 Upstream documentation (behavior, commands, strategies) is in the
 [mod-playerbots wiki](https://github.com/mod-playerbots/mod-playerbots/wiki).
+
+---
+
+Felworld is a non-commercial research project. It contains no game client,
+assets, or proprietary code, and is not affiliated with or endorsed by
+Blizzard Entertainment — see the
+[project disclaimer](https://github.com/felworld/azerothcore#license-and-disclaimer).
