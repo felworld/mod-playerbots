@@ -560,10 +560,11 @@ void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSocialScripts();
 void AddPlayerbotsWpvpScripts();
 
+void AddSC_MagtheridonBotScripts();
 void AddSC_TempestKeepBotScripts();
+void AddSC_HyjalSummitBotScripts();
 void AddSC_IcecrownBotScripts();
 void AddSC_RubySanctumBotScripts();
-void AddSC_HyjalSummitBotScripts();
 
 void AddPlayerbotsScripts()
 {
@@ -580,8 +581,9 @@ void AddPlayerbotsScripts()
     AddPlayerbotsWpvpScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
+    AddSC_MagtheridonBotScripts();
     AddSC_TempestKeepBotScripts();
+    AddSC_HyjalSummitBotScripts();
     AddSC_IcecrownBotScripts();
     AddSC_RubySanctumBotScripts();
-    AddSC_HyjalSummitBotScripts();
 }
