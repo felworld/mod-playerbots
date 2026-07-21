@@ -51,9 +51,8 @@ bool QuestCompetitionInviteTrigger::IsActive()
         if (abs(int32(player->GetLevel()) - int32(bot->GetLevel())) > 4)
             continue;
 
-        PlayerbotAI* targetAI = GET_PLAYERBOT_AI(player);
-        if (targetAI && targetAI->HasActivePlayerMaster())  // someone's alt
-            continue;
+        if (GET_PLAYERBOT_AI(player))  // only invite real players: the random bot manager
+            continue;                  // dismantles bot-led bot groups anyway
 
         Unit* victim = player->GetVictim();
         if (!victim || !victim->IsCreature() || !victim->IsAlive())

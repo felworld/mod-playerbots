@@ -455,7 +455,7 @@ void PlayerbotAI::UpdateAIGroupMaster()
 
             if (!bot->InBattleground())
             {
-                if (questCompetitionInfo.pendingInvite == newMaster->GetGUID())
+                if (questCompetitionInfo.active || questCompetitionInfo.pendingInvite == newMaster->GetGUID())
                 {
                     // Our quest-competition invite was accepted: stay a peer
                     // grinding the shared objectives instead of a follower.
@@ -509,9 +509,9 @@ void PlayerbotAI::UpdateQuestCompetition()
             info.pendingInvite.Clear();
             info.pendingSince = 0;
             info.lastUpkeep = now;
-            // A real-player partner also triggers this switch via
-            // UpdateAIGroupMaster's master adoption; repeating it here covers
-            // bot partners, where no master is ever assigned.
+            // UpdateAIGroupMaster's master adoption applies the same switch,
+            // but only once a master is found; this is the guaranteed
+            // application point.
             ChangeStrategy("+grind quests,-grind,-follow,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
         }
         else if (now - info.pendingSince > 90)

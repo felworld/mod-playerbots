@@ -72,7 +72,7 @@ is forked from — the two move together.
   `AiPlayerbot.EnableHealThanks` (both default on) plus radius/cooldown
   knobs in `playerbots.conf.dist`.
 - Quest-competition groups: a solo random bot that sees a nearby ungrouped
-  same-faction player — real player or bot, within 4 levels — fighting a
+  same-faction real player — within 4 levels — fighting a
   creature the bot still needs for an in-progress quest silently invites
   them to a group, the way real players resolve spawn competition. While
   grouped the bot keeps grinding as a peer rather than trailing its new
