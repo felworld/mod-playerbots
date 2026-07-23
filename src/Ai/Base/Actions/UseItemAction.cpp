@@ -400,9 +400,17 @@ bool UseItemAction::isPossible() { return getName() == "use" || AI_VALUE2(uint32
 
 bool UseSpellItemAction::isUseful() { return AI_VALUE2(bool, "spell cast useful", getName()); }
 
-bool UseHealingPotion::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
+bool UseHealingPotion::isUseful()
+{
+    return AI_VALUE2(bool, "combat", "self target") && botAI->DuelAllowsConsumable(DuelConsumables::ALL);
+}
 
-bool UseManaPotion::isUseful() { return AI_VALUE2(bool, "combat", "self target"); }
+bool UseManaPotion::isUseful()
+{
+    return AI_VALUE2(bool, "combat", "self target") && botAI->DuelAllowsConsumable(DuelConsumables::ALL);
+}
+
+bool UseHealthstone::isUseful() { return botAI->DuelAllowsConsumable(DuelConsumables::ALL); }
 
 bool UseHearthStone::Execute(Event event)
 {

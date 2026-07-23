@@ -151,6 +151,18 @@ out, hunted, and — if the tables turn — reinforced exactly like a bot.
 the `!wpvp defend` chat command ([below](#commands-added-in-this-fork))
 lets you order a defense yourself.
 
+## Duel consumable etiquette
+
+Classic dueling culture has an unwritten "no pots" rule, and upstream bots
+break it freely — chugging a healing potion at critical health and a mana
+potion at 40% mana, duel or no duel. `AiPlayerbot.DuelConsumables` sets
+what bots allow themselves while a duel is in progress: `0` = no
+consumables, `1` = bandages and engineering items only, `2` = potions and
+everything else (the default, matching upstream behaviour). We run `1` on
+Felworld — bandages were the one consumable everyone's duel circle seemed
+to permit. The setting covers every duel a bot fights (bot or real
+opponent) and has no effect outside duels.
+
 ## Emote exchanges that end
 
 Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting

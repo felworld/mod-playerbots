@@ -794,6 +794,8 @@ bool PlayerbotAIConfig::Initialize()
     duelSpotMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotMinBotLevel", 5);
     duelSpotDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMin", 20);
     duelSpotDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMax", 45);
+    duelConsumables = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelConsumables",
+                                                    static_cast<uint32>(DuelConsumables::ALL));
 
     syncLevelWithPlayers = sConfigMgr->GetOption<bool>("AiPlayerbot.SyncLevelWithPlayers", false);
     randomBotGroupNearby = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotGroupNearby", false);

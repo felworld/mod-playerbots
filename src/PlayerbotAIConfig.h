@@ -55,6 +55,13 @@ enum class AutoPartyBuffMode : uint8
     GROUP_OR_RAID = 2
 };
 
+enum class DuelConsumables : uint8
+{
+    NONE = 0,      // no consumables while a duel is in progress
+    BANDAGES = 1,  // bandages and engineering items only
+    ALL = 2        // potions and everything else
+};
+
 enum NewRpgStatus : int
 {
     //Initial Status
@@ -454,6 +461,7 @@ public:
     uint32 duelSpotSolicitCooldown;
     uint32 duelSpotMinBotLevel;
     uint32 duelSpotDwellMinutesMin, duelSpotDwellMinutesMax;
+    uint32 duelConsumables;
     bool syncLevelWithPlayers;
     bool autoLearnQuestSpells;
     bool autoTeleportForLevel;

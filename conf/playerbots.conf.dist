@@ -1257,6 +1257,15 @@ AiPlayerbot.DuelSpotMinBotLevel = 5
 AiPlayerbot.DuelSpotDwellMinutesMin = 20
 AiPlayerbot.DuelSpotDwellMinutesMax = 45
 
+# Consumable etiquette while a duel is in progress - what bots allow
+# themselves to use against their duel opponent:
+#   0 = no consumables
+#   1 = bandages and engineering items only
+#   2 = potions and everything else
+# Applies to all duels a bot fights; has no effect outside duels.
+# Default: 2
+AiPlayerbot.DuelConsumables = 2
+
 # Bots' minimum and maximum level when teleporting in and out of a zone, according to the new RPG strategy
 # Format: AiPlayerbot.ZoneBracket.zoneID = minLevel,maxLevel
 #

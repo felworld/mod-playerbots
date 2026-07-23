@@ -535,6 +535,7 @@ public:
     Item* FindPoison() const;
     Item* FindAmmo() const;
     Item* FindBandage() const;
+    bool DuelAllowsConsumable(DuelConsumables tier) const;
     Item* FindOpenableItem() const;
     Item* FindLockedItem() const;
     Item* FindConsumable(uint32 itemId) const;

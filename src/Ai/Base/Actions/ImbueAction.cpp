@@ -209,7 +209,8 @@ bool TryEmergencyAction::Execute(Event /*event*/)
         return false;
 
     // If bot does not have aggro: use bandage instead of potion/stone/crystal
-    if ((!AI_VALUE(uint8, "my attacker count")) && !bot->HasAura(11196))  // Recently bandaged
+    if ((!AI_VALUE(uint8, "my attacker count")) && !bot->HasAura(11196) &&  // Recently bandaged
+        botAI->DuelAllowsConsumable(DuelConsumables::BANDAGES))
     {
         if (Item* bandage = botAI->FindBandage())
         {
@@ -219,11 +220,14 @@ bool TryEmergencyAction::Execute(Event /*event*/)
     }
 
     // Else loop over the list of health consumable to pick one
-    for (uint8 i = 0; i < std::size(uPrioritizedHealingItemIds); ++i)
+    if (botAI->DuelAllowsConsumable(DuelConsumables::ALL))
     {
-        if (Item* healthItem = botAI->FindConsumable(uPrioritizedHealingItemIds[i]))
+        for (uint8 i = 0; i < std::size(uPrioritizedHealingItemIds); ++i)
         {
-            botAI->ImbueItem(healthItem);
+            if (Item* healthItem = botAI->FindConsumable(uPrioritizedHealingItemIds[i]))
+            {
+                botAI->ImbueItem(healthItem);
+            }
         }
     }
 

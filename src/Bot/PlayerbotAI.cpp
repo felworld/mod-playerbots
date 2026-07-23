@@ -5704,6 +5704,14 @@ Item* PlayerbotAI::FindConsumable(uint32 itemId) const
         });
 }
 
+bool PlayerbotAI::DuelAllowsConsumable(DuelConsumables tier) const
+{
+    if (!bot->duel || bot->duel->State != DUEL_STATE_IN_PROGRESS)
+        return true;
+
+    return sPlayerbotAIConfig.duelConsumables >= static_cast<uint32>(tier);
+}
+
 // Find Bandage
 Item* PlayerbotAI::FindBandage() const
 {
