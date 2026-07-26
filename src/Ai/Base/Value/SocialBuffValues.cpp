@@ -19,6 +19,17 @@ namespace
         "blessing of kings", "greater blessing of kings",
         "blessing of sanctuary", "greater blessing of sanctuary",
     };
+
+    // Check the class rather than the current power type so a druid in bear or
+    // cat form still counts as a mana user.
+    bool HasManaPool(Unit* target)
+    {
+        if (Player* player = target->ToPlayer())
+            return player->getClass() != CLASS_WARRIOR && player->getClass() != CLASS_ROGUE &&
+                   player->getClass() != CLASS_DEATH_KNIGHT;
+
+        return target->getPowerType() == POWER_MANA;
+    }
 }
 
 bool CanBuffWithoutFlagging(Player* bot, Unit* target)
@@ -35,6 +46,10 @@ std::string SelectSocialBuffFor(PlayerbotAI* botAI, Player* bot, Unit* target)
     {
         case CLASS_MAGE:
         {
+            // Intellect is useless to classes without a mana pool.
+            if (!HasManaPool(target))
+                return "";
+
             static std::vector<std::string> const has = { "arcane intellect", "arcane brilliance" };
             candidate = "arcane intellect";
             excludes = &has;
