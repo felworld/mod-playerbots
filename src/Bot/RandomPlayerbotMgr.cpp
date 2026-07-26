@@ -2079,7 +2079,6 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
 
     bot->DurabilityRepairAll(false, 1.0f, false);
     bot->SetFullHealth();
-    bot->SetPvP(sWorld->IsPvPRealm());
     PlayerbotFactory factory(bot, bot->GetLevel());
     factory.Refresh();
 
@@ -2641,13 +2640,7 @@ void RandomPlayerbotMgr::OnPlayerLogin(Player* player)
         // player->Relocate(botPos.getX(), botPos.getY(), botPos.getZ(), botPos.getO());
     }
 
-    if (IsRandomBot(player))
-    {
-        // ObjectGuid::LowType guid = player->GetGUID().GetCounter(); //not used, conditional could be rewritten for
-        // simplicity. line marked for removal.
-        player->SetPvP(sWorld->IsPvPRealm());
-    }
-    else
+    if (!IsRandomBot(player))
     {
         players.push_back(player);
         LOG_DEBUG("playerbots", "Including non-random bot player {} into random bot update", player->GetName().c_str());
