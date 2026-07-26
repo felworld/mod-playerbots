@@ -2098,6 +2098,20 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
         pmo->finish();
 }
 
+bool RandomPlayerbotMgr::IsQuestCompetitionInviteAllowed(ObjectGuid playerGuid) const
+{
+    auto it = questCompetitionInviteTimes.find(playerGuid);
+    if (it == questCompetitionInviteTimes.end())
+        return true;
+
+    return time(nullptr) - it->second >= time_t(sPlayerbotAIConfig.questCompetitionInviteCooldown);
+}
+
+void RandomPlayerbotMgr::RecordQuestCompetitionInvite(ObjectGuid playerGuid)
+{
+    questCompetitionInviteTimes[playerGuid] = time(nullptr);
+}
+
 bool RandomPlayerbotMgr::IsRandomBot(Player* bot)
 {
     if (bot && GET_PLAYERBOT_AI(bot))

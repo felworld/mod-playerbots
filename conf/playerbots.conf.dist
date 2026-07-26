@@ -2499,8 +2499,10 @@ AiPlayerbot.SocialThankCooldown = 180
 # bot says thanks in party chat and leaves. Distant shared quests never
 # hold the group together.
 AiPlayerbot.QuestCompetitionInvite = 1
-# Per-player cooldown (seconds) between invite attempts, so a decline
-# isn't followed by pestering.
+# Per-player cooldown (seconds) between invite attempts, shared across
+# all bots: after any bot invites (or is declined by) a player, no bot
+# invites them again until it expires, so invite volume doesn't scale
+# with how many bots are nearby.
 AiPlayerbot.QuestCompetitionInviteCooldown = 600
 
 #

@@ -393,13 +393,12 @@ struct QuestCompetitionInfo
     time_t pendingSince = 0;
     bool active = false;                                 // a group formed from our invite
     std::unordered_set<uint32> entries;                  // creature entries the group formed around
-    std::unordered_map<ObjectGuid, time_t> inviteCooldowns;
     ObjectGuid candidate;                                // scratch: trigger -> action handoff
     uint32 candidateEntry = 0;
     time_t lastUpkeep = 0;
 
-    // Ends the current invite/group episode; invite cooldowns survive so a
-    // just-disbanded partner isn't immediately re-invited.
+    // Ends the current invite/group episode. Invite cooldowns live in
+    // RandomPlayerbotMgr (one per player, shared by all bots) and survive.
     void EndEpisode()
     {
         pendingInvite.Clear();

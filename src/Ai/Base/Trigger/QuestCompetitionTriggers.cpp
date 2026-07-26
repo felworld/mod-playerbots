@@ -23,15 +23,6 @@ bool QuestCompetitionInviteTrigger::IsActive()
     if (!info.pendingInvite.IsEmpty() || info.active)
         return false;
 
-    time_t now = time(nullptr);
-    for (auto it = info.inviteCooldowns.begin(); it != info.inviteCooldowns.end();)
-    {
-        if (now - it->second >= time_t(sPlayerbotAIConfig.questCompetitionInviteCooldown))
-            it = info.inviteCooldowns.erase(it);
-        else
-            ++it;
-    }
-
     GuidVector nearGuids = AI_VALUE(GuidVector, "nearest friendly players");
     for (ObjectGuid const guid : nearGuids)
     {
@@ -45,7 +36,9 @@ bool QuestCompetitionInviteTrigger::IsActive()
         if (player->GetGroup() || player->isDND())
             continue;
 
-        if (info.inviteCooldowns.count(guid))
+        // One cooldown per player across all bots: in dense areas (starting
+        // zones) per-bot cooldowns still add up to an invite barrage.
+        if (!sRandomPlayerbotMgr.IsQuestCompetitionInviteAllowed(guid))
             continue;
 
         if (abs(int32(player->GetLevel()) - int32(bot->GetLevel())) > 4)

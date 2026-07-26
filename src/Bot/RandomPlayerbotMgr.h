@@ -194,6 +194,12 @@ public:
     void SetWpvpDisabledUntil(time_t until) { wpvpDisabledUntil.store(until, std::memory_order_relaxed); }
     time_t GetWpvpDisabledUntil() const { return wpvpDisabledUntil.load(std::memory_order_relaxed); }
 
+    // Quest-competition invites (Felworld): one cooldown per real player,
+    // shared by all bots, so invite volume doesn't scale with how many bots
+    // happen to be nearby.
+    bool IsQuestCompetitionInviteAllowed(ObjectGuid playerGuid) const;
+    void RecordQuestCompetitionInvite(ObjectGuid playerGuid);
+
 protected:
     void OnBotLoginInternal(Player* const bot) override;
 
@@ -277,6 +283,8 @@ private:
     std::vector<uint32> addClassTypeAccounts;           // Accounts marked as AddClass (type 2)
 
     std::atomic<time_t> wpvpDisabledUntil{0};
+
+    std::unordered_map<ObjectGuid, time_t> questCompetitionInviteTimes;
 
     //void ScaleBotActivity();      // Deprecated function
     static inline uint32 NowSeconds() { return static_cast<uint32>(GameTime::GetGameTime().count()); }

@@ -23,8 +23,13 @@ bool QuestCompetitionInviteAction::Execute(Event /*event*/)
     if (!player || player->GetGroup() || player->GetMapId() != bot->GetMapId())
         return false;
 
+    // Re-check here: another bot's trigger may have picked the same player
+    // before either action ran, and the cooldown only starts on the attempt.
+    if (!sRandomPlayerbotMgr.IsQuestCompetitionInviteAllowed(candidateGuid))
+        return false;
+
     // Cooldown starts at the attempt, so a decline isn't followed by pestering.
-    info.inviteCooldowns[candidateGuid] = time(nullptr);
+    sRandomPlayerbotMgr.RecordQuestCompetitionInvite(candidateGuid);
 
     if (!Invite(bot, player))
         return false;
