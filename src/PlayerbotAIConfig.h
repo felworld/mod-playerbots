@@ -83,7 +83,9 @@ enum NewRpgStatus : int
     RPG_GO_WPVP = 9,
     // Hang out at the faction capital's gate duel spot and solicit duels
     RPG_DUEL_SPOT = 10,
-    RPG_STATUS_END = 11
+    // Druid-only: cast Teleport: Moonglade, potter around Nighthaven, fly out
+    RPG_GO_MOONGLADE = 11,
+    RPG_STATUS_END = 12
 };
 
 #define MAX_SPECNO 20

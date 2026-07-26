@@ -56,6 +56,8 @@ protected:
     const int32 statusGoWpvpTravelDuration = 20 * MINUTE * IN_MILLISECONDS ;
     // Travel phase cap for a duel-spot hangout (dwell time is rolled per trip)
     const int32 statusDuelSpotTravelDuration = 20 * MINUTE * IN_MILLISECONDS ;
+    // Cap on casting Teleport: Moonglade (10s cast, may be interrupted a few times)
+    const int32 statusGoMoongladeDuration = 2 * MINUTE * IN_MILLISECONDS ;
 };
 
 class NewRpgGoGrindAction : public NewRpgBaseAction
@@ -105,6 +107,13 @@ class NewRpgTravelFlightAction : public NewRpgBaseAction
 {
 public:
     NewRpgTravelFlightAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg travel flight") {}
+    bool Execute(Event event) override;
+};
+
+class NewRpgGoMoongladeAction : public NewRpgBaseAction
+{
+public:
+    NewRpgGoMoongladeAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg go moonglade") {}
     bool Execute(Event event) override;
 };
 

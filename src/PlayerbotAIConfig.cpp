@@ -745,6 +745,7 @@ bool PlayerbotAIConfig::Initialize()
     RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
     RpgStatusProbWeight[RPG_GO_WPVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoWpvp", 1);
     RpgStatusProbWeight[RPG_DUEL_SPOT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.DuelSpot", 2);
+    RpgStatusProbWeight[RPG_GO_MOONGLADE] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoMoonglade", 7);
 
     // World PvP excursions (RPG_GO_WPVP)
     wpvpMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpMinBotLevel", 10);

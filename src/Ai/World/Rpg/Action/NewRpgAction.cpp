@@ -66,8 +66,15 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     switch (status)
     {
         case RPG_IDLE:
+            // Moonglade has no grind mobs and only walking exits (the Timbermaw
+            // tunnel), so restrict the roll to statuses that keep bots pottering
+            // around Nighthaven until they take the druid flight path out.
+            if (bot->GetZoneId() == ZONE_MOONGLADE)
+                return RandomChangeStatus({RPG_WANDER_NPC, RPG_REST, RPG_TRAVEL_FLIGHT});
+
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
-                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_GO_WPVP, RPG_DUEL_SPOT});
+                                       RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_GO_WPVP, RPG_DUEL_SPOT,
+                                       RPG_GO_MOONGLADE});
 
         case RPG_GO_GRIND:
         {
@@ -130,6 +137,23 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             if (data.inFlight && !bot->IsInFlight())
             {
                 // flight arrival
+                info.ChangeToIdle();
+                return true;
+            }
+            break;
+        }
+        case RPG_GO_MOONGLADE:
+        {
+            if (bot->GetZoneId() == ZONE_MOONGLADE)
+            {
+                // Arrived: hang around Nighthaven; the restricted idle roll
+                // sends the bot out via the druid flight master later.
+                info.ChangeToWanderNpc();
+                return true;
+            }
+            if (info.HasStatusPersisted(statusGoMoongladeDuration))
+            {
+                // Couldn't get a cast off (combat, interrupts): give up.
                 info.ChangeToIdle();
                 return true;
             }
@@ -638,4 +662,33 @@ bool NewRpgTravelFlightAction::Execute(Event /*event*/)
         return true;
     }
     return true;
+}
+
+bool NewRpgGoMoongladeAction::Execute(Event /*event*/)
+{
+    if (!std::get_if<NewRpgInfo::GoMoonglade>(&botAI->rpgInfo.data))
+        return false;
+
+    // The 10s cast is underway: let it finish. Arrival in Moonglade is
+    // handled by NewRpgStatusUpdateAction.
+    if (bot->IsNonMeleeSpellCast(false))
+        return true;
+
+    // Combat strategies take priority; the status times out if this drags on.
+    if (bot->IsInCombat())
+        return false;
+
+    botAI->RemoveShapeshift();
+    if (bot->IsMounted())
+        bot->Dismount();
+
+    // Casts with a cast time fail while moving.
+    if (bot->isMoving())
+        bot->StopMoving();
+
+    if (!botAI->CanCastSpell(SPELL_TELEPORT_MOONGLADE, bot, true))
+        return false;
+
+    LOG_DEBUG("playerbots", "[New RPG] {} casting Teleport: Moonglade", bot->GetName());
+    return botAI->CastSpell(SPELL_TELEPORT_MOONGLADE, bot);
 }

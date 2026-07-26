@@ -19,6 +19,9 @@ struct POIInfo
     int32 objectiveIdx;
 };
 
+constexpr uint32 SPELL_TELEPORT_MOONGLADE = 18960;
+constexpr uint32 ZONE_MOONGLADE = 493;
+
 /// A base (composition) class for all new rpg actions
 /// All functions that may be shared by multiple actions should be declared here
 /// And we should make all actions composable instead of inheritable

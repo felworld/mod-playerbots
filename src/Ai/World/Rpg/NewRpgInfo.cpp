@@ -68,6 +68,12 @@ void NewRpgInfo::ChangeToDuelSpot(DuelSpot&& spot)
     data = std::move(spot);
 }
 
+void NewRpgInfo::ChangeToGoMoonglade()
+{
+    startT = getMSTime();
+    data = GoMoonglade{};
+}
+
 void NewRpgInfo::ChangeToRest()
 {
     startT = getMSTime();
@@ -114,6 +120,7 @@ NewRpgStatus NewRpgInfo::GetStatus()
         if constexpr (std::is_same_v<T, OutdoorPvP>) return RPG_OUTDOOR_PVP;
         if constexpr (std::is_same_v<T, GoWpvp>) return RPG_GO_WPVP;
         if constexpr (std::is_same_v<T, DuelSpot>) return RPG_DUEL_SPOT;
+        if constexpr (std::is_same_v<T, GoMoonglade>) return RPG_GO_MOONGLADE;
         return RPG_IDLE;
     }, data);
 }
@@ -218,6 +225,11 @@ std::string NewRpgInfo::ToString()
                             ? (arg.dwellDuration - GetMSTimeDiffToNow(arg.arrivedT)) / IN_MILLISECONDS
                             : 0)
                     << "s";
+        }
+        else if constexpr (std::is_same_v<T, GoMoonglade>)
+        {
+            out << "GO_MOONGLADE";
+            out << "\nlastGoMoonglade: " << startT;
         }
         else
             out << "UNKNOWN";

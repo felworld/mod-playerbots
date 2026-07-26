@@ -1066,6 +1066,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # OutdoorPvp    (Default: 10  Participate in outdoor PvP capture points if already in an outdoor PvP zone)
 # GoWpvp        (Default: 1   Travel to an enemy/contested town for world PvP, lurk a while, then go home)
 # DuelSpot      (Default: 2   Hang out at the faction capital's gate duel spot and solicit duels)
+# GoMoonglade   (Default: 7   Druids only: cast Teleport: Moonglade, hang around Nighthaven, fly out)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
 AiPlayerbot.RpgStatusProbWeight.GoGrind = 15
@@ -1076,6 +1077,7 @@ AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
 AiPlayerbot.RpgStatusProbWeight.GoWpvp = 1
 AiPlayerbot.RpgStatusProbWeight.DuelSpot = 2
+AiPlayerbot.RpgStatusProbWeight.GoMoonglade = 7
 
 #
 # World PvP excursions (GoWpvp): a random bot occasionally teleports to a spot

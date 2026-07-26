@@ -96,6 +96,11 @@ struct NewRpgInfo
         uint32 lastSolicitT{0};       // last "anyone up for a duel?" emote/line
         bool addedStartDuel{false};   // whether WE added "start duel" (vs the AiFactory 25% roll)
     };
+    // RPG_GO_MOONGLADE
+    struct GoMoonglade
+    {
+        GoMoonglade() = default;
+    };
     struct Idle
     {
     };
@@ -125,7 +130,8 @@ struct NewRpgInfo
         TravelFlight,
         OutdoorPvP,
         GoWpvp,
-        DuelSpot
+        DuelSpot,
+        GoMoonglade
     >;
     RpgData data;
 
@@ -140,6 +146,7 @@ struct NewRpgInfo
     void ChangeToOutdoorPvp(ObjectGuid::LowType capturePointSpawnId = 0);
     void ChangeToGoWpvp(GoWpvp&& wpvp);
     void ChangeToDuelSpot(DuelSpot&& spot);
+    void ChangeToGoMoonglade();
     void ChangeToRest();
     void ChangeToIdle();
     bool CanChangeTo(NewRpgStatus status);

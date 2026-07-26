@@ -1308,6 +1308,11 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             }
             return false;
         }
+        case RPG_GO_MOONGLADE:
+        {
+            botAI->rpgInfo.ChangeToGoMoonglade();
+            return true;
+        }
         default:
         {
             botAI->rpgInfo.ChangeToRest();
@@ -1412,6 +1417,16 @@ bool NewRpgBaseAction::CheckRpgStatusAvailable(NewRpgStatus status)
                 return false;
 
             return true;
+        }
+        case RPG_GO_MOONGLADE:
+        {
+            if (bot->getClass() != CLASS_DRUID || !bot->HasSpell(SPELL_TELEPORT_MOONGLADE))
+                return false;
+
+            if (bot->GetGroup() || bot->InBattleground())
+                return false;
+
+            return bot->GetZoneId() != ZONE_MOONGLADE;
         }
         default:
             return false;

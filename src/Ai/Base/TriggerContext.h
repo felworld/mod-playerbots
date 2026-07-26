@@ -259,6 +259,7 @@ public:
         creators["outdoor pvp status"] = &TriggerContext::outdoor_pvp_status;
         creators["go wpvp status"] = &TriggerContext::go_wpvp_status;
         creators["duel spot status"] = &TriggerContext::duel_spot_status;
+        creators["go moonglade status"] = &TriggerContext::go_moonglade_status;
         creators["start duel possible"] = &TriggerContext::start_duel_possible;
         creators["wpvp goad"] = &TriggerContext::wpvp_goad;
         creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
@@ -492,6 +493,7 @@ private:
     static Trigger* outdoor_pvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_OUTDOOR_PVP); }
     static Trigger* go_wpvp_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_WPVP); }
     static Trigger* duel_spot_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_DUEL_SPOT); }
+    static Trigger* go_moonglade_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_MOONGLADE); }
     static Trigger* start_duel_possible(PlayerbotAI* botAI) { return new StartDuelPossibleTrigger(botAI); }
     static Trigger* wpvp_goad(PlayerbotAI* botAI) { return new WpvpGoadTrigger(botAI); }
     static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
