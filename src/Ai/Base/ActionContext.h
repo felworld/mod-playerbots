@@ -27,6 +27,7 @@
 #include "ChooseTargetActions.h"
 #include "ChooseTravelTargetAction.h"
 #include "CombatActions.h"
+#include "CraftBandageAction.h"
 #include "DelayAction.h"
 #include "DestroyItemAction.h"
 #include "EmoteAction.h"
@@ -215,6 +216,7 @@ public:
         creators["use random recipe"] = &ActionContext::use_random_recipe;
         creators["use random quest item"] = &ActionContext::use_random_quest_item;
         creators["craft random item"] = &ActionContext::craft_random_item;
+        creators["craft bandage"] = &ActionContext::craft_bandage;
         creators["smart destroy item"] = &ActionContext::smart_destroy_item;
         creators["disenchant random item"] = &ActionContext::disenchant_random_item;
         creators["enchant random item"] = &ActionContext::enchant_random_item;
@@ -444,6 +446,7 @@ private:
     static Action* use_random_recipe(PlayerbotAI* botAI) { return new UseRandomRecipe(botAI); }
     static Action* use_random_quest_item(PlayerbotAI* botAI) { return new UseRandomQuestItem(botAI); }
     static Action* craft_random_item(PlayerbotAI* botAI) { return new CraftRandomItemAction(botAI); }
+    static Action* craft_bandage(PlayerbotAI* botAI) { return new CraftBandageAction(botAI); }
     static Action* smart_destroy_item(PlayerbotAI* botAI) { return new SmartDestroyItemAction(botAI); }
     static Action* disenchant_random_item(PlayerbotAI* botAI) { return new DisEnchantRandomItemAction(botAI); }
     static Action* enchant_random_item(PlayerbotAI* botAI) { return new EnchantRandomItemAction(botAI); }

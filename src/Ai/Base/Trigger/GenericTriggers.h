@@ -980,4 +980,12 @@ private:
     bool triggered;
 };
 
+class CraftBandageTrigger : public Trigger
+{
+public:
+    CraftBandageTrigger(PlayerbotAI* botAI) : Trigger(botAI, "craft bandage", 10) {}
+
+    bool IsActive() override;
+};
+
 #endif

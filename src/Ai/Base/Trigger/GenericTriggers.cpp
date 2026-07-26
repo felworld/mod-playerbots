@@ -9,6 +9,7 @@
 #include <string>
 
 #include "GenericBuffUtils.h"
+#include "CraftBandageAction.h"
 #include "CreatureAI.h"
 #include "NonCombatActions.h"
 #include "ItemVisitors.h"
@@ -761,4 +762,15 @@ bool NewPetTrigger::IsActive()
     }
 
     return false;
+}
+
+bool CraftBandageTrigger::IsActive()
+{
+    if (!botAI->HasSkill(SKILL_FIRST_AID) || bot->IsInCombat() || bot->isMoving())
+        return false;
+
+    if (CraftBandageAction::BandageCount(bot) >= CRAFT_BANDAGE_TARGET_COUNT)
+        return false;
+
+    return CraftBandageAction::FindBestBandageSpell(bot) != 0;
 }

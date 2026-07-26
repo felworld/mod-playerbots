@@ -271,6 +271,7 @@ public:
         creators["can fish"] = &TriggerContext::can_fish;
         creators["can use fishing bobber"] = &TriggerContext::can_use_fishing_bobber;
         creators["new pet"] = &TriggerContext::new_pet;
+        creators["craft bandage"] = &TriggerContext::craft_bandage;
         creators["wait for attack safe distance"] = &TriggerContext::wait_for_attack_safe_distance;
     }
 
@@ -505,6 +506,7 @@ private:
     static Trigger* can_fish(PlayerbotAI* ai) { return new CanFishTrigger(ai); }
     static Trigger* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberTrigger(ai); }
     static Trigger* new_pet(PlayerbotAI* ai) { return new NewPetTrigger(ai); }
+    static Trigger* craft_bandage(PlayerbotAI* ai) { return new CraftBandageTrigger(ai); }
     static Trigger* wait_for_attack_safe_distance(PlayerbotAI* ai) { return new WaitForAttackSafeDistanceTrigger(ai); }
 };
 
