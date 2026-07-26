@@ -15,36 +15,15 @@
 
 bool ResetAiAction::Execute(Event event)
 {
-    if (!event.getPacket().empty())
-    {
-        WorldPacket packet = event.getPacket();
-        if (packet.GetOpcode() == SMSG_GROUP_LIST)
-        {
-            uint8 groupType;
-            Group::MemberSlot slot;
-            packet >> groupType;
-            packet >> slot.group;
-            packet >> slot.flags;
-            packet >> slot.roles;
-            if (groupType & GROUPTYPE_LFG)
-            {
-                uint8 status;
-                uint32 dungeon;
-                packet >> status;
-                packet >> dungeon;
-            }
-            ObjectGuid guid;
-            uint32 counter;
-            uint32 membersCount;
-            packet >> guid;
-            packet >> counter;
-            packet >> membersCount;
-            if (membersCount != 0)
-            {
-                return false;
-            }
-        }
-    }
+    // Packet-triggered resets ("group list", "group set leader") are only
+    // meant for the bot dropping out of its group. There is no single core
+    // packet covering every removal path (disband, kick, leave), and the
+    // closest proxy - an empty SMSG_GROUP_LIST - is also sent to the leader
+    // on group creation. So ask the live state instead: RemoveMember and
+    // Disband null the bot's group pointer before this action runs.
+    if (!event.getPacket().empty() && bot->GetGroup())
+        return false;
+
     if (Player* master = botAI->GetMaster())
     {
         Group* botGroup = bot->GetGroup();
@@ -62,6 +41,12 @@ bool ResetAiAction::Execute(Event event)
     }
     PlayerbotRepository::instance().Reset(botAI);
     botAI->ResetStrategies(false);
-    botAI->TellMaster("AI was reset to defaults");
+
+    // Reply only to the explicit "reset botAI" chat command (empty packet);
+    // packet-triggered resets are mechanical, and TellMaster would leak this
+    // internals line into party chat.
+    if (event.getPacket().empty())
+        botAI->TellMaster("AI was reset to defaults");
+
     return true;
 }
