@@ -32,7 +32,7 @@ namespace
         return false;
     }
 
-    bool UseEquipped(Player* bot, PlayerbotAI* botAI, Item* item, Unit* unitTarget)
+    bool UseEquipped(Player* bot, Item* item, Unit* unitTarget)
     {
         uint32 spellId = EngineeringTinkers::UseSpellId(item);
         if (!spellId)
@@ -106,7 +106,7 @@ bool UseRocketBootsAction::isPossible()
 bool UseRocketBootsAction::Execute(Event /*event*/)
 {
     Item* boots = EngineeringTinkers::UsableEquipped(bot, EQUIPMENT_SLOT_FEET, true);
-    if (!boots || !UseEquipped(bot, botAI, boots, nullptr))
+    if (!boots || !UseEquipped(bot, boots, nullptr))
         return false;
 
     botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
@@ -145,5 +145,5 @@ bool UseGloveTinkerAction::Execute(Event /*event*/)
             return false;
     }
 
-    return UseEquipped(bot, botAI, gloves, target);
+    return UseEquipped(bot, gloves, target);
 }
