@@ -19,6 +19,16 @@ public:
     bool IsActive() override;
 };
 
+// Active while the duel server-side out-of-bounds countdown is running
+// (bot strayed >50yd from the duel flag and has 10s to get back).
+class DuelOutOfBoundsTrigger : public Trigger
+{
+public:
+    DuelOutOfBoundsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "duel out of bounds", 1) {}
+
+    bool IsActive() override;
+};
+
 class PlayerHasNoFlag : public Trigger
 {
 public:

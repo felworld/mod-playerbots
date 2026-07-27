@@ -14,6 +14,10 @@ void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("duel requested", { NextAction("accept duel", relevance) }));
     triggers.push_back(
         new TriggerNode("no attackers", { NextAction("attack duel opponent", 70.0f) }));
+    // Straying >50yd from the duel flag forfeits after 10s; run back in
+    // before anything else.
+    triggers.push_back(
+        new TriggerNode("duel out of bounds", { NextAction("move inside duel bounds", ACTION_EMERGENCY) }));
 }
 
 DuelStrategy::DuelStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}

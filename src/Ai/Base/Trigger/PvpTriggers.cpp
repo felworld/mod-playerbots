@@ -17,6 +17,11 @@
 
 bool EnemyPlayerNear::IsActive() { return AI_VALUE(Unit*, "enemy player target"); }
 
+bool DuelOutOfBoundsTrigger::IsActive()
+{
+    return bot->duel && bot->duel->State == DUEL_STATE_IN_PROGRESS && bot->duel->OutOfBoundsTime;
+}
+
 bool PlayerHasNoFlag::IsActive()
 {
     if (botAI->GetBot()->InBattleground())

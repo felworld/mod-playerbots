@@ -13,6 +13,7 @@
 #include "LastMovementValue.h"
 #include "PlayerbotAIConfig.h"
 
+class GameObject;
 class Player;
 class PlayerbotAI;
 class Unit;
@@ -54,6 +55,8 @@ protected:
     bool IsWaitingForLastMove(MovementPriority priority);
     bool IsMovingAllowed();
     bool Flee(Unit* target);
+    GameObject* GetDuelArenaFlag();
+    void ClampToDuelArena(float& x, float& y, float& z);
     void ClearIdleState();
     void UpdateMovementState();
     bool MoveAway(Unit* target, float distance = sPlayerbotAIConfig.fleeDistance, bool backwards = false);
@@ -200,6 +203,15 @@ public:
     MoveToLootAction(PlayerbotAI* botAI) : MovementAction(botAI, "move to loot") {}
 
     bool Execute(Event event) override;
+};
+
+class MoveInsideDuelBoundsAction : public MovementAction
+{
+public:
+    MoveInsideDuelBoundsAction(PlayerbotAI* botAI) : MovementAction(botAI, "move inside duel bounds") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class MoveOutOfEnemyContactAction : public MovementAction

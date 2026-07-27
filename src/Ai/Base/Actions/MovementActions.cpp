@@ -168,6 +168,39 @@ bool MovementAction::MoveToLOS(WorldObject* target, bool ranged)
     return false;
 }
 
+// A duelist further than 50yd from the duel flag gets a 10s countdown and then
+// forfeits (Player::CheckDuelDistance); re-entry requires closing to within
+// 40yd. Keep combat movement just inside the outer limit and recover to well
+// inside the re-entry radius.
+constexpr float DUEL_ARENA_CLAMP_RADIUS = 48.0f;
+constexpr float DUEL_ARENA_RECOVER_RADIUS = 30.0f;
+
+GameObject* MovementAction::GetDuelArenaFlag()
+{
+    if (!bot->duel || bot->duel->State != DUEL_STATE_IN_PROGRESS)
+        return nullptr;
+
+    return bot->GetMap()->GetGameObject(bot->GetGuidValue(PLAYER_DUEL_ARBITER));
+}
+
+void MovementAction::ClampToDuelArena(float& x, float& y, float& z)
+{
+    GameObject* flag = GetDuelArenaFlag();
+    if (!flag)
+        return;
+
+    float dx = x - flag->GetPositionX();
+    float dy = y - flag->GetPositionY();
+    float dist = std::sqrt(dx * dx + dy * dy);
+    if (dist <= DUEL_ARENA_CLAMP_RADIUS)
+        return;
+
+    float scale = DUEL_ARENA_CLAMP_RADIUS / dist;
+    x = flag->GetPositionX() + dx * scale;
+    y = flag->GetPositionY() + dy * scale;
+    bot->UpdateAllowedPositionZ(x, y, z);
+}
+
 bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle*/, bool /*react*/, bool normal_only,
                             bool exact_waypoint, MovementPriority priority, bool lessDelay, bool backwards)
 {
@@ -176,6 +209,8 @@ bool MovementAction::MoveTo(uint32 mapId, float x, float y, float z, bool /*idle
     {
         return false;
     }
+    if (mapId == bot->GetMapId())
+        ClampToDuelArena(x, y, z);
     if (IsDuplicateMove(x, y, z))
     {
         return false;
@@ -2630,6 +2665,27 @@ bool MoveToLootAction::Execute(Event /*event*/)
         return false;
 
     return MoveNear(loot.GetWorldObject(bot), sPlayerbotAIConfig.contactDistance);
+}
+
+bool MoveInsideDuelBoundsAction::Execute(Event /*event*/)
+{
+    GameObject* flag = GetDuelArenaFlag();
+    if (!flag)
+        return false;
+
+    // Head for a point well inside the 40yd re-entry radius, on the bot's side
+    // of the flag so it does not run through the opponent.
+    float angle = flag->GetAngle(bot);
+    float x = flag->GetPositionX() + std::cos(angle) * DUEL_ARENA_RECOVER_RADIUS;
+    float y = flag->GetPositionY() + std::sin(angle) * DUEL_ARENA_RECOVER_RADIUS;
+    float z = bot->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+    return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool MoveInsideDuelBoundsAction::isUseful()
+{
+    return bot->duel && bot->duel->State == DUEL_STATE_IN_PROGRESS && bot->duel->OutOfBoundsTime;
 }
 
 bool MoveOutOfEnemyContactAction::Execute(Event /*event*/)
