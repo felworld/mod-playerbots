@@ -29,6 +29,7 @@
 #include "CombatActions.h"
 #include "CraftBandageAction.h"
 #include "EngineeringDeviceActions.h"
+#include "EngineeringTinkerActions.h"
 #include "ThrowExplosivesAction.h"
 #include "DelayAction.h"
 #include "DestroyItemAction.h"
@@ -225,6 +226,8 @@ public:
         creators["target dummy"] = &ActionContext::target_dummy;
         creators["explosive sheep"] = &ActionContext::explosive_sheep;
         creators["jumper cables"] = &ActionContext::jumper_cables;
+        creators["rocket boots"] = &ActionContext::rocket_boots;
+        creators["glove tinker"] = &ActionContext::glove_tinker;
         creators["smart destroy item"] = &ActionContext::smart_destroy_item;
         creators["disenchant random item"] = &ActionContext::disenchant_random_item;
         creators["enchant random item"] = &ActionContext::enchant_random_item;
@@ -461,6 +464,8 @@ private:
     static Action* target_dummy(PlayerbotAI* botAI) { return new UseTargetDummyAction(botAI); }
     static Action* explosive_sheep(PlayerbotAI* botAI) { return new UseExplosiveSheepAction(botAI); }
     static Action* jumper_cables(PlayerbotAI* botAI) { return new UseJumperCablesAction(botAI); }
+    static Action* rocket_boots(PlayerbotAI* botAI) { return new UseRocketBootsAction(botAI); }
+    static Action* glove_tinker(PlayerbotAI* botAI) { return new UseGloveTinkerAction(botAI); }
     static Action* smart_destroy_item(PlayerbotAI* botAI) { return new SmartDestroyItemAction(botAI); }
     static Action* disenchant_random_item(PlayerbotAI* botAI) { return new DisEnchantRandomItemAction(botAI); }
     static Action* enchant_random_item(PlayerbotAI* botAI) { return new EnchantRandomItemAction(botAI); }

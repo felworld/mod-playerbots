@@ -1036,4 +1036,20 @@ public:
     bool IsActive() override;
 };
 
+class RocketBootsTrigger : public Trigger
+{
+public:
+    RocketBootsTrigger(PlayerbotAI* botAI) : Trigger(botAI, "rocket boots") {}
+
+    bool IsActive() override;
+};
+
+class GloveTinkerTrigger : public Trigger
+{
+public:
+    GloveTinkerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "glove tinker", 5) {}
+
+    bool IsActive() override;
+};
+
 #endif

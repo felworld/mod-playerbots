@@ -809,6 +809,7 @@ void PlayerbotFactory::Randomize(bool incremental)
     {
         ApplyEnchantAndGemsNew();
     }
+    InitEngineeringTinkers();
     // {
     // pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_EnchantTemplate");
     // LOG_INFO("playerbots", "Initializing enchant templates...");
@@ -913,6 +914,7 @@ void PlayerbotFactory::Refresh()
     }
     if (bot->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
         ApplyEnchantAndGemsNew();
+    InitEngineeringTinkers();
     bot->DurabilityRepairAll(false, 1.0f, false);
     if (bot->isDead())
         bot->ResurrectPlayer(1.0f, false);
@@ -3992,6 +3994,53 @@ void PlayerbotFactory::InitEngineeringConsumables()
         uint32 count = urand(std::max(1u, maxCount / 2), maxCount);
         if (Item* newItem = StoreNewItemInInventorySlot(bot, bestId, count))
             newItem->AddToUpdateQueueOf(bot);
+    }
+}
+
+void PlayerbotFactory::InitEngineeringTinkers()
+{
+    constexpr uint32 TINKER_SKILL_REQUIREMENT = 375;
+    constexpr uint32 ENCHANT_HAND_MOUNTED_PYRO_ROCKET = 3603;
+    constexpr uint32 ENCHANT_HYPERSPEED_ACCELERATORS = 3604;
+    constexpr uint32 ENCHANT_NITRO_BOOSTS = 3606;
+
+    if (bot->GetSkillValue(SKILL_ENGINEERING) < TINKER_SKILL_REQUIREMENT)
+        return;
+
+    // Only ever apply a genuine on-use tinker (guards against enchant id drift).
+    auto isUseTinker = [](uint32 enchantId)
+    {
+        SpellItemEnchantmentEntry const* enchant = sSpellItemEnchantmentStore.LookupEntry(enchantId);
+        if (!enchant)
+            return false;
+
+        for (uint8 s = 0; s < MAX_SPELL_ITEM_ENCHANTMENT_EFFECTS; ++s)
+            if (enchant->type[s] == ITEM_ENCHANTMENT_TYPE_USE_SPELL && enchant->spellid[s])
+                return true;
+
+        return false;
+    };
+
+    auto applyTinker = [this, &isUseTinker](uint8 slot, uint32 enchantId)
+    {
+        Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+        if (!item || item->GetEnchantmentId(PERM_ENCHANTMENT_SLOT) == enchantId || !isUseTinker(enchantId))
+            return;
+
+        bot->ApplyEnchantment(item, PERM_ENCHANTMENT_SLOT, false);
+        item->SetEnchantment(PERM_ENCHANTMENT_SLOT, enchantId, 0, 0, bot->GetGUID());
+        bot->ApplyEnchantment(item, PERM_ENCHANTMENT_SLOT, true);
+    };
+
+    applyTinker(EQUIPMENT_SLOT_FEET, ENCHANT_NITRO_BOOSTS);
+
+    // Gloves: haste for most, the flashier pyro rocket for some; keep whichever is already on.
+    if (Item* gloves = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_HANDS))
+    {
+        uint32 current = gloves->GetEnchantmentId(PERM_ENCHANTMENT_SLOT);
+        if (current != ENCHANT_HYPERSPEED_ACCELERATORS && current != ENCHANT_HAND_MOUNTED_PYRO_ROCKET)
+            applyTinker(EQUIPMENT_SLOT_HANDS,
+                        urand(0, 2) ? ENCHANT_HYPERSPEED_ACCELERATORS : ENCHANT_HAND_MOUNTED_PYRO_ROCKET);
     }
 }
 

@@ -80,6 +80,7 @@ public:
     void InitConsumables();
     void InitPotions();
     void InitEngineeringConsumables();
+    void InitEngineeringTinkers();
     void InitGlyphs(bool increment = false);
     void InitFood();
     void InitMounts();

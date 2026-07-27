@@ -686,7 +686,7 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
     if (player->InBattleground() && player->GetBattleground())
     {
         nonCombatEngine->addStrategiesNoInit("nc", "chat", "default", "buff", "food", "mount", "pvp", "dps assist",
-                                       "attack tagged", "emote", nullptr);
+                                       "attack tagged", "emote", "engineering", nullptr);
         nonCombatEngine->removeStrategy("custom::say", false);
         nonCombatEngine->removeStrategy("travel", false);
         nonCombatEngine->removeStrategy("rpg", false);

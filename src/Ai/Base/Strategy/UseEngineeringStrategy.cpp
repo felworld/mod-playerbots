@@ -21,4 +21,8 @@ void UseEngineeringStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "throw explosives", { NextAction("throw explosives", ACTION_HIGH + 2) }));
     triggers.push_back(new TriggerNode(
         "explosive sheep", { NextAction("explosive sheep", ACTION_HIGH + 1) }));
+    triggers.push_back(new TriggerNode(
+        "rocket boots", { NextAction("rocket boots", ACTION_MOVE + 5) }));
+    triggers.push_back(new TriggerNode(
+        "glove tinker", { NextAction("glove tinker", ACTION_HIGH) }));
 }

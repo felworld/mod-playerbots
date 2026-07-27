@@ -9,9 +9,11 @@
 #include <string>
 
 #include "GenericBuffUtils.h"
+#include "BattlegroundWS.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
 #include "EngineeringDeviceActions.h"
+#include "EngineeringTinkerActions.h"
 #include "ThrowExplosivesAction.h"
 #include "NonCombatActions.h"
 #include "ItemVisitors.h"
@@ -875,4 +877,39 @@ bool JumperCablesTrigger::IsActive()
         return false;
 
     return AI_VALUE(Unit*, "party member to resurrect") != nullptr;
+}
+
+bool RocketBootsTrigger::IsActive()
+{
+    if (bot->IsMounted() || bot->HasUnitState(UNIT_STATE_ROOT))
+        return false;
+
+    if (!EngineeringTinkers::UsableEquipped(bot, EQUIPMENT_SLOT_FEET, /*requireSpeedBurst=*/true))
+        return false;
+
+    // Carrying a battleground flag: hit the boosters immediately.
+    if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))
+        return true;
+
+    // Chasing the enemy flag carrier who is pulling away.
+    if (Unit* target = AI_VALUE(Unit*, "current target"))
+        if (target->IsPlayer() &&
+            (target->HasAura(BG_WS_SPELL_WARSONG_FLAG) || target->HasAura(BG_WS_SPELL_SILVERWING_FLAG)) &&
+            bot->GetDistance(target) > 10.0f)
+            return true;
+
+    // Last-ditch escape.
+    return bot->GetHealthPct() < 25.0f && AI_VALUE(uint8, "my attacker count") > 0;
+}
+
+bool GloveTinkerTrigger::IsActive()
+{
+    if (!bot->IsInCombat())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return false;
+
+    return EngineeringTinkers::UsableEquipped(bot, EQUIPMENT_SLOT_HANDS, false) != nullptr;
 }

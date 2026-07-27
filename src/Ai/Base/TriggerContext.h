@@ -278,6 +278,8 @@ public:
         creators["target dummy"] = &TriggerContext::target_dummy;
         creators["explosive sheep"] = &TriggerContext::explosive_sheep;
         creators["jumper cables"] = &TriggerContext::jumper_cables;
+        creators["rocket boots"] = &TriggerContext::rocket_boots;
+        creators["glove tinker"] = &TriggerContext::glove_tinker;
         creators["wait for attack safe distance"] = &TriggerContext::wait_for_attack_safe_distance;
     }
 
@@ -519,6 +521,8 @@ private:
     static Trigger* target_dummy(PlayerbotAI* ai) { return new TargetDummyTrigger(ai); }
     static Trigger* explosive_sheep(PlayerbotAI* ai) { return new ExplosiveSheepTrigger(ai); }
     static Trigger* jumper_cables(PlayerbotAI* ai) { return new JumperCablesTrigger(ai); }
+    static Trigger* rocket_boots(PlayerbotAI* ai) { return new RocketBootsTrigger(ai); }
+    static Trigger* glove_tinker(PlayerbotAI* ai) { return new GloveTinkerTrigger(ai); }
     static Trigger* wait_for_attack_safe_distance(PlayerbotAI* ai) { return new WaitForAttackSafeDistanceTrigger(ai); }
 };
 
