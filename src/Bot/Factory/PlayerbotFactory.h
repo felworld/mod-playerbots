@@ -79,6 +79,7 @@ public:
     void InitReagents();
     void InitConsumables();
     void InitPotions();
+    void InitEngineeringConsumables();
     void InitGlyphs(bool increment = false);
     void InitFood();
     void InitMounts();

@@ -11,6 +11,7 @@
 #include "GenericBuffUtils.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
+#include "ThrowExplosivesAction.h"
 #include "NonCombatActions.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
@@ -778,4 +779,56 @@ bool CraftBandageTrigger::IsActive()
         return true;
 
     return CraftBandageAction::BandageCount(bot) < CRAFT_BANDAGE_TARGET_COUNT;
+}
+
+bool ThrowExplosivesTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return false;
+
+    Item* item = ThrowExplosivesAction::FindBestThrown(bot);
+    if (!item || !ThrowExplosivesAction::CanThrowAt(bot, item, target))
+        return false;
+
+    // Always worth an explosive when it matters; only an occasional lob at ordinary mobs.
+    if (target->IsPlayer())
+        return true;
+
+    Creature* creature = target->ToCreature();
+    if (creature && creature->isElite())
+        return true;
+
+    if (AI_VALUE(uint8, "attacker count") >= 2)
+        return true;
+
+    return target->GetHealthPct() > 50.0f && roll_chance_i(15);
+}
+
+bool GrenadeInterruptTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !target->IsNonMeleeSpellCast(true))
+        return false;
+
+    Item* item = ThrowExplosivesAction::FindBestThrown(bot, /*requireStun=*/true);
+    return item && ThrowExplosivesAction::CanThrowAt(bot, item, target);
+}
+
+bool SapperChargeTrigger::IsActive()
+{
+    if (bot->GetHealthPct() <= 60.0f || !ThrowExplosivesAction::FindBestSapper(bot))
+        return false;
+
+    // Surrounded: several live attackers inside the blast radius.
+    GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();
+    uint32 close = 0;
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive() && bot->GetDistance(unit) <= 8.0f)
+            ++close;
+    }
+
+    return close >= 3;
 }

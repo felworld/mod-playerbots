@@ -988,4 +988,28 @@ public:
     bool IsActive() override;
 };
 
+class ThrowExplosivesTrigger : public Trigger
+{
+public:
+    ThrowExplosivesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "throw explosives", 3) {}
+
+    bool IsActive() override;
+};
+
+class GrenadeInterruptTrigger : public Trigger
+{
+public:
+    GrenadeInterruptTrigger(PlayerbotAI* botAI) : Trigger(botAI, "grenade interrupt") {}
+
+    bool IsActive() override;
+};
+
+class SapperChargeTrigger : public Trigger
+{
+public:
+    SapperChargeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "sapper charge", 2) {}
+
+    bool IsActive() override;
+};
+
 #endif

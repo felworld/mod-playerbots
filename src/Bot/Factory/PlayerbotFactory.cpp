@@ -35,6 +35,7 @@
 #include "RandomPlayerbotFactory.h"
 #include "ReputationMgr.h"
 #include "SharedDefines.h"
+#include "ThrowExplosivesAction.h"
 #include "StatsWeightCalculator.h"
 #include "World.h"
 #include "AiObjectContext.h"
@@ -779,6 +780,12 @@ void PlayerbotFactory::Randomize(bool incremental)
     if (pmo)
         pmo->finish();
 
+    pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Engineering");
+    LOG_DEBUG("playerbots", "Initializing engineering consumables...");
+    InitEngineeringConsumables();
+    if (pmo)
+        pmo->finish();
+
     pmo = sPerfMonitor.start(PERF_MON_RNDBOT, "PlayerbotFactory_Reagents");
     LOG_DEBUG("playerbots", "Initializing reagents...");
     InitReagents();
@@ -888,6 +895,7 @@ void PlayerbotFactory::Refresh()
     InitReagents();
     InitConsumables();
     InitPotions();
+    InitEngineeringConsumables();
     InitPet();
     InitPetTalents();
     InitSkills();
@@ -3845,6 +3853,114 @@ void PlayerbotFactory::InitPotions()
 
         uint32 maxCount = proto->GetMaxStackSize();
         if (Item* newItem = StoreNewItemInInventorySlot(bot, itemId, urand(maxCount / 2, maxCount)))
+            newItem->AddToUpdateQueueOf(bot);
+    }
+}
+
+void PlayerbotFactory::InitEngineeringConsumables()
+{
+    uint32 skill = bot->GetSkillValue(SKILL_ENGINEERING);
+    if (!skill)
+        return;
+
+    struct Candidate
+    {
+        uint32 itemId;
+        uint32 rank;
+    };
+
+    struct Ladders
+    {
+        std::vector<Candidate> thrown;
+        std::vector<Candidate> stun;
+        std::vector<Candidate> sappers;
+    };
+
+    static Ladders const ladders = []()
+    {
+        Ladders result;
+        for (auto const& [itemId, proto] : *sObjectMgr->GetItemTemplateStore())
+        {
+            if (proto.RequiredSkill != SKILL_ENGINEERING)
+                continue;
+
+            if (ThrowExplosivesAction::IsThrownExplosive(&proto))
+            {
+                result.thrown.push_back({ itemId, proto.RequiredSkillRank });
+                if (ThrowExplosivesAction::IsStunExplosive(&proto))
+                    result.stun.push_back({ itemId, proto.RequiredSkillRank });
+            }
+            else if (ThrowExplosivesAction::IsSapperCharge(&proto))
+                result.sappers.push_back({ itemId, proto.RequiredSkillRank });
+        }
+
+        auto byRank = [](Candidate const& a, Candidate const& b) { return a.rank < b.rank; };
+        std::sort(result.thrown.begin(), result.thrown.end(), byRank);
+        std::sort(result.stun.begin(), result.stun.end(), byRank);
+        std::sort(result.sappers.begin(), result.sappers.end(), byRank);
+        return result;
+    }();
+
+    auto bestFor = [skill](std::vector<Candidate> const& ladder) -> ItemTemplate const*
+    {
+        ItemTemplate const* best = nullptr;
+        for (Candidate const& candidate : ladder)
+        {
+            if (candidate.rank > skill)
+                break;
+
+            best = sObjectMgr->GetItemTemplate(candidate.itemId);
+        }
+
+        return best;
+    };
+
+    ItemTemplate const* thrownProto = bestFor(ladders.thrown);
+    // A separate stun grenade only when the main explosive doesn't stun (for interrupts).
+    ItemTemplate const* stunProto =
+        thrownProto && !ThrowExplosivesAction::IsStunExplosive(thrownProto) ? bestFor(ladders.stun) : nullptr;
+    ItemTemplate const* sapperProto = bestFor(ladders.sappers);
+
+    auto chosen = [&](uint32 itemId)
+    {
+        return (thrownProto && thrownProto->ItemId == itemId) || (stunProto && stunProto->ItemId == itemId) ||
+               (sapperProto && sapperProto->ItemId == itemId);
+    };
+
+    uint32 maxThrownRank = std::max(thrownProto ? thrownProto->RequiredSkillRank : 0,
+                                    stunProto ? stunProto->RequiredSkillRank : 0);
+
+    // Evict outgrown tiers so the bot's bags track its skill, like bandages do.
+    std::vector<Item*> stale;
+    ThrowExplosivesAction::VisitExplosives(bot, [&](Item* item)
+    {
+        ItemTemplate const* proto = item->GetTemplate();
+        if (proto->RequiredSkill != SKILL_ENGINEERING || chosen(proto->ItemId))
+            return;
+
+        if (ThrowExplosivesAction::IsSapperCharge(proto))
+        {
+            if (sapperProto && proto->RequiredSkillRank < sapperProto->RequiredSkillRank)
+                stale.push_back(item);
+        }
+        else if (ThrowExplosivesAction::IsThrownExplosive(proto))
+        {
+            if (proto->RequiredSkillRank < maxThrownRank)
+                stale.push_back(item);
+        }
+    });
+
+    for (Item* item : stale)
+        bot->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
+
+    for (ItemTemplate const* proto : { thrownProto, stunProto, sapperProto })
+    {
+        if (!proto || bot->HasItemCount(proto->ItemId, 1))
+            continue;
+
+        uint32 maxCount = proto->GetMaxStackSize();
+        uint32 count = urand(std::max(1u, maxCount / 2), maxCount);
+        if (Item* newItem = StoreNewItemInInventorySlot(bot, proto->ItemId, count))
             newItem->AddToUpdateQueueOf(bot);
     }
 }

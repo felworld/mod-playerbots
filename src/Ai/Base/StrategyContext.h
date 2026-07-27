@@ -54,6 +54,7 @@
 #include "ThreatStrategy.h"
 #include "TravelStrategy.h"
 #include "UseFoodStrategy.h"
+#include "UseEngineeringStrategy.h"
 #include "UsePotionsStrategy.h"
 #include "WaitForAttackStrategy.h"
 #include "WorldPacketHandlerStrategy.h"
@@ -84,6 +85,7 @@ public:
         creators["start duel"] = &StrategyContext::start_duel;
         creators["kite"] = &StrategyContext::kite;
         creators["potions"] = &StrategyContext::potions;
+        creators["engineering"] = &StrategyContext::engineering;
         creators["cast time"] = &StrategyContext::cast_time;
         creators["threat"] = &StrategyContext::threat;
         creators["focus"] = &StrategyContext::focus;
@@ -151,6 +153,7 @@ private:
     static Strategy* focus(PlayerbotAI* botAI) { return new FocusStrategy(botAI); }
     static Strategy* cast_time(PlayerbotAI* botAI) { return new CastTimeStrategy(botAI); }
     static Strategy* potions(PlayerbotAI* botAI) { return new UsePotionsStrategy(botAI); }
+    static Strategy* engineering(PlayerbotAI* botAI) { return new UseEngineeringStrategy(botAI); }
     static Strategy* kite(PlayerbotAI* botAI) { return new KiteStrategy(botAI); }
     static Strategy* duel(PlayerbotAI* botAI) { return new DuelStrategy(botAI); }
     static Strategy* start_duel(PlayerbotAI* botAI) { return new StartDuelStrategy(botAI); }
