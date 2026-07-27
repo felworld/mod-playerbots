@@ -769,8 +769,13 @@ bool CraftBandageTrigger::IsActive()
     if (!botAI->HasSkill(SKILL_FIRST_AID) || bot->IsInCombat() || bot->isMoving())
         return false;
 
-    if (CraftBandageAction::BandageCount(bot) >= CRAFT_BANDAGE_TARGET_COUNT)
+    uint32 spellId = CraftBandageAction::FindBestBandageSpell(bot);
+    if (!spellId)
         return false;
 
-    return CraftBandageAction::FindBestBandageSpell(bot) != 0;
+    // Fire even at the cap if outgrown bandages are waiting to be evicted.
+    if (CraftBandageAction::LowerTierBandageCount(bot, CraftBandageAction::BandageItemLevel(spellId)))
+        return true;
+
+    return CraftBandageAction::BandageCount(bot) < CRAFT_BANDAGE_TARGET_COUNT;
 }

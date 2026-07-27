@@ -24,8 +24,12 @@ public:
     bool isUseful() override;
 
     // Highest-level bandage spell the bot knows and has the cloth for; 0 if none.
+    // Gray recipes are skipped unless they are the best bandage recipe the bot knows.
     static uint32 FindBestBandageSpell(Player* bot);
+    // Item level of the bandage a create-item spell produces; 0 if it is not a bandage spell.
+    static uint32 BandageItemLevel(uint32 spellId);
     static uint32 BandageCount(Player* bot);
+    static uint32 LowerTierBandageCount(Player* bot, uint32 itemLevel);
 };
 
 #endif

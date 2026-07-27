@@ -5715,9 +5715,33 @@ bool PlayerbotAI::DuelAllowsConsumable(DuelConsumables tier) const
 // Find Bandage
 Item* PlayerbotAI::FindBandage() const
 {
-    return FindItemInInventory(
-        [](ItemTemplate const* pItemProto) -> bool
-        { return pItemProto->Class == ITEM_CLASS_CONSUMABLE && pItemProto->SubClass == ITEM_SUBCLASS_BANDAGE; });
+    // Pick the highest-level usable bandage, not the first one found in bag order.
+    Item* best = nullptr;
+
+    auto consider = [this, &best](Item* item)
+    {
+        ItemTemplate const* proto = item->GetTemplate();
+        if (!proto || proto->Class != ITEM_CLASS_CONSUMABLE || proto->SubClass != ITEM_SUBCLASS_BANDAGE)
+            return;
+
+        if (bot->CanUseItem(proto) != EQUIP_ERR_OK)
+            return;
+
+        if (!best || proto->ItemLevel > best->GetTemplate()->ItemLevel)
+            best = item;
+    };
+
+    for (uint8 slot = INVENTORY_SLOT_ITEM_START; slot < INVENTORY_SLOT_ITEM_END; ++slot)
+        if (Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+            consider(item);
+
+    for (uint8 bag = INVENTORY_SLOT_BAG_START; bag < INVENTORY_SLOT_BAG_END; ++bag)
+        if (Bag const* pBag = (Bag*)bot->GetItemByPos(INVENTORY_SLOT_BAG_0, bag))
+            for (uint8 slot = 0; slot < pBag->GetBagSize(); ++slot)
+                if (Item* item = bot->GetItemByPos(bag, slot))
+                    consider(item);
+
+    return best;
 }
 
 Item* PlayerbotAI::FindOpenableItem() const
