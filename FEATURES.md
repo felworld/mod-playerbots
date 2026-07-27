@@ -163,6 +163,24 @@ Felworld — bandages were the one consumable everyone's duel circle seemed
 to permit. The setting covers every duel a bot fights (bot or real
 opponent) and has no effect outside duels.
 
+## Bandage crafting
+
+Bots stock their own bandages. Upstream bots love *using* bandages — the
+combat logic reaches for one whenever things get dicey — but nothing ever
+put bandages in their bags: bots never craft anything on their own, and
+the bot outfitter that hands out potions, food, and ammo skips bandages
+entirely. Now a bot with First Aid, when idle and out of combat, crafts
+bandages from the cloth it's carrying (quested, looted, whatever) up to a
+stock of 20 — real casts from its own spellbook, so the cloth is consumed
+and First Aid skills up naturally, and custom recipes work because
+nothing is hardcoded. Tier hygiene is enforced on both ends: recipes the
+bot has outgrown (gray) are never crafted unless they're the best it
+knows (so a skill-capped bot still restocks, but a level 55 never burns
+linen on useless bandages), bandages below the tier it can now make are
+tossed rather than hoarded, and when actually bandaging, every bot uses
+the best usable bandage in its bags instead of whichever one it finds
+first. Always on for bots with First Aid; no config knobs.
+
 ## Emote exchanges that end
 
 Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting

@@ -43,6 +43,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   — gank sprees draw LocalDefense/WorldDefense callouts, defenders travel
   in to hunt the attacker, and a beaten ganker can pull reinforcements —
   it all works the same when the ganker is a real player.
+- **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
+  bandages from the cloth they carry, keep the stock level-appropriate,
+  and use their best bandage first.
 - **[Emote exchanges that end](FEATURES.md#emote-exchanges-that-end)** —
   bot-to-bot emote replies trail off instead of ping-ponging forever, and
   crowds don't reply in chorus.
