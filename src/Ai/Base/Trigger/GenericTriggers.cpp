@@ -11,6 +11,7 @@
 #include "GenericBuffUtils.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
+#include "EngineeringDeviceActions.h"
 #include "ThrowExplosivesAction.h"
 #include "NonCombatActions.h"
 #include "ItemVisitors.h"
@@ -831,4 +832,47 @@ bool SapperChargeTrigger::IsActive()
     }
 
     return close >= 3;
+}
+
+bool TargetDummyTrigger::IsActive()
+{
+    if (!bot->IsInCombat() || bot->GetHealthPct() > 60.0f || AI_VALUE(uint8, "my attacker count") < 2)
+        return false;
+
+    return EngineeringDevices::FindBestCarried(bot, EngineeringDevices::TargetDummies()) != nullptr;
+}
+
+bool ExplosiveSheepTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || target->GetHealthPct() < 50.0f)
+        return false;
+
+    if (!EngineeringDevices::FindBestCarried(bot, EngineeringDevices::ExplosiveSheep()))
+        return false;
+
+    return AI_VALUE(uint8, "attacker count") >= 2 || roll_chance_i(10);
+}
+
+bool JumperCablesTrigger::IsActive()
+{
+    if (bot->IsInCombat())
+        return false;
+
+    // Classes with a real resurrection spell don't need to improvise.
+    switch (bot->getClass())
+    {
+        case CLASS_PRIEST:
+        case CLASS_PALADIN:
+        case CLASS_SHAMAN:
+        case CLASS_DRUID:
+            return false;
+        default:
+            break;
+    }
+
+    if (!EngineeringDevices::FindBestCarried(bot, EngineeringDevices::JumperCables()))
+        return false;
+
+    return AI_VALUE(Unit*, "party member to resurrect") != nullptr;
 }

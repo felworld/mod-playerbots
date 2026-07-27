@@ -275,6 +275,9 @@ public:
         creators["throw explosives"] = &TriggerContext::throw_explosives;
         creators["grenade interrupt"] = &TriggerContext::grenade_interrupt;
         creators["sapper charge"] = &TriggerContext::sapper_charge;
+        creators["target dummy"] = &TriggerContext::target_dummy;
+        creators["explosive sheep"] = &TriggerContext::explosive_sheep;
+        creators["jumper cables"] = &TriggerContext::jumper_cables;
         creators["wait for attack safe distance"] = &TriggerContext::wait_for_attack_safe_distance;
     }
 
@@ -513,6 +516,9 @@ private:
     static Trigger* throw_explosives(PlayerbotAI* ai) { return new ThrowExplosivesTrigger(ai); }
     static Trigger* grenade_interrupt(PlayerbotAI* ai) { return new GrenadeInterruptTrigger(ai); }
     static Trigger* sapper_charge(PlayerbotAI* ai) { return new SapperChargeTrigger(ai); }
+    static Trigger* target_dummy(PlayerbotAI* ai) { return new TargetDummyTrigger(ai); }
+    static Trigger* explosive_sheep(PlayerbotAI* ai) { return new ExplosiveSheepTrigger(ai); }
+    static Trigger* jumper_cables(PlayerbotAI* ai) { return new JumperCablesTrigger(ai); }
     static Trigger* wait_for_attack_safe_distance(PlayerbotAI* ai) { return new WaitForAttackSafeDistanceTrigger(ai); }
 };
 

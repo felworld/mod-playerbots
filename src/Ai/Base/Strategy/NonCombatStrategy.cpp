@@ -11,6 +11,11 @@ void NonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("random", { NextAction("clean quest log", 1.0f) }));
     triggers.push_back(new TriggerNode("timer", { NextAction("check mount state", 1.0f) }));
     triggers.push_back(new TriggerNode("craft bandage", { NextAction("craft bandage", 1.0f) }));
+    // Engineer improvised resurrection; walks to the corpse first when out of reach.
+    triggers.push_back(new TriggerNode(
+        "jumper cables",
+        { NextAction("jumper cables", ACTION_CRITICAL_HEAL + 5),
+          NextAction("reach party member to resurrect", ACTION_CRITICAL_HEAL + 4) }));
 }
 
 void CollisionStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

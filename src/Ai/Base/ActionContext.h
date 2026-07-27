@@ -28,6 +28,7 @@
 #include "ChooseTravelTargetAction.h"
 #include "CombatActions.h"
 #include "CraftBandageAction.h"
+#include "EngineeringDeviceActions.h"
 #include "ThrowExplosivesAction.h"
 #include "DelayAction.h"
 #include "DestroyItemAction.h"
@@ -221,6 +222,9 @@ public:
         creators["throw explosives"] = &ActionContext::throw_explosives;
         creators["grenade interrupt"] = &ActionContext::grenade_interrupt;
         creators["sapper charge"] = &ActionContext::sapper_charge;
+        creators["target dummy"] = &ActionContext::target_dummy;
+        creators["explosive sheep"] = &ActionContext::explosive_sheep;
+        creators["jumper cables"] = &ActionContext::jumper_cables;
         creators["smart destroy item"] = &ActionContext::smart_destroy_item;
         creators["disenchant random item"] = &ActionContext::disenchant_random_item;
         creators["enchant random item"] = &ActionContext::enchant_random_item;
@@ -454,6 +458,9 @@ private:
     static Action* throw_explosives(PlayerbotAI* botAI) { return new ThrowExplosivesAction(botAI); }
     static Action* grenade_interrupt(PlayerbotAI* botAI) { return new GrenadeInterruptAction(botAI); }
     static Action* sapper_charge(PlayerbotAI* botAI) { return new SapperChargeAction(botAI); }
+    static Action* target_dummy(PlayerbotAI* botAI) { return new UseTargetDummyAction(botAI); }
+    static Action* explosive_sheep(PlayerbotAI* botAI) { return new UseExplosiveSheepAction(botAI); }
+    static Action* jumper_cables(PlayerbotAI* botAI) { return new UseJumperCablesAction(botAI); }
     static Action* smart_destroy_item(PlayerbotAI* botAI) { return new SmartDestroyItemAction(botAI); }
     static Action* disenchant_random_item(PlayerbotAI* botAI) { return new DisEnchantRandomItemAction(botAI); }
     static Action* enchant_random_item(PlayerbotAI* botAI) { return new EnchantRandomItemAction(botAI); }

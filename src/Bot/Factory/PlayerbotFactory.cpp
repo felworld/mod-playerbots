@@ -34,6 +34,7 @@
 #include "RandomItemMgr.h"
 #include "RandomPlayerbotFactory.h"
 #include "ReputationMgr.h"
+#include "EngineeringDeviceActions.h"
 #include "SharedDefines.h"
 #include "ThrowExplosivesAction.h"
 #include "StatsWeightCalculator.h"
@@ -3961,6 +3962,35 @@ void PlayerbotFactory::InitEngineeringConsumables()
         uint32 maxCount = proto->GetMaxStackSize();
         uint32 count = urand(std::max(1u, maxCount / 2), maxCount);
         if (Item* newItem = StoreNewItemInInventorySlot(bot, proto->ItemId, count))
+            newItem->AddToUpdateQueueOf(bot);
+    }
+
+    // Devices: target dummies, jumper cables, an explosive sheep or two.
+    using EngineeringDevices::Tier;
+    for (std::vector<Tier> const* ladder : { &EngineeringDevices::TargetDummies(),
+                                             &EngineeringDevices::JumperCables(),
+                                             &EngineeringDevices::ExplosiveSheep() })
+    {
+        uint32 bestId = EngineeringDevices::BestForSkill(*ladder, skill);
+        for (Tier const& tier : *ladder)
+        {
+            if (tier.itemId == bestId || tier.rank > skill)
+                continue;
+
+            while (Item* outgrown = bot->GetItemByEntry(tier.itemId))
+                bot->DestroyItem(outgrown->GetBagSlot(), outgrown->GetSlot(), true);
+        }
+
+        if (!bestId || bot->HasItemCount(bestId, 1))
+            continue;
+
+        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(bestId);
+        if (!proto)
+            continue;
+
+        uint32 maxCount = proto->GetMaxStackSize();
+        uint32 count = urand(std::max(1u, maxCount / 2), maxCount);
+        if (Item* newItem = StoreNewItemInInventorySlot(bot, bestId, count))
             newItem->AddToUpdateQueueOf(bot);
     }
 }

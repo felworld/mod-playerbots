@@ -1012,4 +1012,28 @@ public:
     bool IsActive() override;
 };
 
+class TargetDummyTrigger : public Trigger
+{
+public:
+    TargetDummyTrigger(PlayerbotAI* botAI) : Trigger(botAI, "target dummy", 2) {}
+
+    bool IsActive() override;
+};
+
+class ExplosiveSheepTrigger : public Trigger
+{
+public:
+    ExplosiveSheepTrigger(PlayerbotAI* botAI) : Trigger(botAI, "explosive sheep", 5) {}
+
+    bool IsActive() override;
+};
+
+class JumperCablesTrigger : public Trigger
+{
+public:
+    JumperCablesTrigger(PlayerbotAI* botAI) : Trigger(botAI, "jumper cables", 3) {}
+
+    bool IsActive() override;
+};
+
 #endif

@@ -16,5 +16,9 @@ void UseEngineeringStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "sapper charge", { NextAction("sapper charge", ACTION_HIGH + 8) }));
     triggers.push_back(new TriggerNode(
+        "target dummy", { NextAction("target dummy", ACTION_HIGH + 9) }));
+    triggers.push_back(new TriggerNode(
         "throw explosives", { NextAction("throw explosives", ACTION_HIGH + 2) }));
+    triggers.push_back(new TriggerNode(
+        "explosive sheep", { NextAction("explosive sheep", ACTION_HIGH + 1) }));
 }
