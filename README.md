@@ -46,6 +46,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.
+- **[Engineering in combat](FEATURES.md#engineering-in-combat)** —
+  engineer bots throw bombs and grenades, interrupt casters with stun
+  grenades, sapper when surrounded, drop target dummies, pop rocket
+  boots on flag runs, and jump-start dead groupmates with jumper cables.
 - **[Emote exchanges that end](FEATURES.md#emote-exchanges-that-end)** —
   bot-to-bot emote replies trail off instead of ping-ponging forever, and
   crowds don't reply in chorus.

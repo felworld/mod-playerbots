@@ -181,6 +181,45 @@ tossed rather than hoarded, and when actually bandaging, every bot uses
 the best usable bandage in its bags instead of whichever one it finds
 first. Always on for bots with First Aid; no config knobs.
 
+## Engineering in combat
+
+Engineer bots fight like engineers. Upstream bots pick professions and
+level them, but engineering never showed up in a fight — no bombs, no
+gadgets, none of the toys that make the profession worth playing.
+Engineering is one of only two professions in the game whose crafted
+consumables are locked to the profession (First Aid is the other), so
+this is the one place profession-flavored combat behavior is actually
+realistic rather than cosmetic.
+
+The bot outfitter stocks engineer bots by skill, mirroring how it hands
+out potions: the best thrown explosive their skill allows (dynamite,
+bombs, grenades — classified from the items' on-use spells, so every
+tier from Rough Dynamite to Saronite Bomb is covered without an ID
+table), a stun grenade when the main explosive doesn't stun, a sapper
+charge, target dummies, Goblin Jumper Cables, and an explosive sheep or
+two. Outgrown tiers are evicted at maintenance, same as bandages. At 375
+skill bots also get tinkered: Nitro Boosts on boots, and Hyperspeed
+Accelerators (most) or a Hand-Mounted Pyro Rocket (some) on gloves,
+applied after regular enchanting so the tinker wins the slot — the
+authentic engineer choice.
+
+In combat, the new `engineering` strategy (on by default, including
+battlegrounds but not arenas) puts it all to use. Bots throw their best
+explosive at players, elites, and multi-mob pulls — with an occasional
+lob at an ordinary mob just because — and answer an enemy cast with a
+stun grenade at just-below class-interrupt priority, so a real kick wins
+when one is available. Surrounded by three or more attackers with a
+healthy HP buffer, an engineer sets off a sapper charge; overwhelmed and
+hurting, it drops a target dummy to shed aggro; now and then it releases
+an explosive sheep. Glove tinkers fire on cooldown. Rocket boots pop
+when it matters most: carrying a Warsong Gulch flag, chasing an enemy
+flag carrier who is pulling away, or fleeing below 25% health. And after
+the fight, a bot with no real resurrection spell but a set of jumper
+cables will walk to a dead group member and try a jump-start — the
+item's native fail chance supplies the comedy. Duels honor
+`AiPlayerbot.DuelConsumables` (engineering items are tier `1`, the
+Felworld setting). No other config knobs.
+
 ## Emote exchanges that end
 
 Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting
