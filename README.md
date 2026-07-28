@@ -43,6 +43,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   — gank sprees draw LocalDefense/WorldDefense callouts, defenders travel
   in to hunt the attacker, and a beaten ganker can pull reinforcements —
   it all works the same when the ganker is a real player.
+- **[World PvP threat reactions](FEATURES.md#world-pvp-threat-reactions)**
+  — attacked in the open world, bots get up from meals, abort long casts,
+  turn from mobs to their assailant, hold a soulstone res while the
+  killer lurks, and wait out corpse campers instead of rezzing into them.
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.

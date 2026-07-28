@@ -151,6 +151,42 @@ out, hunted, and — if the tables turn — reinforced exactly like a bot.
 the `!wpvp defend` chat command ([below](#commands-added-in-this-fork))
 lets you order a defense yourself.
 
+## World PvP threat reactions
+
+Upstream bots are strangely oblivious to being attacked by an enemy player
+in the open world; this cluster of fixes makes them react like people:
+
+- **Eating and drinking**: a consuming bot used to sleep through its whole
+  meal — the AI set itself a 10-27 second wake-up timer — so a ganker
+  could kill it while it sat there. Bots now re-evaluate every second
+  while consuming: still safe, keep sitting; attacked, or an enemy player
+  closing within 40 yards, get up and respond. Upstream had that vigilance
+  only inside battlegrounds; now it applies everywhere.
+- **Long casts**: the same wake-up-timer pattern covered cast times, so a
+  bot mid-Summon Imp (10 seconds) stayed committed no matter what.
+  Entering combat now wakes the AI immediately, and a non-combat cast is
+  interrupted — unless it's nearly finished (under 3 seconds left), in
+  which case finishing it is the better play.
+- **Target priority**: the bot's attacker list was built from creature
+  threat lists, which never contain players — an enemy player beating on
+  a bot busy fighting mobs literally did not exist to its target
+  selection. Open-world PvP assailants now enter the attacker list and
+  outrank whatever mob the bot was already fighting. (Battlegrounds keep
+  their own targeting machinery.)
+- **Soulstone discipline**: a warlock's soulstone (or a shaman's
+  reincarnation) fired the instant the bot died, even mid-gank — handing
+  the enemy a free second kill and wasting the stone. Bots now hold the
+  self-res while a PvP-flagged enemy is within 40 yards, waiting up to a
+  minute for them to leave before giving up on it and releasing normally.
+- **No rezzing into campers**: a dead bot ran back and popped up at its
+  corpse — or took the spirit-healer res — regardless of who was standing
+  on it. Ghosts now wait out a flagged enemy loitering at the rez spot,
+  and only after about three minutes of being camped give up and rez
+  anyway.
+
+No config knobs; the thresholds (40 yards, one minute, three minutes) are
+fixed.
+
 ## Duel consumable etiquette
 
 Classic dueling culture has an unwritten "no pots" rule, and upstream bots
