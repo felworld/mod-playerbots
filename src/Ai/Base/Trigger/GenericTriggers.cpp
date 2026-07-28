@@ -10,6 +10,7 @@
 
 #include "GenericBuffUtils.h"
 #include "BattlegroundWS.h"
+#include "BotDeathSafety.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
 #include "EngineeringDeviceActions.h"
@@ -282,11 +283,17 @@ bool NoDrinkTrigger::IsActive()
 
 bool ConsumingFoodOrDrinkTrigger::IsActive()
 {
-    if (!bot->InBattleground() || bot->IsInCombat())
+    if (bot->IsInCombat())
         return false;
 
     return (BotConsumables::IsEatingFood(bot) && bot->GetHealthPct() < 100.0f) ||
            (BotConsumables::IsDrinking(bot) && bot->GetPowerPct(POWER_MANA) < 100.0f);
+}
+
+bool SelfResurrectTrigger::IsActive()
+{
+    return !bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL) &&
+           !BotDeathSafety::EnemyPlayerNear(bot);
 }
 
 bool TargetInSightTrigger::IsActive() { return AI_VALUE(Unit*, "grind target"); }

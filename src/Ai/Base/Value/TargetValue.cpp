@@ -140,6 +140,12 @@ bool FindTargetStrategy::IsHighPriority(Unit* attacker)
             return true;
         }
     }
+
+    // Outside battlegrounds, any enemy player among our attackers is a world-PvP
+    // assailant — they outrank whatever mob we were already fighting.
+    if (attacker->IsPlayer() && !botAI->GetBot()->InBattleground())
+        return true;
+
     return false;
 }
 

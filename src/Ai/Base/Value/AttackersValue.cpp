@@ -103,6 +103,22 @@ void AttackersValue::AddAttackersOf(Player* player, std::unordered_set<Unit*>& t
             player->GetDistance2d(attacker) < sPlayerbotAIConfig.sightDistance)
             targets.insert(attacker);
     }
+
+    // Creature threat lists never contain enemy players, so world-PvP assailants have
+    // to come from the PvP combat references (battlegrounds keep their own machinery).
+    if (!bot->InBattleground())
+    {
+        for (auto const& [guid, ref] : player->GetCombatManager().GetPvPCombatRefs())
+        {
+            Unit* enemy = ref->GetOther(player);
+            if (!enemy || !enemy->IsPlayer())
+                continue;
+
+            if (player->IsValidAttackTarget(enemy) &&
+                player->GetDistance2d(enemy) < sPlayerbotAIConfig.sightDistance)
+                targets.insert(enemy);
+        }
+    }
 }
 
 void AttackersValue::RemoveNonThreating(std::unordered_set<Unit*>& targets)

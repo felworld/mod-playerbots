@@ -63,14 +63,11 @@ bool IsDrinking(Player* bot)
     return HasSeatedRegenAura(bot, SPELL_AURA_MOD_POWER_REGEN) || HasSeatedRegenAura(bot, SPELL_AURA_OBS_MOD_POWER);
 }
 
-bool IsSafeToConsumeInBattleground(PlayerbotAI* botAI, Player* bot)
+bool IsSafeToConsume(PlayerbotAI* botAI, Player* bot)
 {
-    if (!bot->InBattleground())
-        return true;
-
-    Battleground* bg = bot->GetBattleground();
-    if (!bg || bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetStatus() == STATUS_WAIT_LEAVE)
-        return true;
+    if (Battleground* bg = bot->GetBattleground())
+        if (bg->GetStatus() == STATUS_WAIT_JOIN || bg->GetStatus() == STATUS_WAIT_LEAVE)
+            return true;
 
     GuidVector enemies = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest enemy players")->Get();
     for (ObjectGuid const& guid : enemies)
@@ -103,17 +100,9 @@ bool DrinkAction::Execute(Event event)
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
-        // float hp = bot->GetHealthPercent();
-        float mp = bot->GetPowerPct(POWER_MANA);
-        float p = mp;
-        float delay;
-
-        if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
-        else
-            delay = 12000.0f * (100 - p) / 100.0f;
-
-        botAI->SetNextCheckDelay(delay);
+        // Re-evaluate every second; the "continue eating" hold keeps the bot seated
+        // while it remains safe, and lets it get up as soon as it is attacked.
+        botAI->SetNextCheckDelay(1000);
 
         bot->AddAura(25990, bot);
         return true;
@@ -127,7 +116,7 @@ bool DrinkAction::isUseful()
 {
     return UseItemAction::isUseful() && AI_VALUE2(bool, "has mana", "self target") &&
            AI_VALUE2(uint8, "mana", "self target") < 100 && !BotConsumables::IsDrinking(bot) &&
-           BotConsumables::IsSafeToConsumeInBattleground(botAI, bot);
+           BotConsumables::IsSafeToConsume(botAI, bot);
 }
 
 bool DrinkAction::isPossible()
@@ -155,7 +144,7 @@ bool ContinueEatingAction::Execute(Event event)
     return true;
 }
 
-bool ContinueEatingAction::isUseful() { return BotConsumables::IsSafeToConsumeInBattleground(botAI, bot); }
+bool ContinueEatingAction::isUseful() { return BotConsumables::IsSafeToConsume(botAI, bot); }
 
 bool EatAction::Execute(Event event)
 {
@@ -177,17 +166,9 @@ bool EatAction::Execute(Event event)
         bot->SetStandState(UNIT_STAND_STATE_SIT);
         botAI->InterruptSpell();
 
-        float hp = bot->GetHealthPct();
-        // float mp = bot->HasMana() ? bot->GetPowerPercent() : 0.f;
-        float p = hp;
-        float delay;
-
-        if (!bot->InBattleground())
-            delay = 18000.0f * (100 - p) / 100.0f;
-        else
-            delay = 12000.0f * (100 - p) / 100.0f;
-
-        botAI->SetNextCheckDelay(delay);
+        // Re-evaluate every second; the "continue eating" hold keeps the bot seated
+        // while it remains safe, and lets it get up as soon as it is attacked.
+        botAI->SetNextCheckDelay(1000);
 
         bot->AddAura(25990, bot);
         return true;
@@ -199,7 +180,7 @@ bool EatAction::Execute(Event event)
 bool EatAction::isUseful()
 {
     return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 100 &&
-           !BotConsumables::IsEatingFood(bot) && BotConsumables::IsSafeToConsumeInBattleground(botAI, bot);
+           !BotConsumables::IsEatingFood(bot) && BotConsumables::IsSafeToConsume(botAI, bot);
 }
 
 bool EatAction::isPossible()

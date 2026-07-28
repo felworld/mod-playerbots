@@ -705,6 +705,7 @@ protected:
     Position jumpDestination = Position();
     uint32 nextTransportCheck = 0;
     bool spellInterruptRequested = false;
+    bool wasInCombat = false;
 };
 
 #endif

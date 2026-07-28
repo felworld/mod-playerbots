@@ -269,6 +269,13 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
 
     AllowActivity();
 
+    // Wake a sleeping AI the moment combat starts (attacked while eating, mid long
+    // cast, ...) so the engines can react instead of sleeping through the opener.
+    bool const nowInCombat = bot->IsInCombat();
+    if (nowInCombat && !wasInCombat)
+        SetNextCheckDelay(0);
+    wasInCombat = nowInCombat;
+
     if (!CanUpdateAI())
         return;
 
@@ -305,6 +312,19 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
                 GameObject* goSpellTarget = currentSpell->m_targets.GetGOTarget();
 
                 if (goSpellTarget && !goSpellTarget->isSpawned())
+                {
+                    InterruptSpell();
+                    YieldThread(bot, GetReactDelay());
+                    return;
+                }
+
+                // Jumped mid non-combat cast (summon, mount, hearthstone, ...): abort
+                // the cast so the engines can respond to the attacker — unless it is
+                // about to complete anyway, in which case finishing it is worth more
+                // than the fraction of a second saved.
+                constexpr int32 FINISH_CAST_THRESHOLD = 3000;
+                if (bot->IsInCombat() && currentEngine == engines[BOT_STATE_NON_COMBAT] &&
+                    currentSpell->GetCastTimeRemaining() > FINISH_CAST_THRESHOLD)
                 {
                     InterruptSpell();
                     YieldThread(bot, GetReactDelay());

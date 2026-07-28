@@ -4,6 +4,7 @@
  */
 
 #include "ReleaseSpiritAction.h"
+#include "BotDeathSafety.h"
 #include "ServerFacade.h"
 #include "Event.h"
 #include "GameGraveyard.h"
@@ -111,6 +112,13 @@ bool AutoReleaseSpiritAction::isUseful()
         return ShouldDelayBattlegroundRelease();
 
     if (bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
+        return false;
+
+    // A pending soulstone/reincarnation is lost on release; while its use is blocked by a
+    // nearby enemy player, hold the release a bit and wait for them to leave.
+    if (bot->GetUInt32Value(PLAYER_SELF_RES_SPELL) &&
+        BotDeathSafety::TimeSinceDeath(bot) < BotDeathSafety::SELF_RES_WAIT_SECONDS &&
+        BotDeathSafety::EnemyPlayerNear(bot))
         return false;
 
     return ShouldAutoRelease();
@@ -265,5 +273,6 @@ bool SelfResurrectAction::Execute(Event /*event*/)
 }
 bool SelfResurrectAction::isUseful()
 {
-    return !bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL);
+    return !bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL) &&
+           !BotDeathSafety::EnemyPlayerNear(bot);
 }

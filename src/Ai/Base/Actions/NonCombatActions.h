@@ -16,7 +16,7 @@ namespace BotConsumables
 {
 bool IsEatingFood(Player* bot);
 bool IsDrinking(Player* bot);
-bool IsSafeToConsumeInBattleground(PlayerbotAI* botAI, Player* bot);
+bool IsSafeToConsume(PlayerbotAI* botAI, Player* bot);
 }
 
 class DrinkAction : public UseItemAction

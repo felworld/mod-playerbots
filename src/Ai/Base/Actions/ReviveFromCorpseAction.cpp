@@ -6,6 +6,7 @@
 
 #include "ReviveFromCorpseAction.h"
 
+#include "BotDeathSafety.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameGraveyard.h"
@@ -43,6 +44,11 @@ bool ReviveFromCorpseAction::Execute(Event event)
     // if (corpse->GetGhostTime() + bot->GetCorpseReclaimDelay(corpse->GetType() == CORPSE_RESURRECTABLE_PVP) >
     // time(nullptr))
     //     return false;
+
+    // Don't rez into a corpse camper; wait for them to leave (or lose patience).
+    if (time(nullptr) - corpse->GetGhostTime() < BotDeathSafety::CAMP_GIVE_UP_SECONDS &&
+        BotDeathSafety::EnemyPlayerNear(bot))
+        return false;
 
     if (groupLeader)
     {
@@ -133,7 +139,10 @@ bool FindCorpseAction::Execute(Event /*event*/)
         {
             GuidVector units = AI_VALUE(GuidVector, "possible targets no los");
 
-            if (botPos.getUnitsAggro(units, bot) == 0)  // There are no mobs near.
+            // Stop to resurrect only when no mob would aggro and no enemy player camps
+            // the spot (after long enough, give up and take the death).
+            if (botPos.getUnitsAggro(units, bot) == 0 &&
+                (deadTime >= BotDeathSafety::CAMP_GIVE_UP_SECONDS || !BotDeathSafety::EnemyPlayerNear(bot)))
                 return false;
         }
     }
@@ -311,6 +320,11 @@ bool SpiritHealerAction::Execute(Event /*event*/)
 
     if (bot->GetDistance2d(ClosestGrave->x, ClosestGrave->y) < sPlayerbotAIConfig.sightDistance)
     {
+        // The graveyard is camped by an enemy player: stay a ghost until they leave
+        // (or we lose patience) instead of rezzing straight into them.
+        if (deadTime < BotDeathSafety::CAMP_GIVE_UP_SECONDS && BotDeathSafety::EnemyPlayerNear(bot))
+            return false;
+
         GuidVector npcs = AI_VALUE(GuidVector, "nearest npcs");
         for (GuidVector::iterator i = npcs.begin(); i != npcs.end(); i++)
         {
