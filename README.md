@@ -46,7 +46,8 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[World PvP threat reactions](FEATURES.md#world-pvp-threat-reactions)**
   — attacked in the open world, bots get up from meals, abort long casts,
   turn from mobs to their assailant, hold a soulstone res while the
-  killer lurks, and wait out corpse campers instead of rezzing into them.
+  killer lurks, wait out corpse campers instead of rezzing into them, and
+  put recreational duels on hold while a fight rages nearby.
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.

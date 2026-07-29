@@ -183,9 +183,16 @@ in the open world; this cluster of fixes makes them react like people:
   on it. Ghosts now wait out a flagged enemy loitering at the rez spot,
   and only after about three minutes of being camped give up and rez
   anyway.
+- **No dueling next to a battlefield**: idle bots would happily start a
+  recreational duel while a gank unfolded across the road. Bots now
+  neither offer nor accept another bot's duel while world PvP is live
+  nearby — a PvP kill or defense callout in their zone within the last
+  two minutes, or a PvP-flagged enemy player inside vision range
+  (`AiPlayerbot.WpvpVisionDistance`). A real player's challenge is still
+  accepted; a human read the room.
 
-No config knobs; the thresholds (40 yards, one minute, three minutes) are
-fixed.
+No config knobs; the thresholds (40 yards, one minute, two minutes, three
+minutes) are fixed.
 
 ## Duel consumable etiquette
 

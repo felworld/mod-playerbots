@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cctype>
 
+#include "BotDeathSafety.h"
 #include "ChatHelper.h"
 #include "DBCStores.h"
 #include "NewRpgInfo.h"
@@ -30,6 +31,12 @@ constexpr uint32 RESPONDABLE_WINDOW_MS = 10 * MINUTE * IN_MILLISECONDS;
 // this only needs to outlive that cadence; when the defender dies or leaves,
 // the plea for help becomes honest again about this fast.
 constexpr uint32 DEFENDER_ON_SCENE_WINDOW_MS = 30 * IN_MILLISECONDS;
+
+// How long after the last kill or callout in a zone the fight still counts
+// as "happening" for the leisure-suppression check. Short on purpose: real
+// players do duel while waiting for enemies to come back, just not while
+// bodies are still warm.
+constexpr uint32 RECENT_FIGHT_WINDOW_MS = 2 * MINUTE * IN_MILLISECONDS;
 
 uint64 RollKey(ObjectGuid bot, ObjectGuid attacker) { return bot.GetRawValue() ^ (attacker.GetRawValue() << 1); }
 
@@ -352,6 +359,17 @@ bool WpvpDefenseBoard::FindByZone(TeamId team, uint32 zoneId, WpvpDefenseEntry& 
     return true;
 }
 
+bool WpvpDefenseBoard::RecentActivityInZone(uint32 mapId, uint32 zoneId, uint32 windowMs)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    uint32 now = getMSTime();
+    for (auto const& [guid, entry] : _entries)
+        if (entry.pos.GetMapId() == mapId && entry.zoneId == zoneId && getMSTimeDiff(entry.updatedMs, now) < windowMs)
+            return true;
+
+    return false;
+}
+
 bool WpvpDefenseBoard::FindReinforceable(TeamId team, uint8 botLevel, ObjectGuid botGuid, WpvpDefenseEntry& out)
 {
     std::lock_guard<std::mutex> lock(_mutex);
@@ -402,6 +420,17 @@ void WpvpDefenseBoard::Prune(uint32 now)
 
     _lastPruneMs = now;
     std::erase_if(_entries, [&](auto const& pair) { return getMSTimeDiff(pair.second.updatedMs, now) > ENTRY_TTL_MS; });
+}
+
+bool WpvpHappeningNearby(Player* bot)
+{
+    if (WpvpDefenseBoard::instance().RecentActivityInZone(bot->GetMapId(), bot->GetZoneId(), RECENT_FIGHT_WINDOW_MS))
+        return true;
+
+    // The board only hears about kills and callouts; a fight still in its
+    // opening seconds - or a flagged ganker prowling between victims - shows
+    // up here instead.
+    return BotDeathSafety::EnemyPlayerNear(bot, sPlayerbotAIConfig.wpvpVisionDistance);
 }
 
 bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker)

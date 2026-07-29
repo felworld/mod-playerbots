@@ -11,6 +11,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SocialMgr.h"
+#include "WpvpDefense.h"
 
 bool NoRpgTargetTrigger::IsActive() { return !AI_VALUE(GuidPosition, "rpg target"); }
 
@@ -393,6 +394,11 @@ bool RpgDuelTrigger::IsActive()
         // Dueling isn't allowed here
         return false;
     }
+
+    // Sparring for fun next to an actual battlefield reads wrong - hold the
+    // duel while world PvP is live (or was moments ago) in this zone.
+    if (WpvpHappeningNearby(bot))
+        return false;
 
     if (!AI_VALUE(GuidVector, "all targets").empty())
         return false;

@@ -131,6 +131,11 @@ public:
     bool FindRespondable(TeamId team, uint8 botLevel, ObjectGuid botGuid, WpvpDefenseEntry& out);
     bool FindByZone(TeamId team, uint32 zoneId, WpvpDefenseEntry& out);
 
+    // Any tracked attacker - either side, called out or not - whose latest
+    // kill or callout placed them in this zone inside the window: "a fight
+    // just happened here".
+    bool RecentActivityInZone(uint32 mapId, uint32 zoneId, uint32 windowMs);
+
     // A tracked attacker on THIS bot's team whose reinforcement wave is armed
     // and fresh - the backchannel "friends, I'm getting swarmed" ask. Same
     // one-roll-per-bot-per-attacker dice set as defense responses (a bot is
@@ -158,6 +163,12 @@ private:
 // defend mode, aimed at the given spot. Same-zone bots just run over; remote
 // bots wait out a distance-scaled travel delay, then guarded-teleport in.
 bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker);
+
+// World PvP is happening around this bot, or just was: a board entry in its
+// zone from the last couple of minutes, or a PvP-flagged enemy player inside
+// vision range right now. Downtime leisure - dueling for fun - reads wrong
+// next to a battlefield; use this to hold it until things quiet down.
+bool WpvpHappeningNearby(Player* bot);
 
 // A ganker's spree crossed the escalation threshold and this bot knows it
 // first-hand (it died to them and is still in their zone, or can see them
