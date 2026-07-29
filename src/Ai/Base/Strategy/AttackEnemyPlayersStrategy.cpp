@@ -27,4 +27,8 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     // faction-mates in as reinforcements (no chat - assumed backchannel).
     triggers.push_back(new TriggerNode("wpvp reinforce",
                                        { NextAction("wpvp reinforce", 37.0f) }));
+    // A friendly emoting at an enemy is a silent callout: every bot close
+    // enough to have seen it converges on the spot to hunt them (Felworld).
+    triggers.push_back(new TriggerNode("wpvp emote alert",
+                                       { NextAction("wpvp emote alert", 36.0f) }));
 }

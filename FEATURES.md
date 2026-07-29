@@ -172,6 +172,21 @@ out, hunted, and — if the tables turn — reinforced exactly like a bot.
 the `!wpvp defend` chat command ([below](#commands-added-in-this-fork))
 lets you order a defense yourself.
 
+A quieter signal rides the same hunt machinery: a targeted emote at an
+enemy. When any friendly — player or bot — aims a text emote (`/point`,
+`/charge`, anything) at a PvP-flagged enemy player, every bot close enough
+to have seen it (the `ListenRange.TextEmote` radius around the emoter)
+treats it as "look at THAT one" and converges on the spot to hunt them.
+No dice roll — the emote is the dice — so it reliably covers the enemies
+bots fail to notice on their own: out of vision range, behind a wall, or
+stealthed. Point at the lurking rogue and the bots around you fan out
+after them. Bots already dwelling on a world-PvP excursion answer too
+(they're out there exactly for these fights), while bots already answering
+a defense call stay on task; the same level slack as defense responses
+keeps hopelessly outleveled bots out of it, and the emoter itself never
+counts as a witness — pointing is a callout, not a self-command to charge.
+`AiPlayerbot.WpvpEmoteAlertEnabled` turns it off.
+
 ## World PvP threat reactions
 
 Upstream bots are strangely oblivious to being attacked by an enemy player

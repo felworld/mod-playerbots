@@ -1211,6 +1211,18 @@ AiPlayerbot.WpvpReinforcementEnabled = 1
 AiPlayerbot.WpvpReinforcementDeaths = 2
 AiPlayerbot.WpvpReinforcementChance = 15
 
+# Emote alerts: a targeted emote (/point, /charge, anything) aimed at a
+# PvP-flagged enemy player tips off everyone close enough to see it - bots
+# within the text-emote listen range (ListenRange.TextEmote) of the emoter
+# treat it as "look at THAT one". Eligible witnesses (same faction as the
+# emoter, level within WpvpDefenseLevelSlack of the enemy, not busy - bots
+# dwelling on a wpvp excursion count as available) all converge to hunt the
+# enemy, no dice roll, covering enemies bots failed to spot on their own
+# (out of range, behind a wall, stealthed). Works for player and bot
+# emoters alike, so pointing at a lurking rogue rallies the bots around you.
+# Default: 1 (enabled)
+AiPlayerbot.WpvpEmoteAlertEnabled = 1
+
 # Travel realism for defense responses: departure is held for a rough
 # ride-there estimate scaled by DelayFactor (1.0 = full estimate, 0 = leave
 # at once; clamped to 10s-4min). Once there, defenders dwell only a few

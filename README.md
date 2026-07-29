@@ -45,8 +45,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   emotes and level-gap-curved gankers.
 - **[World PvP defense and reinforcements](FEATURES.md#world-pvp-defense-and-reinforcements)**
   — gank sprees draw LocalDefense/WorldDefense callouts, defenders travel
-  in to hunt the attacker, and a beaten ganker can pull reinforcements —
-  it all works the same when the ganker is a real player.
+  in to hunt the attacker, a beaten ganker can pull reinforcements, and
+  emoting at an enemy rallies every bot that saw you do it — it all works
+  the same when the ganker is a real player.
 - **[World PvP threat reactions](FEATURES.md#world-pvp-threat-reactions)**
   — attacked in the open world, bots get up from meals, abort long casts,
   turn from mobs to their assailant, hold a soulstone res while the

@@ -460,6 +460,7 @@ public:
     bool wpvpReinforcementEnabled;
     uint32 wpvpReinforcementDeaths;
     float wpvpReinforcementChance;
+    bool wpvpEmoteAlertEnabled;
     uint32 wpvpKillSwitchDefaultMinutes;
     bool enableBotDuels;
     uint32 duelChallengeRange;

@@ -8,6 +8,7 @@
 #include "Playerbots.h"
 #include "ScriptMgr.h"
 #include "WpvpDefense.h"
+#include "WpvpEmoteAlert.h"
 
 // Feeds the wpvp defense board: world PvP kills bump the killer's
 // uncontested-kill tally (arming the WorldDefense escalation shout), and a
@@ -17,7 +18,10 @@
 class PlayerbotsWpvpScript : public PlayerScript
 {
 public:
-    PlayerbotsWpvpScript() : PlayerScript("PlayerbotsWpvpScript", { PLAYERHOOK_ON_PVP_KILL }) {}
+    PlayerbotsWpvpScript()
+        : PlayerScript("PlayerbotsWpvpScript", { PLAYERHOOK_ON_PVP_KILL, PLAYERHOOK_ON_TEXT_EMOTE })
+    {
+    }
 
     void OnPlayerPVPKill(Player* killer, Player* killed) override
     {
@@ -36,6 +40,15 @@ public:
 
         WpvpDefenseBoard::instance().RecordKill(killer, killed);
         WpvpDefenseBoard::instance().RecordAttackerDeath(killed, killer->GetGUID());
+    }
+
+    // A targeted emote at an enemy player is visible intel: the packet the
+    // clients get names the target only as a localized string, but this hook
+    // fires before the broadcast with the real guid. Witness bots pick the
+    // sighting up from the emote-alert board.
+    void OnPlayerTextEmote(Player* player, uint32 /*textEmote*/, uint32 /*emoteNum*/, ObjectGuid guid) override
+    {
+        NoteTargetedEmoteAtEnemy(player, guid);
     }
 };
 
