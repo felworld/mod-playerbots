@@ -10,6 +10,7 @@
 #include "BystanderTriggers.h"
 #include "QuestCompetitionTriggers.h"
 #include "SocialBuffTriggers.h"
+#include "StealthReactTriggers.h"
 #include "CureTriggers.h"
 #include "DuelChallenge.h"
 #include "FishingTriggers.h"
@@ -182,6 +183,8 @@ public:
         creators["passerby to buff"] = &TriggerContext::passerby_to_buff;
         creators["buffed by friendly"] = &TriggerContext::buffed_by_friendly;
         creators["healed by friendly"] = &TriggerContext::healed_by_friendly;
+        creators["stealther spotted"] = &TriggerContext::stealther_spotted;
+        creators["stealth spot emote"] = &TriggerContext::stealth_spot_emote;
         creators["no rpg target"] = &TriggerContext::no_rpg_target;
         creators["has rpg target"] = &TriggerContext::has_rpg_target;
         creators["far from rpg target"] = &TriggerContext::far_from_rpg_target;
@@ -444,6 +447,8 @@ private:
     static Trigger* passerby_to_buff(PlayerbotAI* botAI) { return new PasserbyToBuffTrigger(botAI); }
     static Trigger* buffed_by_friendly(PlayerbotAI* botAI) { return new BuffedByFriendlyTrigger(botAI); }
     static Trigger* healed_by_friendly(PlayerbotAI* botAI) { return new HealedByFriendlyTrigger(botAI); }
+    static Trigger* stealther_spotted(PlayerbotAI* botAI) { return new StealtherSpottedTrigger(botAI); }
+    static Trigger* stealth_spot_emote(PlayerbotAI* botAI) { return new StealthSpotEmoteTrigger(botAI); }
     static Trigger* bg_waiting(PlayerbotAI* botAI) { return new BgWaitingTrigger(botAI); }
     static Trigger* bg_active(PlayerbotAI* botAI) { return new BgActiveTrigger(botAI); }
     static Trigger* bg_invite_active(PlayerbotAI* botAI) { return new BgInviteActiveTrigger(botAI); }

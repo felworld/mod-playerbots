@@ -629,6 +629,11 @@ bool PlayerbotAIConfig::Initialize()
     enableHealThanks = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableHealThanks", true);
     socialThankCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialThankCooldown", 180);
 
+    // stealth-spotting reactions (Felworld)
+    enableStealthReactions = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableStealthReactions", true);
+    stealthReactionCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.StealthReactionCooldown", 180);
+    stealthReactionEmoteChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.StealthReactionEmoteChance", 30);
+
     // SPP switches
     enableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);
     summonWhenGroup = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonWhenGroup", true);

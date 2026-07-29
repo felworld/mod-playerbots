@@ -78,6 +78,27 @@ buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and
 `AiPlayerbot.EnableHealThanks` (both default on) plus radius/cooldown
 knobs in `playerbots.conf.dist`.
 
+## Stealth-spotting reactions
+
+Upstream bots walked straight past a rogue they could technically see
+and never acknowledged them. Now, when a bot's stealth detection
+genuinely reaches a stealthed player nearby — the same math the server
+uses for real players (level plus stealth/detect auras, up to 30 yards),
+except in all directions, since the client's stealth-detect ping isn't
+directional — it has the "oh crap" moment a real player has: it freezes
+mid-stride, snaps around to face the stealther, and hesitates a beat
+before carrying on. Friend or enemy, it's startling either way.
+
+Sometimes the fright resolves into an emote a moment later: a /wave at a
+friendly sneak, but only when no enemy is around who could use the wave
+to find them; or a /point calling out a hostile one, but only when a
+friendly is nearby to warn and the bot isn't PvP-flagged (a flagged bot
+in a contested situation fights rather than points). Group members never
+trigger the reaction — stealthed party members are always visible to
+their own group — and a bot that is itself stealthed stays quiet rather
+than give its position away. `AiPlayerbot.EnableStealthReactions`
+(default on) plus cooldown/emote-chance knobs in `playerbots.conf.dist`.
+
 ## Quest-competition groups
 
 A solo random bot that sees a nearby ungrouped

@@ -18,6 +18,7 @@
 #include "BystanderAssistActions.h"
 #include "QuestCompetitionActions.h"
 #include "SocialBuffActions.h"
+#include "StealthReactActions.h"
 #include "CastCustomSpellAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -183,6 +184,8 @@ public:
         creators["buff passerby"] = &ActionContext::buff_passerby;
         creators["buff back"] = &ActionContext::buff_back;
         creators["thank healer"] = &ActionContext::thank_healer;
+        creators["startle at stealther"] = &ActionContext::startle_at_stealther;
+        creators["stealth spot emote"] = &ActionContext::stealth_spot_emote;
         creators["reach bystander to assist"] = &ActionContext::reach_bystander_to_assist;
         creators["attack bystander attacker"] = &ActionContext::attack_bystander_attacker;
         creators["check values"] = &ActionContext::check_values;
@@ -347,6 +350,8 @@ private:
     static Action* buff_passerby(PlayerbotAI* botAI) { return new BuffPasserbyAction(botAI); }
     static Action* buff_back(PlayerbotAI* botAI) { return new BuffBackAction(botAI); }
     static Action* thank_healer(PlayerbotAI* botAI) { return new ThankHealerAction(botAI); }
+    static Action* startle_at_stealther(PlayerbotAI* botAI) { return new StartleAtStealtherAction(botAI); }
+    static Action* stealth_spot_emote(PlayerbotAI* botAI) { return new StealthSpotEmoteAction(botAI); }
     static Action* reach_bystander_to_assist(PlayerbotAI* botAI) { return new ReachBystanderToAssistAction(botAI); }
     static Action* attack_bystander_attacker(PlayerbotAI* botAI) { return new AttackBystanderAttackerAction(botAI); }
     static Action* check_mail(PlayerbotAI* botAI) { return new CheckMailAction(botAI); }

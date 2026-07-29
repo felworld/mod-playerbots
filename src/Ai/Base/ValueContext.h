@@ -19,6 +19,7 @@
 #include "BudgetValues.h"
 #include "BystanderValues.h"
 #include "SocialBuffValues.h"
+#include "StealthReactValues.h"
 #include "CcTargetValue.h"
 #include "ChatValue.h"
 #include "CollisionValue.h"
@@ -123,6 +124,8 @@ public:
         creators["passerby to buff"] = &ValueContext::passerby_to_buff;
         creators["pending buff back"] = &ValueContext::pending_buff_back;
         creators["pending thank"] = &ValueContext::pending_thank;
+        creators["stealther spotted"] = &ValueContext::stealther_spotted;
+        creators["pending stealth emote"] = &ValueContext::pending_stealth_emote;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
         creators["nearest unflagged enemy players"] = &ValueContext::nearest_unflagged_enemy_players;
@@ -449,6 +452,11 @@ private:
     static UntypedValue* pending_thank(PlayerbotAI* botAI)
     {
         return new ManualSetValue<SocialReactionEvent>(botAI, SocialReactionEvent(), "pending thank");
+    }
+    static UntypedValue* stealther_spotted(PlayerbotAI* botAI) { return new StealtherSpottedValue(botAI); }
+    static UntypedValue* pending_stealth_emote(PlayerbotAI* botAI)
+    {
+        return new ManualSetValue<StealthSpotEvent>(botAI, StealthSpotEvent(), "pending stealth emote");
     }
     static UntypedValue* closest_friendly_players(PlayerbotAI* botAI)
     {

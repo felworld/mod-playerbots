@@ -33,6 +33,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   winnable.
 - **[Social buffing](FEATURES.md#social-buffing)** — idle bots buff
   passers-by, return buffs, and thank strangers for heals.
+- **[Stealth-spotting reactions](FEATURES.md#stealth-spotting-reactions)** —
+  a bot that detects someone stealthed nearby freezes and snaps around to
+  face them, sometimes waving at a friendly sneak or calling out a hostile
+  one.
 - **[Quest-competition groups](FEATURES.md#quest-competition-groups)** — a
   bot competing with you for spawns invites you to group and grinds
   alongside you as a peer.

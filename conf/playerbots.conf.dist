@@ -2507,6 +2507,24 @@ AiPlayerbot.QuestCompetitionInvite = 1
 # with how many bots are nearby.
 AiPlayerbot.QuestCompetitionInviteCooldown = 600
 
+# Stealth-spotting reactions (Felworld): when a bot's stealth detection
+# genuinely reaches a stealthed player nearby (the core detection math -
+# level and stealth/detect auras, up to 30 yards - but in all directions,
+# since the client's detect ping isn't directional), it has the same "oh
+# crap" moment a real player does: it freezes mid-stride, snaps around
+# to face the stealther, and hesitates a beat before carrying on.
+# Sometimes it follows up with an emote: a /wave at a friendly sneak
+# (only when no enemy is nearby to take advantage), or a /point calling
+# out a hostile one (only when a friendly is around to warn and the bot
+# isn't PvP-flagged itself). Friend or enemy both startle; group members
+# never do, and a bot that is itself stealthed stays quiet.
+AiPlayerbot.EnableStealthReactions = 1
+# Per-stealther cooldown (seconds), so one rogue circling a bot gets one
+# reaction, not one per scan.
+AiPlayerbot.StealthReactionCooldown = 180
+# Percent chance the startle resolves into the follow-up emote.
+AiPlayerbot.StealthReactionEmoteChance = 30
+
 #
 #
 ####################################################################################################

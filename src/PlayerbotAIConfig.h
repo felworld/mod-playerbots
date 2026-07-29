@@ -209,6 +209,11 @@ public:
     bool enableHealThanks;
     uint32 socialThankCooldown;
 
+    // stealth-spotting reactions (Felworld)
+    bool enableStealthReactions;
+    uint32 stealthReactionCooldown;
+    uint32 stealthReactionEmoteChance;
+
     // chat
     bool randomBotTalk;
     bool randomBotEmote;
