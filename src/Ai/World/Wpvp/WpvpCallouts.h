@@ -8,6 +8,7 @@
 #include "ObjectGuid.h"
 #include "SharedDefines.h"
 #include "Trigger.h"
+#include "WpvpDefense.h"
 
 class Player;
 class PlayerbotAI;
@@ -40,12 +41,22 @@ private:
     uint32 _lastPruneMs{0};
 };
 
-// The PvP-flagged opposing player this bot would report: whoever is attacking
-// it, else the nearest flagged enemy (invaders on excursion are always
-// flagged) - skipping enemies the bot outlevels by the gank gap, which are
-// nothing to raise an alarm over. Returns nullptr when there is nothing to
-// report.
-Player* FindWpvpIntruder(PlayerbotAI* botAI);
+// The opposing player this bot would report, and what they were seen doing.
+// Flagged presence alone is not it: on a PvP-type realm everyone in a
+// contested zone is flagged, so the flag says nothing about intent. An enemy
+// qualifies by being seen in combat with the defending side - the bot,
+// another player, or friendly NPCs - or by being a still-fresh ganker the
+// defense channels already called out (Prowling). Enemies the bot outlevels
+// by the gank gap are skipped either way: nothing to raise an alarm over.
+// Returns false when there is nothing to report.
+struct WpvpIntruderSighting
+{
+    Player* intruder{nullptr};
+    WpvpCalloutActivity activity{WpvpCalloutActivity::Prowling};
+    std::string victimName;  // AttackingPlayer only
+};
+
+bool FindWpvpIntruder(PlayerbotAI* botAI, WpvpIntruderSighting& out);
 
 // A random defender bot (not itself on an excursion) sees an invader and the
 // throttle window is open.

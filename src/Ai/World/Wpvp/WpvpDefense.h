@@ -26,6 +26,16 @@ enum class WpvpCalloutKind : uint8
     Escalation,
 };
 
+// What the reported enemy was actually seen doing - the callout wording has
+// to match it, or bots shout "attacking Greenpaw Village" about someone
+// grinding furbolgs there.
+enum class WpvpCalloutActivity : uint8
+{
+    AttackingPlayer,  // in combat with a defending-side player (or their pet)
+    AttackingNpcs,    // in combat with NPCs friendly to the defenders (guards, civilians)
+    Prowling,         // not seen fighting, but a still-fresh, already-called-out ganker
+};
+
 struct WpvpCalloutNotification
 {
     WpvpCalloutKind kind;
@@ -37,6 +47,11 @@ struct WpvpCalloutNotification
     uint8 attackerClass{0};
     uint8 attackerLevel{0};
     uint32 killCount{0};       // Escalation only: uncontested kills so far
+    // FirstCallout only: what the attacker was seen doing, and - for
+    // AttackingPlayer - who they were fighting (the speaker's own name when
+    // the speaker is the one attacked).
+    WpvpCalloutActivity activity{WpvpCalloutActivity::AttackingNpcs};
+    std::string victimName;
     std::string prebakedLine;  // the line playerbots itself would say
 };
 
@@ -129,6 +144,12 @@ public:
     // A fresh, called-out entry this bot hasn't rolled response dice for yet
     // and is not hopelessly outleveled by (level + slack >= attacker level).
     bool FindRespondable(TeamId team, uint8 botLevel, ObjectGuid botGuid, WpvpDefenseEntry& out);
+
+    // The attacker has a fresh entry against this team that some channel
+    // already named: sighting them again is news worth repeating even when
+    // they aren't seen fighting. An attacker nobody announced - including a
+    // failed gank, which leaves no entry at all - stays anonymous.
+    bool IsKnownThreat(ObjectGuid attacker, TeamId team);
     bool FindByZone(TeamId team, uint32 zoneId, WpvpDefenseEntry& out);
 
     // Any tracked attacker - either side, called out or not - whose latest

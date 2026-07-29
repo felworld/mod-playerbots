@@ -333,6 +333,13 @@ bool WpvpDefenseBoard::FindRespondable(TeamId team, uint8 botLevel, ObjectGuid b
     return true;
 }
 
+bool WpvpDefenseBoard::IsKnownThreat(ObjectGuid attacker, TeamId team)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _entries.find(attacker);
+    return it != _entries.end() && it->second.defendingTeam == team && IsRespondable(it->second, getMSTime());
+}
+
 bool WpvpDefenseBoard::FindByZone(TeamId team, uint32 zoneId, WpvpDefenseEntry& out)
 {
     std::lock_guard<std::mutex> lock(_mutex);

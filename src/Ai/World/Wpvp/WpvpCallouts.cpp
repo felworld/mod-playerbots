@@ -64,7 +64,42 @@ void WpvpCalloutThrottle::Prune(uint32 now)
                   [&](auto const& entry) { return getMSTimeDiff(entry.second, now) > staleAfter; });
 }
 
-Player* FindWpvpIntruder(PlayerbotAI* botAI)
+namespace
+{
+// Combat with the defending side is what makes an enemy report-worthy;
+// fighting mobs is just leveling. Checks both directions - who the enemy is
+// swinging at and who is swinging at them - since a caster kiting guards has
+// no melee victim of its own.
+bool ObservedHostility(Player* enemy, Player* bot, WpvpIntruderSighting& out)
+{
+    auto defenderSide = [&](Unit* unit) { return unit && unit->IsFriendlyTo(bot); };
+
+    Unit* foe = defenderSide(enemy->GetVictim()) ? enemy->GetVictim() : nullptr;
+    if (!foe)
+        for (Unit* attacker : enemy->getAttackers())
+            if (defenderSide(attacker))
+            {
+                foe = attacker;
+                break;
+            }
+
+    if (!foe)
+        return false;
+
+    // A pet in the fight means its owner is in the fight.
+    if (Player* victim = foe->GetCharmerOrOwnerPlayerOrPlayerItself())
+    {
+        out.activity = WpvpCalloutActivity::AttackingPlayer;
+        out.victimName = victim->GetName();
+    }
+    else
+        out.activity = WpvpCalloutActivity::AttackingNpcs;
+
+    return true;
+}
+}
+
+bool FindWpvpIntruder(PlayerbotAI* botAI, WpvpIntruderSighting& out)
 {
     Player* bot = botAI->GetBot();
 
@@ -73,13 +108,38 @@ Player* FindWpvpIntruder(PlayerbotAI* botAI)
     auto alarmWorthy = [&](Player* enemy)
     { return bot->GetLevel() < enemy->GetLevel() + sPlayerbotAIConfig.wpvpGankLevelGap; };
 
+    auto reportWorthy = [&](Player* enemy)
+    {
+        if (!alarmWorthy(enemy))
+            return false;
+
+        if (ObservedHostility(enemy, bot, out))
+        {
+            out.intruder = enemy;
+            return true;
+        }
+
+        // Not seen fighting anyone of ours: only worth naming if the defense
+        // channels already know this one - a fresh, called-out board entry.
+        if (WpvpDefenseBoard::instance().IsKnownThreat(enemy->GetGUID(), bot->GetTeamId()))
+        {
+            out.intruder = enemy;
+            out.activity = WpvpCalloutActivity::Prowling;
+            out.victimName.clear();
+            return true;
+        }
+
+        return false;
+    };
+
     if (Unit* attacker = bot->getAttackerForHelper())
         if (Player* enemy = attacker->ToPlayer())
-            if (botAI->IsOpposing(enemy) && alarmWorthy(enemy))
-                return enemy;
+            if (botAI->IsOpposing(enemy) && reportWorthy(enemy))
+                return true;
 
-    // "nearest enemy players" is IsPvP-gated, which is exactly right:
-    // invaders are always flagged.
+    // "nearest enemy players" is IsPvP-gated, which on a PvP-type realm means
+    // everyone in a contested zone - it narrows the candidates, but only
+    // observed hostility (or a known ganker) qualifies one.
     GuidVector enemies = botAI->GetAiObjectContext()->GetValue<GuidVector>("nearest enemy players")->Get();
     for (ObjectGuid const guid : enemies)
     {
@@ -88,11 +148,11 @@ Player* FindWpvpIntruder(PlayerbotAI* botAI)
             continue;
 
         if (Player* enemy = unit->ToPlayer())
-            if (alarmWorthy(enemy))
-                return enemy;
+            if (reportWorthy(enemy))
+                return true;
     }
 
-    return nullptr;
+    return false;
 }
 
 bool WpvpDefenseCalloutTrigger::IsActive()
@@ -110,18 +170,21 @@ bool WpvpDefenseCalloutTrigger::IsActive()
     if (botAI->rpgInfo.GetStatus() == RPG_GO_WPVP)
         return false;
 
-    Player* intruder = FindWpvpIntruder(botAI);
-    if (!intruder)
+    WpvpIntruderSighting sighting;
+    if (!FindWpvpIntruder(botAI, sighting))
         return false;
 
-    return WpvpCalloutThrottle::instance().CanReport(bot->GetTeamId(), bot->GetZoneId(), intruder->GetGUID());
+    return WpvpCalloutThrottle::instance().CanReport(bot->GetTeamId(), bot->GetZoneId(),
+                                                     sighting.intruder->GetGUID());
 }
 
 bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
 {
-    Player* intruder = FindWpvpIntruder(botAI);
-    if (!intruder)
+    WpvpIntruderSighting sighting;
+    if (!FindWpvpIntruder(botAI, sighting))
         return false;
+
+    Player* intruder = sighting.intruder;
 
     // Atomic check-and-record: when several defenders spot the same invader
     // in the same tick, only the first one gets to shout.
@@ -134,20 +197,44 @@ bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
     std::string areaName = PlayerbotAI::GetLocalizedAreaName(area);
     std::string name = intruder->GetName();
 
+    // The line has to match what was seen: "attacking <area>" is for someone
+    // actually hitting the defenders' NPCs, not for whatever camp the
+    // spotter happens to stand in.
     std::string msg;
-    switch (urand(0, 3))
+    switch (sighting.activity)
     {
-        case 0:
-            msg = Acore::StringFormat("{} is attacking {}!", name, areaName);
+        case WpvpCalloutActivity::AttackingPlayer:
+            if (sighting.victimName == bot->GetName())
+                msg = urand(0, 1)
+                    ? Acore::StringFormat("{} jumped me near {}! Little help?", name, areaName)
+                    : Acore::StringFormat("Under attack at {} - it's {}!", areaName, name);
+            else
+                msg = urand(0, 1)
+                    ? Acore::StringFormat("{} is attacking {} near {}!", name, sighting.victimName, areaName)
+                    : Acore::StringFormat("{} needs help at {} - {} is on them!", sighting.victimName, areaName,
+                                          name);
             break;
-        case 1:
-            msg = Acore::StringFormat("Enemy spotted: {} near {}.", name, areaName);
-            break;
-        case 2:
-            msg = Acore::StringFormat("We're under attack at {}! It's {}.", areaName, name);
+        case WpvpCalloutActivity::Prowling:
+            msg = urand(0, 1)
+                ? Acore::StringFormat("That ganker {} is prowling around {} now.", name, areaName)
+                : Acore::StringFormat("Watch yourselves - {} was just spotted near {}.", name, areaName);
             break;
         default:
-            msg = Acore::StringFormat("{} needs defenders - {} is here!", areaName, name);
+            switch (urand(0, 3))
+            {
+                case 0:
+                    msg = Acore::StringFormat("{} is attacking {}!", name, areaName);
+                    break;
+                case 1:
+                    msg = Acore::StringFormat("Enemy spotted: {} near {}.", name, areaName);
+                    break;
+                case 2:
+                    msg = Acore::StringFormat("We're under attack at {}! It's {}.", areaName, name);
+                    break;
+                default:
+                    msg = Acore::StringFormat("{} needs defenders - {} is here!", areaName, name);
+                    break;
+            }
             break;
     }
 
@@ -166,6 +253,8 @@ bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
     notification.attackerRace = intruder->getRace();
     notification.attackerClass = intruder->getClass();
     notification.attackerLevel = intruder->GetLevel();
+    notification.activity = sighting.activity;
+    notification.victimName = sighting.victimName;
     notification.prebakedLine = msg;
     FireWpvpCalloutNotification(notification);
 

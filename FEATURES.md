@@ -141,7 +141,15 @@ observability, and a runtime kill switch.
 
 Ganking has consequences, on both
 sides. Defender bots call out invaders in LocalDefense ("Bloguk is
-attacking Goldshire!"), throttled per zone and per attacker, and an
+attacking Goldshire!"), throttled per zone and per attacker. A callout
+takes evidence, not just presence — on a PvP-type realm everyone in a
+contested zone is flagged, so an enemy quietly grinding mobs is everyday
+leveling, not an attack. Bots report an enemy they see fighting the
+defending side (a friendly player, their pet, or the town's guards and
+civilians), or a still-fresh ganker the defense channels already named
+merely prowling past — and the wording follows what was seen ("Bloguk is
+attacking Elissa near Goldshire!" / "That ganker Bloguk is prowling
+around Goldshire now."). An
 uncontested *gank* spree — kills of victims at least the gank gap below
 the ganker; even fights never escalate, no matter how many times somebody
 loses one — earns one WorldDefense shout from an eyewitness: a victim of
