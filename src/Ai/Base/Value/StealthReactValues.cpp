@@ -23,9 +23,29 @@ bool CanDetectStealth360(Player* bot, Unit* target)
     if (!target->m_stealth.GetFlags())
         return false;
 
-    // Stealth layered under invisibility the bot can't pierce stays unseen.
-    if (target->m_invisibility.GetFlags() && !bot->CanDetectInvisibilityOf(target))
-        return false;
+    // Stealth layered under invisibility the bot can't pierce stays unseen -
+    // an inline mirror of WorldObject::CanDetectInvisibilityOf (private to
+    // the core), minus the invisible-seer corner: a bot startling in the
+    // open is never itself invisible.
+    if (uint32 invisFlags = target->m_invisibility.GetFlags())
+    {
+        uint32 mask = invisFlags & (bot->m_invisibilityDetect.GetFlags() | bot->m_invisibility.GetFlags());
+        if (mask != invisFlags)
+            return false;
+
+        for (uint32 i = 0; i < TOTAL_INVISIBILITY_TYPES; ++i)
+        {
+            if (!(mask & (1 << i)))
+                continue;
+
+            // Visible for the same invisibility type.
+            if (bot->m_invisibility.GetValue(InvisibilityType(i)) && target->m_invisibility.GetValue(InvisibilityType(i)))
+                continue;
+
+            if (bot->m_invisibilityDetect.GetValue(InvisibilityType(i)) < target->m_invisibility.GetValue(InvisibilityType(i)))
+                return false;
+        }
+    }
 
     float distance = bot->GetExactDist(target);
     float combatReach = bot->GetCombatReach();
