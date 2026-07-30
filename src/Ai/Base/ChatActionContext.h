@@ -13,6 +13,7 @@
 #include "BuffAction.h"
 #include "BuyAction.h"
 #include "CastCustomSpellAction.h"
+#include "ClassServiceActions.h"
 #include "ChangeChatAction.h"
 #include "ChangeStrategyAction.h"
 #include "ChangeTalentsAction.h"
@@ -173,6 +174,10 @@ public:
         creators["position"] = &ChatActionContext::position;
         creators["tell target"] = &ChatActionContext::tell_target;
         creators["summon"] = &ChatActionContext::summon;
+        creators["conjure"] = &ChatActionContext::conjure;
+        creators["portal"] = &ChatActionContext::portal;
+        creators["ritual"] = &ChatActionContext::ritual;
+        creators["use summoning portal"] = &ChatActionContext::use_summoning_portal;
         creators["who"] = &ChatActionContext::who;
         creators["save mana"] = &ChatActionContext::save_mana;
         creators["max dps chat shortcut"] = &ChatActionContext::max_dps_chat_shortcut;
@@ -236,6 +241,10 @@ private:
     static Action* save_mana(PlayerbotAI* botAI) { return new SaveManaAction(botAI); }
     static Action* who(PlayerbotAI* botAI) { return new WhoAction(botAI); }
     static Action* summon(PlayerbotAI* botAI) { return new SummonAction(botAI); }
+    static Action* conjure(PlayerbotAI* botAI) { return new ConjureItemAction(botAI); }
+    static Action* portal(PlayerbotAI* botAI) { return new OpenPortalAction(botAI); }
+    static Action* ritual(PlayerbotAI* botAI) { return new RitualOfSummoningAction(botAI); }
+    static Action* use_summoning_portal(PlayerbotAI* botAI) { return new UseSummoningPortalAction(botAI); }
     static Action* tell_target(PlayerbotAI* botAI) { return new TellTargetAction(botAI); }
     static Action* position(PlayerbotAI* botAI) { return new PositionAction(botAI); }
     static Action* spirit_healer(PlayerbotAI* botAI) { return new SpiritHealerAction(botAI); }

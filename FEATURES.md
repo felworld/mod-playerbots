@@ -381,6 +381,37 @@ refills the population automatically. This is a runtime override — a config
 reload or restart reverts to `AiPlayerbot.Enabled` (which Felworld drives
 per session mode via the `AC_AI_PLAYERBOT_ENABLED` env var).
 
+## Class service commands
+
+The class utilities other players provide on a busy server — a mage handing
+out food and water, a mage opening a city portal, warlocks summoning a group
+member — issued as explicit commands to your bots:
+
+- `!conjure food` / `!conjure water` (mage) — the bot casts its best
+  Conjure Food/Water (Conjure Refreshment at high level, which covers
+  both requests) and hands the conjured stacks straight to you. Stand
+  within trade range; anything already conjured in its bags is handed
+  over immediately without a cast.
+- `!portal <city>` (mage) — the bot casts the matching Portal spell
+  (`!portal stormwind`, `!portal shattrath`, …); step through before it
+  fades. `!portal` alone lists the destinations it knows — it can only
+  open portals its faction and level have learned.
+- `!ritual` (warlock) — summons *you* with a real Ritual of Summoning:
+  the warlock begins the channel and two group bots standing with it
+  click the summoning portal, so wherever you are you get the standard
+  summon-accept dialog. Requires being in the bot's group and two other
+  group members beside the warlock — the classic warlock taxi for
+  skipping the walk back to your party. (The portal clicks use an
+  internal `use summoning portal` command, which also works on a ritual
+  *you* cast as a warlock.)
+
+Reagents are the one concession to convenience: a bot missing the Rune of
+Portals or Soul Shard a spell consumes produces one in its bags first —
+bots don't shop for reagents. Everything else uses the real spells, cast
+times, and mechanics, so it all plays out visibly in the world. These
+commands are also the hooks for later making the behaviors emergent or
+LLM-driven (mod-llm tool-calls answering "can someone summon me?").
+
 ## Commands added in this fork
 
 Bot chat commands — spoken to a bot like any command from the
@@ -398,6 +429,9 @@ with the `!` prefix described above:
   issue it, but only world (random) bots accept — your own alt bots ignore
   it. This is also the hook behind mod-llm's `go_defend` tool, so in LLM
   mode you can simply ask a bot in plain language to go help.
+- `!conjure food` / `!conjure water`, `!portal <city>`, `!ritual` — the
+  mage and warlock class services described in
+  [Class service commands](#class-service-commands).
 
 GM / console commands:
 

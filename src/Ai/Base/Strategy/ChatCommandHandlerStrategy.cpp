@@ -131,6 +131,10 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("rti");
     supported.push_back("position");
     supported.push_back("summon");
+    supported.push_back("conjure");
+    supported.push_back("portal");
+    supported.push_back("ritual");
+    supported.push_back("use summoning portal");
     supported.push_back("who");
     supported.push_back("save mana");
     supported.push_back("formation");

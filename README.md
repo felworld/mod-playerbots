@@ -68,6 +68,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   crowds don't reply in chorus.
 - **[Tunable unprompted emoting](FEATURES.md#tunable-unprompted-emoting)** —
   thin out idle emoting without touching reactions.
+- **[Class service commands](FEATURES.md#class-service-commands)** —
+  `!conjure food`/`!conjure water`, `!portal <city>`, `!ritual`: mage
+  food and water handed straight to you, mage city portals, and a real
+  warlock summoning ritual your bots click for you.
 - **[Faction-honest chat](FEATURES.md#faction-honest-chat)** — bots speak
   their faction's language, honor `AllowTwoSide.Interaction.Chat`, and
   ignore speech they couldn't understand.
@@ -82,6 +86,9 @@ Spoken to a bot (with the `!` prefix, like every
 - `!grind quests` — switch to the quest-aware grind strategy.
 - `!wpvp defend [zone]` — order a random bot to come defend a zone (the one
   you're standing in if omitted).
+- `!conjure food` / `!conjure water`, `!portal <city>`, `!ritual` — mage
+  and warlock class services (conjured goods handed to you, city portals,
+  summoning rituals).
 
 GM / console:
 
