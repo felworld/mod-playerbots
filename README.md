@@ -85,6 +85,9 @@ GM / console:
 - `.playerbots enable | disable | status` — the runtime random-bot toggle.
 - `.playerbots wpvp test [class] | off [minutes] | on | status` — world-PvP
   excursion test hook, kill switch, and status report.
+- `.playerbots gear [player] <quality> [max item level]` — non-destructively
+  re-gear a character with spec-appropriate items of the given rarity, the
+  way the bot factory outfits bots.
 
 Arguments and behavior details:
 [FEATURES.md](FEATURES.md#commands-added-in-this-fork).

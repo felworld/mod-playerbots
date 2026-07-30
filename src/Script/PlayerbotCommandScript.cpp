@@ -21,11 +21,14 @@
 #include "NewRpgWpvp.h"
 #include "PerfMonitor.h"
 #include "PlayerbotCommandScript.h"
+#include "PlayerbotFactory.h"
 #include "PlayerbotMgr.h"
 #include "Playerbots.h"
 #include "Random.h"
 #include "RandomPlayerbotMgr.h"
 #include "ScriptMgr.h"
+
+#include <cctype>
 
 using namespace Acore::ChatCommands;
 
@@ -111,6 +114,7 @@ public:
 
         static ChatCommandTable playerbotsCommandTable = {
             {"bot", HandlePlayerbotCommand, SEC_PLAYER, Console::No},
+            {"gear", HandlePlayerbotsGearCommand, SEC_GAMEMASTER, Console::Yes},
             {"wpvp", playerbotsWpvpCommandTable},
             {"enable", HandlePlayerbotsEnableCommand, SEC_ADMINISTRATOR, Console::Yes},
             {"disable", HandlePlayerbotsDisableCommand, SEC_ADMINISTRATOR, Console::Yes},
@@ -132,6 +136,78 @@ public:
     static bool HandlePlayerbotCommand(ChatHandler* handler, char const* args)
     {
         return PlayerbotMgr::HandlePlayerbotMgrCommand(handler, args);
+    }
+
+    // Non-destructively re-gear an online character (human or bot) with
+    // factory-picked items of the requested quality, using the same
+    // spec-aware selection the bot "autogear" chat command uses. Replaced
+    // items are moved into the character's bags by InitEquipment; a slot
+    // whose old item does not fit in the bags is left unchanged.
+    static bool HandlePlayerbotsGearCommand(ChatHandler* handler, Optional<PlayerIdentifier> target,
+                                            std::string qualityName, Optional<uint32> maxItemLevel)
+    {
+        static std::unordered_map<std::string, uint32> const qualities = {
+            {"white", ITEM_QUALITY_NORMAL},        {"common", ITEM_QUALITY_NORMAL},
+            {"green", ITEM_QUALITY_UNCOMMON},      {"uncommon", ITEM_QUALITY_UNCOMMON},
+            {"blue", ITEM_QUALITY_RARE},           {"rare", ITEM_QUALITY_RARE},
+            {"epic", ITEM_QUALITY_EPIC},           {"purple", ITEM_QUALITY_EPIC},
+            {"legendary", ITEM_QUALITY_LEGENDARY}, {"yellow", ITEM_QUALITY_LEGENDARY},
+        };
+
+        for (char& c : qualityName)
+            c = std::tolower(c);
+
+        auto it = qualities.find(qualityName);
+        if (it == qualities.end())
+        {
+            handler->PSendSysMessage(
+                "Usage: .playerbots gear [player] <white|green|blue|epic|legendary> [max item level]");
+            return true;
+        }
+        uint32 itemQuality = it->second;
+
+        if (!target)
+            target = PlayerIdentifier::FromTargetOrSelf(handler);
+
+        if (!target || !target->IsConnected())
+        {
+            handler->PSendSysMessage("The target character must be online.");
+            return true;
+        }
+
+        Player* player = target->GetConnectedPlayer();
+        if (handler->HasLowerSecurity(player))
+            return false;
+
+        // Replaced gear goes to the bags, so a full-ish inventory means some
+        // slots keep their old item. Warn up front rather than fail silently.
+        uint32 equipped = 0;
+        for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
+            if (slot != EQUIPMENT_SLOT_BODY && slot != EQUIPMENT_SLOT_TABARD &&
+                player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                ++equipped;
+
+        uint32 freeSlots = player->GetFreeInventorySpace();
+        if (freeSlots < equipped)
+            handler->PSendSysMessage(
+                "Warning: {} free bag slot(s) for {} equipped item(s) - slots whose replaced item does not fit "
+                "will keep their current gear.",
+                freeSlots, equipped);
+
+        uint32 gearScoreLimit =
+            maxItemLevel ? PlayerbotFactory::CalcMixedGearScore(*maxItemLevel, itemQuality) : 0;
+        PlayerbotFactory factory(player, player->GetLevel(), itemQuality, gearScoreLimit);
+        factory.InitEquipment(false);
+        factory.InitAmmo();
+        if (player->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)
+            factory.ApplyEnchantAndGemsNew();
+        player->DurabilityRepairAll(false, 1.0f, false);
+        player->SaveToDB(false, false);
+
+        handler->PSendSysMessage("Re-geared {} with {} items{} - replaced gear is in their bags.",
+                                 handler->playerLink(target->GetName()), qualityName,
+                                 maxItemLevel ? Acore::StringFormat(" (max item level {})", *maxItemLevel) : "");
+        return true;
     }
 
     static uint8 ParseClassName(std::string const& name)

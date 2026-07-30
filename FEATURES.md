@@ -386,6 +386,18 @@ GM / console commands:
 - `.playerbots wpvp status` — whether excursions are enabled, plus one line
   per bot currently out: destination, travelling or dwelling, and deaths so
   far.
+- `.playerbots gear [player] <white|green|blue|epic|legendary> [max item level]`
+  — non-destructively re-gear an online character (targeted, named, or
+  yourself) with factory-picked items of the given rarity, using the same
+  spec-aware stat weighting that outfits bots: every slot is re-rolled, the
+  new gear is enchanted and gemmed (at the `AiPlayerbot.MinEnchantingBotLevel`
+  threshold), ammo is restocked, and durability repaired. Replaced items are
+  moved to the character's bags, never destroyed — a slot whose old item
+  doesn't fit in the bags is left unchanged, and the command warns up front
+  when bag space looks short. The optional trailing number caps the item
+  level. Made for GM-leveled test characters (`.character level` and go), and
+  works on bots too (gamemaster; works from the console with an explicit
+  player name).
 
 ---
 
