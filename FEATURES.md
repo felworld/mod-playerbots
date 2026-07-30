@@ -182,7 +182,10 @@ lets you order a defense yourself.
 
 A quieter signal rides the same hunt machinery: a targeted emote at an
 enemy. When any friendly — player or bot — aims a text emote (`/point`,
-`/charge`, anything) at a PvP-flagged enemy player, every bot close enough
+`/charge`, nearly anything — sincere respect gestures like `/salute` and
+`/bow` are exempt, see the [same-class truce](#same-class-truce) below;
+a `/wave` or `/smile` at an enemy reads just as easily as gank taunting,
+so those still count) at a PvP-flagged enemy player, every bot close enough
 to have seen it (the `ListenRange.TextEmote` radius around the emoter)
 treats it as "look at THAT one" and converges on the spot to hunt them.
 No dice roll — the emote is the dice — so it reliably covers the enemies
@@ -194,6 +197,29 @@ a defense call stay on task; the same level slack as defense responses
 keeps hopelessly outleveled bots out of it, and the emoter itself never
 counts as a witness — pointing is a callout, not a self-command to charge.
 `AiPlayerbot.WpvpEmoteAlertEnabled` turns it off.
+
+## Same-class truce
+
+Some pairs of same-class enemies honor the old player code — "druids don't
+gank druids". Where the regular world-PvP targeting would open an
+unprovoked attack (or an excursion bot would goad), a truce-bound bot
+declines, faces the spared enemy, and delivers a targeted `/salute`
+instead — stealthed rogues and druids step out of stealth to do it, the
+reveal being part of the gesture. Whether a given pair falls under the
+code is decided deterministically per character pair, not rolled per
+encounter: the configured percentage is the share of pairs that do, and
+the decision never flips mid-standoff. Honoring it is personal, though — a
+small deterministic share of individuals are oathbreakers toward a
+particular rival, so most truce-bound pairs exchange salutes and move on,
+but sometimes the recipient of the courtesy answers it with an attack.
+The truce covers only unprovoked attacks:
+a bot defends itself and assists its party exactly as before, instanced
+PvP is exempt, and an enemy the defense boards already track as a ganker
+forfeits the courtesy. Salutes are throttled per pair, and the emote-alert
+machinery above deliberately ignores sincere respect gestures so the
+salute never summons the militia onto the salutee.
+`AiPlayerbot.WpvpClassTruceChance` sets per-class percentages
+(default `druid:60,hunter:25`; unlisted classes never truce).
 
 ## World PvP threat reactions
 

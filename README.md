@@ -48,6 +48,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   in to hunt the attacker, a beaten ganker can pull reinforcements, and
   emoting at an enemy rallies every bot that saw you do it — it all works
   the same when the ganker is a real player.
+- **[Same-class truce](FEATURES.md#same-class-truce)** — some same-class
+  pairs honor the "druids don't gank druids" code: no unprovoked attack,
+  a `/salute` instead.
 - **[World PvP threat reactions](FEATURES.md#world-pvp-threat-reactions)**
   — attacked in the open world, bots get up from meals, abort long casts,
   turn from mobs to their assailant, hold a soulstone res while the

@@ -37,10 +37,11 @@ struct WpvpEmoteAlertEntry
 };
 
 // A targeted text emote landed on someone: called from the text-emote hook
-// with the raw target guid. Validates the pair (opposing teams, PvP-flagged
-// enemy player within vision range, no BG/arena/prohibited zone) and posts
-// the sighting for witnesses.
-void NoteTargetedEmoteAtEnemy(Player* emoter, ObjectGuid targetGuid);
+// with the emote id and the raw target guid. Validates the pair (opposing
+// teams, PvP-flagged enemy player within vision range, no BG/arena/prohibited
+// zone), exempts sincere respect gestures (/salute, /bow - the same-class
+// truce vocabulary), and posts the sighting for witnesses.
+void NoteTargetedEmoteAtEnemy(Player* emoter, uint32 textEmote, ObjectGuid targetGuid);
 
 // Bulletin board of fresh emote sightings, keyed by the enemy. Producer: the
 // text-emote hook (any map-update thread). Consumers: witness bots' triggers.

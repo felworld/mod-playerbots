@@ -7,6 +7,7 @@
 #ifndef PLAYERBOTS_PLAYERBOTAICONFIG_H
 #define PLAYERBOTS_PLAYERBOTAICONFIG_H
 
+#include <array>
 #include <mutex>
 #include <unordered_map>
 #include <set>
@@ -461,6 +462,7 @@ public:
     uint32 wpvpReinforcementDeaths;
     float wpvpReinforcementChance;
     bool wpvpEmoteAlertEnabled;
+    std::array<uint32, MAX_CLASSES> wpvpClassTruceChance;
     uint32 wpvpKillSwitchDefaultMinutes;
     bool enableBotDuels;
     uint32 duelChallengeRange;

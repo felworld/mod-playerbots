@@ -791,6 +791,37 @@ bool PlayerbotAIConfig::Initialize()
     wpvpReinforcementDeaths = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementDeaths", 2);
     wpvpReinforcementChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpReinforcementChance", 15.0f);
     wpvpEmoteAlertEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpEmoteAlertEnabled", true);
+    wpvpClassTruceChance.fill(0);
+    {
+        static std::unordered_map<std::string, uint8> const classesByName = {
+            {"warrior", CLASS_WARRIOR}, {"paladin", CLASS_PALADIN}, {"hunter", CLASS_HUNTER},
+            {"rogue", CLASS_ROGUE},     {"priest", CLASS_PRIEST},   {"deathknight", CLASS_DEATH_KNIGHT},
+            {"shaman", CLASS_SHAMAN},   {"mage", CLASS_MAGE},       {"warlock", CLASS_WARLOCK},
+            {"druid", CLASS_DRUID}};
+
+        std::string const truceSpec =
+            sConfigMgr->GetOption<std::string>("AiPlayerbot.WpvpClassTruceChance", "druid:60,hunter:25");
+        for (std::string const& token : split(truceSpec, ','))
+        {
+            std::string entry = token;
+            entry.erase(std::remove_if(entry.begin(), entry.end(), ::isspace), entry.end());
+            if (entry.empty())
+                continue;
+
+            size_t const colon = entry.find(':');
+            auto klass = colon == std::string::npos ? classesByName.end()
+                                                    : classesByName.find(entry.substr(0, colon));
+            int32 const chance = colon == std::string::npos ? -1 : atoi(entry.c_str() + colon + 1);
+            if (klass == classesByName.end() || chance < 0 || chance > 100)
+            {
+                LOG_ERROR("playerbots", "AiPlayerbot.WpvpClassTruceChance: bad entry '{}' (want class:percent)",
+                          token);
+                continue;
+            }
+
+            wpvpClassTruceChance[klass->second] = uint32(chance);
+        }
+    }
     wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
 
     enableBotDuels = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBotDuels", true);

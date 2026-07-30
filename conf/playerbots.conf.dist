@@ -1211,8 +1211,10 @@ AiPlayerbot.WpvpReinforcementEnabled = 1
 AiPlayerbot.WpvpReinforcementDeaths = 2
 AiPlayerbot.WpvpReinforcementChance = 15
 
-# Emote alerts: a targeted emote (/point, /charge, anything) aimed at a
-# PvP-flagged enemy player tips off everyone close enough to see it - bots
+# Emote alerts: a targeted emote (/point, /charge, nearly anything - sincere
+# respect gestures like /salute and /bow are exempt, see the same-class truce
+# below) aimed at a PvP-flagged enemy player tips off everyone close enough
+# to see it - bots
 # within the text-emote listen range (ListenRange.TextEmote) of the emoter
 # treat it as "look at THAT one". Eligible witnesses (same faction as the
 # emoter, level within WpvpDefenseLevelSlack of the enemy, not busy - bots
@@ -1222,6 +1224,22 @@ AiPlayerbot.WpvpReinforcementChance = 15
 # emoters alike, so pointing at a lurking rogue rallies the bots around you.
 # Default: 1 (enabled)
 AiPlayerbot.WpvpEmoteAlertEnabled = 1
+
+# Same-class truce: some pairs of same-class enemies honor the old player
+# code ("druids don't gank druids") - instead of an unprovoked world-PvP
+# attack or a goad, the bot faces the spared enemy and delivers a targeted
+# /salute (stealthers step out to do it). Whether a given pair falls under
+# the code is decided deterministically per character pair - the listed
+# percent is the share of pairs that do, and it never flips mid-standoff -
+# but honoring it is personal: a small deterministic share of individuals
+# are oathbreakers toward a particular rival and answer the salute with an
+# attack. The truce covers only unprovoked attacks: self-defense, party
+# assists and instanced PvP are untouched, and an enemy the defense boards
+# already track as a ganker forfeits the courtesy. Comma-separated
+# class:percent entries (warrior, paladin, hunter, rogue, priest,
+# deathknight, shaman, mage, warlock, druid); unlisted classes never truce.
+# Default: "druid:60,hunter:25"
+AiPlayerbot.WpvpClassTruceChance = "druid:60,hunter:25"
 
 # Travel realism for defense responses: departure is held for a rough
 # ride-there estimate scaled by DelayFactor (1.0 = full estimate, 0 = leave

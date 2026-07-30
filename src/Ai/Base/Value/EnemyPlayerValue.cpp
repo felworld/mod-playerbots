@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
+#include "WpvpTruce.h"
 
 bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
 {
@@ -121,7 +122,20 @@ Unit* EnemyPlayerValue::Calculate()
 
         if (bot->IsWithinLOSInMap(pTarget) &&
             (controllingCannon || (fabs(bot->GetPositionZ() - pTarget->GetPositionZ()) < 30.0f)))
+        {
+            // Same-class truce (Felworld): this pair honors the old "druids
+            // don't gank druids" code - decline the unprovoked attack and
+            // queue a salute instead. Only this phase is gated: self-defense
+            // (1) and party assists (3) stay - the truce is an offer, not
+            // pacifism, and it's off the moment they swing first.
+            if (WpvpTruceHolds(bot, pTarget))
+            {
+                WpvpTruceBoard::instance().NotePassing(bot, pTarget);
+                continue;
+            }
+
             return pTarget;
+        }
     }
 
     // 3. Check party attackers.

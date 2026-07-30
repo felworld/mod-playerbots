@@ -25,9 +25,17 @@ namespace
 constexpr uint32 ALERT_TTL_MS = 60 * IN_MILLISECONDS;
 }
 
-void NoteTargetedEmoteAtEnemy(Player* emoter, ObjectGuid targetGuid)
+void NoteTargetedEmoteAtEnemy(Player* emoter, uint32 textEmote, ObjectGuid targetGuid)
 {
     if (!sPlayerbotAIConfig.wpvpEmoteAlertEnabled)
+        return;
+
+    // Sincere respect gestures are not a call to arms: the same-class truce
+    // answers a spared enemy with /salute, and rallying witnesses onto the
+    // salutee would invert the gesture. Only unambiguously respectful emotes
+    // qualify - a /wave or /smile at an enemy reads just as easily as gank
+    // taunting, and still rallies.
+    if (textEmote == TEXT_EMOTE_SALUTE || textEmote == TEXT_EMOTE_BOW)
         return;
 
     if (!emoter || !targetGuid.IsPlayer() || targetGuid == emoter->GetGUID())

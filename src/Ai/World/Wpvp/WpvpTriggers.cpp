@@ -6,6 +6,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include "WpvpTruce.h"
 
 Unit* WpvpGoadTrigger::FindMark(PlayerbotAI* botAI, Player* bot)
 {
@@ -19,8 +20,19 @@ Unit* WpvpGoadTrigger::FindMark(PlayerbotAI* botAI, Player* bot)
     for (ObjectGuid const guid : targets)
     {
         Unit* enemy = botAI->GetUnit(guid);
-        if (enemy && enemy->IsAlive() && bot->GetDistance(enemy) < range)
-            return enemy;
+        if (!enemy || !enemy->IsAlive() || bot->GetDistance(enemy) >= range)
+            continue;
+
+        // Same-class truce (Felworld): a fellow initiate isn't goad material
+        // either - salute them instead.
+        Player* enemyPlayer = enemy->ToPlayer();
+        if (enemyPlayer && WpvpTruceHolds(bot, enemyPlayer))
+        {
+            WpvpTruceBoard::instance().NotePassing(bot, enemyPlayer);
+            continue;
+        }
+
+        return enemy;
     }
 
     return nullptr;

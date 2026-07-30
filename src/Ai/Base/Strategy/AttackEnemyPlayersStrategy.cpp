@@ -12,6 +12,10 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     triggers.push_back(new TriggerNode("enemy player near",
                                        { NextAction("attack enemy player", 55.0f) }));
+    // A same-class enemy the truce gate just spared gets a salute instead of
+    // a charge (Felworld).
+    triggers.push_back(new TriggerNode("wpvp truce salute",
+                                       { NextAction("wpvp truce salute", 41.0f) }));
     // "pvp" is on every non-BG bot, so this is where defenders shout about
     // invaders in LocalDefense (heavily throttled in WpvpCalloutThrottle).
     triggers.push_back(new TriggerNode("wpvp defense callout",

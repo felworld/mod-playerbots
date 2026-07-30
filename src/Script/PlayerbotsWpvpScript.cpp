@@ -46,9 +46,9 @@ public:
     // clients get names the target only as a localized string, but this hook
     // fires before the broadcast with the real guid. Witness bots pick the
     // sighting up from the emote-alert board.
-    void OnPlayerTextEmote(Player* player, uint32 /*textEmote*/, uint32 /*emoteNum*/, ObjectGuid guid) override
+    void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 /*emoteNum*/, ObjectGuid guid) override
     {
-        NoteTargetedEmoteAtEnemy(player, guid);
+        NoteTargetedEmoteAtEnemy(player, textEmote, guid);
     }
 };
 
