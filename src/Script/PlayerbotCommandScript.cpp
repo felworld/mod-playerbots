@@ -197,6 +197,9 @@ public:
         uint32 gearScoreLimit =
             maxItemLevel ? PlayerbotFactory::CalcMixedGearScore(*maxItemLevel, itemQuality) : 0;
         PlayerbotFactory factory(player, player->GetLevel(), itemQuality, gearScoreLimit);
+        // Exactly the requested tier: no random lowering, no below-tier pool
+        // fallback. A slot with no candidates at the tier keeps its gear.
+        factory.SetStrictQuality(true);
         factory.InitEquipment(false);
         factory.InitAmmo();
         if (player->GetLevel() >= sPlayerbotAIConfig.minEnchantingBotLevel)

@@ -395,9 +395,14 @@ GM / console commands:
   moved to the character's bags, never destroyed — a slot whose old item
   doesn't fit in the bags is left unchanged, and the command warns up front
   when bag space looks short. The optional trailing number caps the item
-  level. Made for GM-leveled test characters (`.character level` and go), and
-  works on bots too (gamemaster; works from the console with an explicit
-  player name).
+  level. The rarity is exact: unlike the bot population (which rolls
+  `AiPlayerbot.RandomGearLoweringChance` and pads thin item pools with lower
+  tiers), the command never equips below the requested tier — a slot with no
+  candidates at that tier keeps its current gear. The factory's low-level
+  slot gates still apply: no rings below level 20, no helmet/neck below 30,
+  no trinkets below 50. Made for GM-leveled test characters
+  (`.character level` and go), and works on bots too (gamemaster; works from
+  the console with an explicit player name).
 
 ---
 

@@ -2244,7 +2244,8 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
         }
 
         int32 desiredQuality = itemQuality;
-        if (urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance && desiredQuality > ITEM_QUALITY_NORMAL)
+        if (!strictQuality && urand(0, 100) < 100 * sPlayerbotAIConfig.randomGearLoweringChance &&
+            desiredQuality > ITEM_QUALITY_NORMAL)
             desiredQuality--;
 
         do
@@ -2309,7 +2310,7 @@ void PlayerbotFactory::InitEquipment(bool incremental, bool second_chance)
                     }
                 }
             }
-        } while (items[slot].size() < 25 && desiredQuality-- > ITEM_QUALITY_POOR);
+        } while (!strictQuality && items[slot].size() < 25 && desiredQuality-- > ITEM_QUALITY_POOR);
 
         std::vector<std::pair<uint32, int32>>& ids = items[slot];
         if (ids.empty())

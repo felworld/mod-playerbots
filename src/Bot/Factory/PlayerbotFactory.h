@@ -71,6 +71,10 @@ public:
     void InitClassSpells();
     void InitSpecialSpells();
     void InitEquipment(bool incremental, bool second_chance = false);
+    // Treat itemQuality as an exact tier: no RandomGearLoweringChance roll and
+    // no below-tier pool fallback. Slots with no candidates at the tier are
+    // left untouched. Used by the .playerbots gear GM command.
+    void SetStrictQuality(bool strict) { strictQuality = strict; }
     void InitPet();
     void InitAmmo();
     static uint32 CalcMixedGearScore(uint32 gs, uint32 quality);
@@ -221,6 +225,7 @@ private:
     uint32 level;
     uint32 itemQuality;
     uint32 gearScoreLimit;
+    bool strictQuality = false;
     static std::list<uint32> specialQuestIds;
     static std::unordered_map<uint32, std::vector<uint32>> trainerIdCache;
     static std::vector<uint32> enchantSpellIdCache;
