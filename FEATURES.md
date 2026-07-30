@@ -389,9 +389,10 @@ member — issued as explicit commands to your bots:
 
 - `!conjure food` / `!conjure water` (mage) — the bot casts its best
   Conjure Food/Water (Conjure Refreshment at high level, which covers
-  both requests) and hands the conjured stacks straight to you. Stand
-  within trade range; anything already conjured in its bags is handed
-  over immediately without a cast.
+  both requests) and hands the conjured stacks straight to you, walking
+  over to deliver them if you're not beside it (within visual range —
+  it won't chase you across the zone). Anything already conjured in its
+  bags is handed over immediately without a cast.
 - `!portal <city>` (mage) — the bot casts the matching Portal spell
   (`!portal stormwind`, `!portal shattrath`, …); step through before it
   fades. `!portal` alone lists the destinations it knows — it can only
@@ -399,10 +400,14 @@ member — issued as explicit commands to your bots:
 - `!ritual` (warlock) — summons *you* with a real Ritual of Summoning:
   the warlock begins the channel and two group bots standing with it
   click the summoning portal, so wherever you are you get the standard
-  summon-accept dialog. Requires being in the bot's group and two other
-  group members beside the warlock — the classic warlock taxi for
-  skipping the walk back to your party. (The portal clicks use an
-  internal `use summoning portal` command, which also works on a ritual
+  summon-accept dialog — the classic warlock taxi for skipping the walk
+  back to your party. You must be in the bot's group (the game only
+  lets group members work the portal), but the two clickers don't have
+  to be: if the group doesn't have two members standing with the
+  warlock, it recruits nearby ungrouped world bots into the group for
+  the ritual, like asking strangers at a summoning stone — they click,
+  then quietly leave the group a minute later. (An internal
+  `use summoning portal` command also makes group bots click a ritual
   *you* cast as a warlock.)
 
 Reagents are the one concession to convenience: a bot missing the Rune of

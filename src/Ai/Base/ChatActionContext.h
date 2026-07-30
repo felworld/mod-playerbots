@@ -178,6 +178,7 @@ public:
         creators["portal"] = &ChatActionContext::portal;
         creators["ritual"] = &ChatActionContext::ritual;
         creators["use summoning portal"] = &ChatActionContext::use_summoning_portal;
+        creators["ritual depart"] = &ChatActionContext::ritual_depart;
         creators["who"] = &ChatActionContext::who;
         creators["save mana"] = &ChatActionContext::save_mana;
         creators["max dps chat shortcut"] = &ChatActionContext::max_dps_chat_shortcut;
@@ -245,6 +246,7 @@ private:
     static Action* portal(PlayerbotAI* botAI) { return new OpenPortalAction(botAI); }
     static Action* ritual(PlayerbotAI* botAI) { return new RitualOfSummoningAction(botAI); }
     static Action* use_summoning_portal(PlayerbotAI* botAI) { return new UseSummoningPortalAction(botAI); }
+    static Action* ritual_depart(PlayerbotAI* botAI) { return new RitualDepartAction(botAI); }
     static Action* tell_target(PlayerbotAI* botAI) { return new TellTargetAction(botAI); }
     static Action* position(PlayerbotAI* botAI) { return new PositionAction(botAI); }
     static Action* spirit_healer(PlayerbotAI* botAI) { return new SpiritHealerAction(botAI); }

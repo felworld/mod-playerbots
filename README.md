@@ -70,8 +70,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   thin out idle emoting without touching reactions.
 - **[Class service commands](FEATURES.md#class-service-commands)** —
   `!conjure food`/`!conjure water`, `!portal <city>`, `!ritual`: mage
-  food and water handed straight to you, mage city portals, and a real
-  warlock summoning ritual your bots click for you.
+  food and water walked over and handed to you, mage city portals, and
+  a real warlock summoning ritual — recruiting bystander bots into the
+  group when yours aren't around.
 - **[Faction-honest chat](FEATURES.md#faction-honest-chat)** — bots speak
   their faction's language, honor `AllowTwoSide.Interaction.Chat`, and
   ignore speech they couldn't understand.

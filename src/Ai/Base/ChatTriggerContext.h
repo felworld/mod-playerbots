@@ -109,6 +109,7 @@ public:
         creators["portal"] = &ChatTriggerContext::portal;
         creators["ritual"] = &ChatTriggerContext::ritual;
         creators["use summoning portal"] = &ChatTriggerContext::use_summoning_portal;
+        creators["ritual depart"] = &ChatTriggerContext::ritual_depart;
         creators["who"] = &ChatTriggerContext::who;
         creators["save mana"] = &ChatTriggerContext::save_mana;
         creators["max dps"] = &ChatTriggerContext::max_dps;
@@ -200,6 +201,7 @@ private:
     {
         return new ChatCommandTrigger(botAI, "use summoning portal");
     }
+    static Trigger* ritual_depart(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "ritual depart"); }
     static Trigger* position(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "position"); }
     static Trigger* runaway(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "runaway"); }
     static Trigger* warning(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "warning"); }

@@ -737,6 +737,11 @@ void PlayerbotAI::HandleCommands()
     }
 }
 
+void PlayerbotAI::QueueChatCommand(std::string const text, Player* fromPlayer, uint32 type, uint32 delaySeconds)
+{
+    chatCommands.push_back(ChatCommandHolder(text, fromPlayer, type, delaySeconds ? time(nullptr) + delaySeconds : 0));
+}
+
 std::map<std::string, ChatMsg> chatMap;
 void PlayerbotAI::HandleCommand(uint32 type, const std::string& text, Player& fromPlayer, const uint32 lang)
 {

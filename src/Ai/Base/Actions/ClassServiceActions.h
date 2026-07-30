@@ -24,7 +24,8 @@ public:
 
 private:
     uint32 FindConjureSpell(bool drink);
-    bool GiveConjured(Player* requester, bool drink, bool includeOtherCategory);
+    std::vector<Item*> CollectConjured(bool drink, bool includeOtherCategory);
+    bool GiveConjured(Player* requester, std::vector<Item*> const& items);
     bool Requeue(Player* requester, std::string const& kind, uint32 retriesLeft);
 };
 
@@ -48,6 +49,15 @@ class UseSummoningPortalAction : public Action
 {
 public:
     UseSummoningPortalAction(PlayerbotAI* botAI) : Action(botAI, "use summoning portal") {}
+
+    bool Execute(Event event) override;
+};
+
+// Internal: a bot recruited into a group for a summoning ritual leaves it again.
+class RitualDepartAction : public Action
+{
+public:
+    RitualDepartAction(PlayerbotAI* botAI) : Action(botAI, "ritual depart") {}
 
     bool Execute(Event event) override;
 };

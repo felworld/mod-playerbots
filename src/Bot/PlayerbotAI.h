@@ -423,6 +423,10 @@ public:
 
     std::string const HandleRemoteCommand(std::string const command);
     void HandleCommand(uint32 type, std::string const text, Player* fromPlayer);
+    // Queue a chat command directly, bypassing the security and prefix filtering of
+    // HandleCommand — for internally generated commands only. delaySeconds defers execution.
+    void QueueChatCommand(std::string const text, Player* fromPlayer, uint32 type = CHAT_MSG_WHISPER,
+                          uint32 delaySeconds = 0);
     void QueueChatResponse(const ChatQueuedReply reply);
     void HandleBotOutgoingPacket(WorldPacket const& packet);
     void HandleMasterIncomingPacket(WorldPacket const& packet);
