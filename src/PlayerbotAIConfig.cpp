@@ -822,6 +822,8 @@ bool PlayerbotAIConfig::Initialize()
             wpvpClassTruceChance[klass->second] = uint32(chance);
         }
     }
+    wpvpTruceOathbreakerChance =
+        std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpTruceOathbreakerChance", 15), 100);
     wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
 
     enableBotDuels = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBotDuels", true);

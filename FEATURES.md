@@ -219,7 +219,9 @@ forfeits the courtesy. Salutes are throttled per pair, and the emote-alert
 machinery above deliberately ignores sincere respect gestures so the
 salute never summons the militia onto the salutee.
 `AiPlayerbot.WpvpClassTruceChance` sets per-class percentages
-(default `druid:60,hunter:25`; unlisted classes never truce).
+(default `druid:60,hunter:25`; unlisted classes never truce) and
+`AiPlayerbot.WpvpTruceOathbreakerChance` the oathbreaker share
+(default 15).
 
 ## World PvP threat reactions
 

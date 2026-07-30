@@ -1231,15 +1231,17 @@ AiPlayerbot.WpvpEmoteAlertEnabled = 1
 # /salute (stealthers step out to do it). Whether a given pair falls under
 # the code is decided deterministically per character pair - the listed
 # percent is the share of pairs that do, and it never flips mid-standoff -
-# but honoring it is personal: a small deterministic share of individuals
-# are oathbreakers toward a particular rival and answer the salute with an
-# attack. The truce covers only unprovoked attacks: self-defense, party
-# assists and instanced PvP are untouched, and an enemy the defense boards
-# already track as a ganker forfeits the courtesy. Comma-separated
+# but honoring it is personal: OathbreakerChance percent of individuals
+# (equally deterministic, rolled per direction) are oathbreakers toward a
+# particular rival and answer the salute with an attack. The truce covers
+# only unprovoked attacks: self-defense, party assists and instanced PvP
+# are untouched, and an enemy the defense boards already track as a ganker
+# forfeits the courtesy. ClassTruceChance takes comma-separated
 # class:percent entries (warrior, paladin, hunter, rogue, priest,
 # deathknight, shaman, mage, warlock, druid); unlisted classes never truce.
-# Default: "druid:60,hunter:25"
+# Default: "druid:60,hunter:25" / 15
 AiPlayerbot.WpvpClassTruceChance = "druid:60,hunter:25"
+AiPlayerbot.WpvpTruceOathbreakerChance = 15
 
 # Travel realism for defense responses: departure is held for a rough
 # ride-there estimate scaled by DelayFactor (1.0 = full estimate, 0 = leave

@@ -463,6 +463,7 @@ public:
     float wpvpReinforcementChance;
     bool wpvpEmoteAlertEnabled;
     std::array<uint32, MAX_CLASSES> wpvpClassTruceChance;
+    uint32 wpvpTruceOathbreakerChance;
     uint32 wpvpKillSwitchDefaultMinutes;
     bool enableBotDuels;
     uint32 duelChallengeRange;

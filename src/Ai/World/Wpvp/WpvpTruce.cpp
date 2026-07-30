@@ -25,12 +25,6 @@ constexpr uint32 PENDING_TTL_MS = 30 * IN_MILLISECONDS;
 // another round of formalities.
 constexpr uint32 SALUTE_COOLDOWN_MS = 10 * MINUTE * IN_MILLISECONDS;
 
-// Even when a pair falls under the code, this share of individuals are
-// oathbreakers toward that particular rival: they accept the salute and
-// swing anyway. Rolled per direction, so betrayal is one-sided - true to
-// life, the recipient of the courtesy sometimes violates it.
-constexpr uint32 TRUCE_OATHBREAKER_CHANCE = 15;
-
 // 64 bit FNV-1a hash constants, same scheme as PossibleTargetsValue's
 // level-gap dice.
 constexpr uint64 FNV_OFFSET_BASIS = 14695981039346656037ULL;
@@ -78,12 +72,12 @@ bool WpvpTruceHolds(Player* bot, Player* enemy)
     if ((HashPair(lo, hi) % 100) >= chance)
         return false;
 
-    // ...but honoring it is personal: a directional roll makes a small share
-    // of individuals oathbreakers toward this rival, so one side may salute
+    // ...but honoring it is personal: a directional roll makes a share of
+    // individuals oathbreakers toward this rival, so one side may salute
     // and the other swing anyway. Equally permanent, equally deterministic.
     uint64 const dirHash =
         HashPair(bot->GetGUID().GetRawValue() ^ OATHBREAKER_SALT, enemy->GetGUID().GetRawValue());
-    return (dirHash % 100) >= TRUCE_OATHBREAKER_CHANCE;
+    return (dirHash % 100) >= sPlayerbotAIConfig.wpvpTruceOathbreakerChance;
 }
 
 void WpvpTruceBoard::NotePassing(Player* bot, Player* target)
