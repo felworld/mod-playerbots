@@ -414,8 +414,10 @@ Reagents are the one concession to convenience: a bot missing the Rune of
 Portals or Soul Shard a spell consumes produces one in its bags first —
 bots don't shop for reagents. Everything else uses the real spells, cast
 times, and mechanics, so it all plays out visibly in the world. These
-commands are also the hooks for later making the behaviors emergent or
-LLM-driven (mod-llm tool-calls answering "can someone summon me?").
+commands are also the hooks mod-llm's LLM-driven bots answer
+natural-language requests with — a plain "can someone summon me?" to an LLM
+bot triggers the same machinery; see
+[mod-llm's class services](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#class-services).
 
 ## Commands added in this fork
 
