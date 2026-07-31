@@ -4685,31 +4685,50 @@ bool BgStrategyCommandAction::Execute(Event event)
     if (!sPlayerbotAIConfig.bgStrategyComplianceChance)
         return false;
 
-    // mod-llm's bg_strategy tool fires this action with an "llm" event
-    // source: the model choosing to follow the call is the compliance
-    // decision, and it acknowledges in its own words, so the roll and the
-    // canned announcement both belong to the chat-command path only
-    bool fromLlm = event.GetSource() == "llm";
+    // mod-llm's bg_strategy tool: this bot interpreted a natural-language
+    // callout ("inc!!") and calls the play for the whole team. Relay the
+    // order to every bot on the team - self included - through the normal
+    // command path below, so each one rolls compliance, throttles, and
+    // announces exactly as if the caller had typed "!bg strategy <play>"
+    if (event.GetSource() == "llm")
+    {
+        Group* group = bot->GetGroup();
+        if (!group || !group->isBGGroup())
+            return false;
+
+        bool relayed = false;
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member->GetTeamId() != bot->GetTeamId())
+                continue;
+
+            PlayerbotAI* memberAi = GET_PLAYERBOT_AI(member);
+            if (!memberAi)
+                continue;
+
+            memberAi->DoSpecificAction("bg strategy", Event("bg strategy", param, requester), true);
+            relayed = true;
+        }
+        return relayed;
+    }
 
     time_t now = time(nullptr);
     time_t duration = time_t(sPlayerbotAIConfig.bgStrategyOrderDuration);
     BgStrategyOrderData data = context->GetValue<BgStrategyOrderData>("bg strategy order")->Get();
 
-    if (!fromLlm)
+    // One compliance roll per order per duration window, so repeating the
+    // call can't ratchet the whole team toward 100% compliance
+    if (data.lastCalledOrder == order && now < data.lastRollTime + duration)
+        return false;
+
+    data.lastCalledOrder = order;
+    data.lastRollTime = now;
+
+    if (urand(0, 99) >= sPlayerbotAIConfig.bgStrategyComplianceChance)
     {
-        // One compliance roll per order per duration window, so repeating the
-        // call can't ratchet the whole team toward 100% compliance
-        if (data.lastCalledOrder == order && now < data.lastRollTime + duration)
-            return false;
-
-        data.lastCalledOrder = order;
-        data.lastRollTime = now;
-
-        if (urand(0, 99) >= sPlayerbotAIConfig.bgStrategyComplianceChance)
-        {
-            context->GetValue<BgStrategyOrderData>("bg strategy order")->Set(data);
-            return false;
-        }
+        context->GetValue<BgStrategyOrderData>("bg strategy order")->Set(data);
+        return false;
     }
 
     data.order = order;
@@ -4728,16 +4747,13 @@ bool BgStrategyCommandAction::Execute(Event event)
         bot->GetMotionMaster()->Clear();
     }
 
-    if (!fromLlm)
+    if (char const* text = bgStrategyAnnounceText(order))
     {
-        if (char const* text = bgStrategyAnnounceText(order))
+        if (Group* group = bot->GetGroup(); group && group->isBGGroup())
         {
-            if (Group* group = bot->GetGroup(); group && group->isBGGroup())
-            {
-                WorldPacket packet;
-                ChatHandler::BuildChatPacket(packet, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, text);
-                group->BroadcastPacket(&packet, false);
-            }
+            WorldPacket packet;
+            ChatHandler::BuildChatPacket(packet, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, text);
+            group->BroadcastPacket(&packet, false);
         }
     }
 

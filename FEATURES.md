@@ -67,10 +67,10 @@ rolled at match start) stays what it is — no amount of chat whipping
 changes a team's nature, only its next move.
 
 This order machinery is also the hook behind mod-llm's `bg_strategy`
-tool: in LLM mode, bots read natural callouts like "inc!!" or "fc mid" in
-battleground chat and can follow them through the same orders — there the
-model's decision replaces the compliance roll, and the bot acknowledges
-in its own words instead of the canned line. See
+tool: in LLM mode, one bot reads a natural callout like "inc!!" or "fc
+mid" in battleground chat and relays it as a play call for the whole
+team — every bot (the interpreter included) rolls the same compliance
+dice and announces the same way as if the command had been typed. See
 [mod-llm's battleground play calls](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#battleground-play-calls).
 Setting `AiPlayerbot.BgStrategyComplianceChance = 0` disables play calls
 entirely, the LLM path included.
