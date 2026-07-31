@@ -4681,29 +4681,40 @@ bool BgStrategyCommandAction::Execute(Event event)
             return false;
     }
 
+    // Chance 0 turns play calls off entirely, the LLM path included
+    if (!sPlayerbotAIConfig.bgStrategyComplianceChance)
+        return false;
+
+    // mod-llm's bg_strategy tool fires this action with an "llm" event
+    // source: the model choosing to follow the call is the compliance
+    // decision, and it acknowledges in its own words, so the roll and the
+    // canned announcement both belong to the chat-command path only
+    bool fromLlm = event.GetSource() == "llm";
+
     time_t now = time(nullptr);
     time_t duration = time_t(sPlayerbotAIConfig.bgStrategyOrderDuration);
     BgStrategyOrderData data = context->GetValue<BgStrategyOrderData>("bg strategy order")->Get();
 
-    // One compliance roll per order per duration window, so repeating the
-    // call can't ratchet the whole team toward 100% compliance
-    if (data.lastCalledOrder == order && now < data.lastRollTime + duration)
-        return false;
-
-    data.lastCalledOrder = order;
-    data.lastRollTime = now;
-
-    bool complies = urand(0, 99) < sPlayerbotAIConfig.bgStrategyComplianceChance;
-    if (complies)
+    if (!fromLlm)
     {
-        data.order = order;
-        data.expires = now + duration;
+        // One compliance roll per order per duration window, so repeating the
+        // call can't ratchet the whole team toward 100% compliance
+        if (data.lastCalledOrder == order && now < data.lastRollTime + duration)
+            return false;
+
+        data.lastCalledOrder = order;
+        data.lastRollTime = now;
+
+        if (urand(0, 99) >= sPlayerbotAIConfig.bgStrategyComplianceChance)
+        {
+            context->GetValue<BgStrategyOrderData>("bg strategy order")->Set(data);
+            return false;
+        }
     }
 
+    data.order = order;
+    data.expires = now + duration;
     context->GetValue<BgStrategyOrderData>("bg strategy order")->Set(data);
-
-    if (!complies)
-        return false;
 
     // Recompute the objective now rather than at the next 60s tactics tick
     PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
@@ -4717,13 +4728,16 @@ bool BgStrategyCommandAction::Execute(Event event)
         bot->GetMotionMaster()->Clear();
     }
 
-    if (char const* text = bgStrategyAnnounceText(order))
+    if (!fromLlm)
     {
-        if (Group* group = bot->GetGroup(); group && group->isBGGroup())
+        if (char const* text = bgStrategyAnnounceText(order))
         {
-            WorldPacket packet;
-            ChatHandler::BuildChatPacket(packet, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, text);
-            group->BroadcastPacket(&packet, false);
+            if (Group* group = bot->GetGroup(); group && group->isBGGroup())
+            {
+                WorldPacket packet;
+                ChatHandler::BuildChatPacket(packet, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, text);
+                group->BroadcastPacket(&packet, false);
+            }
         }
     }
 

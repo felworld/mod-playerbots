@@ -66,6 +66,15 @@ exist. The team's overall temperament (offense-heavy vs. defense-heavy,
 rolled at match start) stays what it is — no amount of chat whipping
 changes a team's nature, only its next move.
 
+This order machinery is also the hook behind mod-llm's `bg_strategy`
+tool: in LLM mode, bots read natural callouts like "inc!!" or "fc mid" in
+battleground chat and can follow them through the same orders — there the
+model's decision replaces the compliance roll, and the bot acknowledges
+in its own words instead of the canned line. See
+[mod-llm's battleground play calls](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#battleground-play-calls).
+Setting `AiPlayerbot.BgStrategyComplianceChance = 0` disables play calls
+entirely, the LLM path included.
+
 ## Bystander assist
 
 Solo random bots rescue nearby non-group players — real
@@ -450,7 +459,8 @@ with the `!` prefix described above:
 - `!bg strategy <attack fc|attack base|defend fc|defend base>` — call a
   play in Warsong Gulch battleground chat; bots on your team each follow
   the order with configurable probability for a limited time, announcing
-  what they're doing. Detailed in
+  what they're doing. Also the hook behind mod-llm's `bg_strategy` tool,
+  so in LLM mode plain callouts like "inc!!" work too. Detailed in
   [Warsong Gulch teamwork](#warsong-gulch-teamwork).
 - `!wpvp defend [zone]` — order a random bot to travel in and defend a
   zone; with no argument, the zone *you* are standing in. The bot heads for
