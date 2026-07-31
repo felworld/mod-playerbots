@@ -443,14 +443,19 @@ member — issued as explicit commands to your bots:
   the warlock begins the channel and two group bots standing with it
   click the summoning portal, so wherever you are you get the standard
   summon-accept dialog — the classic warlock taxi for skipping the walk
-  back to your party. You must be in the bot's group (the game only
-  lets group members work the portal), but the two clickers don't have
-  to be: if the group doesn't have two members standing with the
-  warlock, it recruits nearby ungrouped world bots into the group for
-  the ritual, like asking strangers at a summoning stone — they click,
-  then quietly leave the group a minute later. (An internal
-  `use summoning portal` command also makes group bots click a ritual
-  *you* cast as a warlock.)
+  back to your party. The game only lets group members work the portal,
+  but you don't have to arrange the group yourself: whisper `!ritual` to
+  any warlock world bot and, if you're not already grouped with it, *it*
+  invites *you* — accept the invite and the ritual begins. (The invite
+  has to run in that direction: inviting a distant world bot into your
+  own group teleports it to you on accept, which defeats the summon.
+  The bot stops waiting after a minute if you don't accept.) The two
+  portal clickers don't have to be groupmates either: if the group
+  doesn't have two members standing with the warlock, it recruits nearby
+  ungrouped world bots into the group for the ritual, like asking
+  strangers at a summoning stone — they click, then quietly leave the
+  group a minute later. (An internal `use summoning portal` command also
+  makes group bots click a ritual *you* cast as a warlock.)
 
 Reagents are the one concession to convenience: a bot missing the Rune of
 Portals or Soul Shard a spell consumes produces one in its bags first —

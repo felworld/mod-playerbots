@@ -43,6 +43,11 @@ public:
     RitualOfSummoningAction(PlayerbotAI* botAI) : Action(botAI, "ritual") {}
 
     bool Execute(Event event) override;
+
+private:
+    bool InviteRequester(Player* requester);
+    bool WaitForAccept(Player* requester, uint32 retriesLeft);
+    bool PerformRitual(Player* requester);
 };
 
 class UseSummoningPortalAction : public Action

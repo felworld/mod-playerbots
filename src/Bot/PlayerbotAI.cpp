@@ -1078,6 +1078,9 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
         unsecuredCommands.insert("rpg status");
         unsecuredCommands.insert("wpvp defend");
         unsecuredCommands.insert("bg strategy");
+        // Prefix-matches "ritual", "ritual wait ..." and "ritual depart": summoning
+        // requesters are usually strangers to the warlock bot (the bot invites them).
+        unsecuredCommands.insert("ritual");
     }
 
     for (std::set<std::string>::iterator i = unsecuredCommands.begin(); i != unsecuredCommands.end(); ++i)

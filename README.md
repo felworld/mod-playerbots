@@ -75,8 +75,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Class service commands](FEATURES.md#class-service-commands)** —
   `!conjure food`/`!conjure water`, `!portal <city>`, `!ritual`: mage
   food and water walked over and handed to you, mage city portals, and
-  a real warlock summoning ritual — recruiting bystander bots into the
-  group when yours aren't around.
+  a real warlock summoning ritual — whisper any warlock world bot and it
+  invites you to its group for the summon, recruiting bystander bots as
+  portal clickers when needed.
 - **[Faction-honest chat](FEATURES.md#faction-honest-chat)** — bots speak
   their faction's language, honor `AllowTwoSide.Interaction.Chat`, and
   ignore speech they couldn't understand.

@@ -14,6 +14,7 @@
 #include "Event.h"
 #include "GameObject.h"
 #include "Group.h"
+#include "ObjectAccessor.h"
 #include "ObjectDefines.h"
 #include "ObjectMgr.h"
 #include "Opcodes.h"
@@ -37,6 +38,9 @@ constexpr uint32 RITUAL_CLICKERS_NEEDED = 2;
 // or GameObject::CheckRitualList prunes them - hold their AI still slightly longer.
 constexpr uint32 RITUAL_CHANNEL_FREEZE_MS = 8000;
 constexpr uint32 RITUAL_DEPART_DELAY_SECS = 60;
+// How long a summoning requester gets to accept the bot's group invite (polled every 2s).
+constexpr uint32 RITUAL_INVITE_RETRIES = 30;
+constexpr uint32 RITUAL_INVITE_POLL_SECS = 2;
 
 std::string ToLower(std::string text)
 {
@@ -58,6 +62,30 @@ bool IsRefreshmentSpell(uint32 spellId)
 {
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     return spellInfo && SpellNameMatches(spellInfo, "conjure refreshment");
+}
+
+// Summoning requesters are often strangers to an ungrouped random bot, so TellError
+// (master-only) would be lost - whisper them directly instead.
+void WhisperTo(Player* bot, Player* requester, std::string const& text)
+{
+    if (bot->IsInWorld() && requester->IsInWorld())
+        bot->Whisper(text, LANG_UNIVERSAL, requester);
+}
+
+bool GroupHasRealPlayers(Group* group)
+{
+    for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+    {
+        Player* member = ref->GetSource();
+        if (!member)
+            continue;
+
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || memberAI->IsRealPlayer())
+            return true;
+    }
+
+    return false;
 }
 }
 
@@ -295,28 +323,130 @@ bool OpenPortalAction::Execute(Event event)
 
 bool RitualOfSummoningAction::Execute(Event event)
 {
-    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
+    // Requeued invite-wait calls carry "wait <retries> <guid counter>" and are queued
+    // with the bot itself as owner, so the requester logging out mid-wait cannot leave
+    // a dangling pointer in the command queue.
+    std::istringstream params(event.getParam());
+    std::string token;
+    params >> token;
+
+    bool const waiting = token == "wait";
+    uint32 retries = 0;
+    Player* requester = nullptr;
+    if (waiting)
+    {
+        uint32 counter = 0;
+        params >> retries >> counter;
+        requester = ObjectAccessor::FindPlayer(ObjectGuid::Create<HighGuid::Player>(counter));
+    }
+    else
+        requester = event.getOwner() ? event.getOwner() : GetMaster();
+
     if (!requester)
         return false;
 
     if (bot->getClass() != CLASS_WARLOCK)
     {
-        botAI->TellError("I am not a warlock - I cannot summon you");
+        WhisperTo(bot, requester, "I am not a warlock - I cannot summon you");
         return false;
     }
 
     if (!bot->HasSpell(SPELL_RITUAL_OF_SUMMONING))
     {
-        botAI->TellError("I have not learned Ritual of Summoning");
+        WhisperTo(bot, requester, "I have not learned Ritual of Summoning");
         return false;
     }
 
     Group* group = bot->GetGroup();
-    if (!group || !group->IsMember(requester->GetGUID()))
+    if (group && group->IsMember(requester->GetGUID()))
+        return PerformRitual(requester);
+
+    return waiting ? WaitForAccept(requester, retries) : InviteRequester(requester);
+}
+
+// The requester is not in the bot's group: form one around the bot instead of making
+// them invite the bot - a random bot teleports to its inviter when it accepts, which
+// defeats the summon. The bot stays put, invites the requester, and begins the ritual
+// once they accept.
+bool RitualOfSummoningAction::InviteRequester(Player* requester)
+{
+    if (Group* pending = requester->GetGroupInvite())
     {
-        botAI->TellError("We must be in the same group");
+        if (pending->GetLeaderGUID() == bot->GetGUID())
+            return WaitForAccept(requester, RITUAL_INVITE_RETRIES);
+
+        WhisperTo(bot, requester, "You already have a group invite pending - settle that one and ask me again");
         return false;
     }
+
+    if (requester->GetGroup())
+    {
+        WhisperTo(bot, requester,
+                  "You are already in a group - I can only summon members of my own group. Leave yours and ask me again");
+        return false;
+    }
+
+    Group* group = bot->GetGroup();
+    if (group && !group->IsLeader(bot->GetGUID()))
+    {
+        if (GroupHasRealPlayers(group))
+        {
+            WhisperTo(bot, requester, "I am already traveling with a group");
+            return false;
+        }
+
+        // A bot-only group is not worth keeping the requester waiting for.
+        bot->RemoveFromGroup();
+        group = nullptr;
+    }
+
+    if (group && group->IsFull())
+    {
+        WhisperTo(bot, requester, "My group is full - I cannot invite you");
+        return false;
+    }
+
+    // Clear any invite aimed at the bot so the leader invite below can be created.
+    if (Group* botPending = bot->GetGroupInvite(); botPending && botPending->GetLeaderGUID() != bot->GetGUID())
+        bot->UninviteFromGroup();
+
+    WorldPacket p;
+    p << requester->GetName();
+    p << uint32(0);  // roles mask
+    bot->GetSession()->HandleGroupInviteOpcode(p);
+
+    Group* pending = requester->GetGroupInvite();
+    if (!pending || pending->GetLeaderGUID() != bot->GetGUID())
+    {
+        WhisperTo(bot, requester, "I could not send you a group invite");
+        return false;
+    }
+
+    WhisperTo(bot, requester, "Accept my group invite and I will begin the summoning ritual");
+    return WaitForAccept(requester, RITUAL_INVITE_RETRIES);
+}
+
+bool RitualOfSummoningAction::WaitForAccept(Player* requester, uint32 retriesLeft)
+{
+    Group* pending = requester->GetGroupInvite();
+    if (!pending || pending->GetLeaderGUID() != bot->GetGUID())
+        return false;  // declined - an accept lands in PerformRitual on the next poll
+
+    if (!retriesLeft)
+    {
+        WhisperTo(bot, requester, "I will stop waiting - ask me again when you are ready");
+        return false;
+    }
+
+    std::ostringstream cmd;
+    cmd << "ritual wait " << (retriesLeft - 1) << " " << requester->GetGUID().GetCounter();
+    botAI->QueueChatCommand(cmd.str(), bot, CHAT_MSG_WHISPER, RITUAL_INVITE_POLL_SECS);
+    return true;
+}
+
+bool RitualOfSummoningAction::PerformRitual(Player* requester)
+{
+    Group* group = bot->GetGroup();
 
     // The ritual portal needs two participants besides the caster.
     std::vector<Player*> clickers;
@@ -366,14 +496,14 @@ bool RitualOfSummoningAction::Execute(Event event)
 
     if (clickers.size() + recruits.size() < RITUAL_CLICKERS_NEEDED)
     {
-        botAI->TellError("I need two more party members with me, and there is no one nearby to recruit");
+        WhisperTo(bot, requester, "I need two more party members with me, and there is no one nearby to recruit");
         return false;
     }
 
     if (!recruits.empty() && !group->isRaidGroup() &&
         group->GetMembersCount() + recruits.size() > MAXGROUPSIZE)
     {
-        botAI->TellError("Our group does not have room for the helpers I would recruit");
+        WhisperTo(bot, requester, "Our group does not have room for the helpers I would recruit");
         return false;
     }
 
@@ -396,7 +526,7 @@ bool RitualOfSummoningAction::Execute(Event event)
     if (clickers.size() < RITUAL_CLICKERS_NEEDED)
     {
         undoRecruiting();
-        botAI->TellError("I could not recruit enough helpers for the ritual");
+        WhisperTo(bot, requester, "I could not recruit enough helpers for the ritual");
         return false;
     }
 
@@ -407,7 +537,7 @@ bool RitualOfSummoningAction::Execute(Event event)
         !botAI->CastSpell(SPELL_RITUAL_OF_SUMMONING, bot))
     {
         undoRecruiting();
-        botAI->TellError("I cannot begin the ritual right now");
+        WhisperTo(bot, requester, "I cannot begin the ritual right now");
         return false;
     }
 
@@ -421,7 +551,7 @@ bool RitualOfSummoningAction::Execute(Event event)
     {
         bot->InterruptNonMeleeSpells(true);
         undoRecruiting();
-        botAI->TellError("The ritual fizzled");
+        WhisperTo(bot, requester, "The ritual fizzled");
         return false;
     }
 
@@ -438,7 +568,7 @@ bool RitualOfSummoningAction::Execute(Event event)
         GET_PLAYERBOT_AI(recruit)->QueueChatCommand("ritual depart", recruit, CHAT_MSG_WHISPER,
                                                     RITUAL_DEPART_DELAY_SECS);
 
-    botAI->TellMasterNoFacing("We are casting a summoning ritual - accept when the portal opens");
+    WhisperTo(bot, requester, "We are casting a summoning ritual - accept when the portal opens");
     botAI->SetNextCheckDelay(RITUAL_CHANNEL_FREEZE_MS);
     return true;
 }
