@@ -27,7 +27,8 @@ is in [FEATURES.md](FEATURES.md). In brief:
   partner.
 - **[Warsong Gulch teamwork](FEATURES.md#warsong-gulch-teamwork)** —
   flag-carrier escorts and peels, flag-room defenders, roles re-decided on
-  death, stealthy approaches, incoming callouts in BG chat.
+  death, stealthy approaches, incoming callouts in BG chat, and a
+  `bg strategy` command for calling plays your teammates actually follow.
 - **[Bystander assist](FEATURES.md#bystander-assist)** — solo bots rescue
   nearby non-group players who look about to die, when the fight looks
   winnable.

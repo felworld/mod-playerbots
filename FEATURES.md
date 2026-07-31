@@ -47,6 +47,25 @@ enemies closing on the friendly flag room calls it in battleground chat
 ("3 incoming at our flag room!") — one callout per team per wave, not ten
 bots shouting at once.
 
+Communication works the other way too: you can call plays. Saying
+`!bg strategy attack fc`, `!bg strategy attack base`, `!bg strategy
+defend fc`, or `!bg strategy defend base` in battleground chat orders your
+bot teammates to chase the enemy flag carrier, push the enemy flag room,
+escort your flag carrier, or fall back and hold your own flag room. Like
+real teammates, not everyone listens: each bot independently follows the
+call with `AiPlayerbot.BgStrategyComplianceChance` percent probability
+(default 65), announcing in battleground chat what it's doing ("Going
+after their flag carrier!") so you can see exactly who is responding. The
+order overrides a bot's normal role for
+`AiPlayerbot.BgStrategyOrderDuration` seconds (default 45), then it
+drifts back to whatever it was doing — and repeating the same call within
+that window doesn't re-roll the dice, so spamming can't whip the whole
+team into line. Flag carriers ignore orders and keep running the flag,
+and `fc` calls are ignored when the flag carrier in question doesn't
+exist. The team's overall temperament (offense-heavy vs. defense-heavy,
+rolled at match start) stays what it is — no amount of chat whipping
+changes a team's nature, only its next move.
+
 ## Bystander assist
 
 Solo random bots rescue nearby non-group players — real
@@ -428,6 +447,11 @@ with the `!` prefix described above:
 - `!grind quests` — switch the bot to the quest-aware grind strategy
   (replaces plain `grind` and vice versa; `!nc -grind quests` turns it
   off).
+- `!bg strategy <attack fc|attack base|defend fc|defend base>` — call a
+  play in Warsong Gulch battleground chat; bots on your team each follow
+  the order with configurable probability for a limited time, announcing
+  what they're doing. Detailed in
+  [Warsong Gulch teamwork](#warsong-gulch-teamwork).
 - `!wpvp defend [zone]` — order a random bot to travel in and defend a
   zone; with no argument, the zone *you* are standing in. The bot heads for
   the last reported attacker position there if defenders have called one

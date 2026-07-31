@@ -791,6 +791,8 @@ bool PlayerbotAIConfig::Initialize()
     wpvpReinforcementDeaths = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementDeaths", 2);
     wpvpReinforcementChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpReinforcementChance", 15.0f);
     wpvpEmoteAlertEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpEmoteAlertEnabled", true);
+    bgStrategyComplianceChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.BgStrategyComplianceChance", 65);
+    bgStrategyOrderDuration = sConfigMgr->GetOption<uint32>("AiPlayerbot.BgStrategyOrderDuration", 45);
     wpvpClassTruceChance.fill(0);
     {
         static std::unordered_map<std::string, uint8> const classesByName = {

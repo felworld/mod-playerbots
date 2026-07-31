@@ -7,12 +7,32 @@
 #ifndef PLAYERBOTS_PVPVALUES_H
 #define PLAYERBOTS_PVPVALUES_H
 
+#include <ctime>
+
 #include "NamedObjectContext.h"
 #include "SharedDefines.h"
 #include "Value.h"
 
 class PlayerbotAI;
 class Unit;
+
+// Explicit tactics order issued via the "bg strategy" chat command
+enum BgStrategyOrder : uint8
+{
+    BG_STRATEGY_ORDER_NONE        = 0,
+    BG_STRATEGY_ORDER_ATTACK_FC   = 1,
+    BG_STRATEGY_ORDER_ATTACK_BASE = 2,
+    BG_STRATEGY_ORDER_DEFEND_FC   = 3,
+    BG_STRATEGY_ORDER_DEFEND_BASE = 4,
+};
+
+struct BgStrategyOrderData
+{
+    uint8 order = BG_STRATEGY_ORDER_NONE;            // active order until expires
+    time_t expires = 0;
+    uint8 lastCalledOrder = BG_STRATEGY_ORDER_NONE;  // throttles compliance re-rolls
+    time_t lastRollTime = 0;
+};
 
 class BgTypeValue : public ManualSetValue<uint32>
 {
@@ -30,6 +50,12 @@ class BgRoleValue : public ManualSetValue<uint32>
 {
 public:
     BgRoleValue(PlayerbotAI* botAI) : ManualSetValue<uint32>(botAI, 0, "bg role") {}
+};
+
+class BgStrategyOrderValue : public ManualSetValue<BgStrategyOrderData>
+{
+public:
+    BgStrategyOrderValue(PlayerbotAI* botAI) : ManualSetValue<BgStrategyOrderData>(botAI, {}, "bg strategy order") {}
 };
 
 class BgMastersValue : public SingleCalculatedValue<std::vector<CreatureData const*>>, public Qualified

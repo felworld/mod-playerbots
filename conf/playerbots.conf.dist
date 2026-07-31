@@ -1493,6 +1493,15 @@ AiPlayerbot.AutoTeleportForLevel = 1
 # Enable battlegrounds/arenas for randombots
 AiPlayerbot.RandomBotJoinBG = 1
 
+# "bg strategy" chat command (Warsong Gulch): any player can call
+# "bg strategy attack fc | attack base | defend fc | defend base" in
+# battleground chat; each bot independently follows the order with
+# BgStrategyComplianceChance percent probability for BgStrategyOrderDuration
+# seconds, announcing compliance in battleground chat. Set the chance to 0 to
+# disable the command.
+AiPlayerbot.BgStrategyComplianceChance = 65
+AiPlayerbot.BgStrategyOrderDuration = 45
+
 # Enable auto-joining of battlegrounds - have bots start battlegrounds and arenas on their own
 AiPlayerbot.RandomBotAutoJoinBG = 0
 

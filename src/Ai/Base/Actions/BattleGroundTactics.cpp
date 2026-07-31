@@ -32,6 +32,7 @@
 #include "Playerbots.h"
 #include "PositionValue.h"
 #include "PvpTriggers.h"
+#include "PvpValues.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
 
@@ -1841,6 +1842,16 @@ bool BGTactics::moveToStart(bool force)
     return true;
 }
 
+// The bot's current "bg strategy" order, or BG_STRATEGY_ORDER_NONE once expired
+static uint8 wsActiveStrategyOrder(AiObjectContext* context)
+{
+    BgStrategyOrderData data = context->GetValue<BgStrategyOrderData>("bg strategy order")->Get();
+    if (data.order != BG_STRATEGY_ORDER_NONE && time(nullptr) < data.expires)
+        return data.order;
+
+    return BG_STRATEGY_ORDER_NONE;
+}
+
 bool BGTactics::selectObjective(bool reset)
 {
     Battleground* bg = bot->GetBattleground();
@@ -2202,7 +2213,57 @@ bool BGTactics::selectObjective(bool reset)
 
             // Check if both teams currently have the flag
             bool bothFlagsTaken = enemyFC && teamFC;
-            if (!hasFlag && isEscort && teamFC && teamFC != bot)
+
+            // An explicit "bg strategy" order overrides normal role logic until
+            // it expires; flag carriers stay exempt
+            bool orderHandled = false;
+            if (!hasFlag)
+            {
+                switch (wsActiveStrategyOrder(context))
+                {
+                    case BG_STRATEGY_ORDER_ATTACK_FC:
+                        if (enemyFC)
+                        {
+                            target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
+                            orderHandled = true;
+                        }
+                        break;
+                    case BG_STRATEGY_ORDER_ATTACK_BASE:
+                        SetSafePos(team == TEAM_ALLIANCE ? WS_FLAG_POS_HORDE : WS_FLAG_POS_ALLIANCE);
+                        orderHandled = true;
+                        break;
+                    case BG_STRATEGY_ORDER_DEFEND_FC:
+                        if (teamFC && teamFC != bot)
+                        {
+                            target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
+                            if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
+                                Follow(teamFC);
+
+                            orderHandled = true;
+                        }
+                        break;
+                    case BG_STRATEGY_ORDER_DEFEND_BASE:
+                        if (enemyFC)
+                        {
+                            // Our flag is out: run it down, like a home defender would
+                            target.Relocate(enemyFC->GetPositionX(), enemyFC->GetPositionY(), enemyFC->GetPositionZ());
+                        }
+                        else
+                        {
+                            SetSafePos(team == TEAM_ALLIANCE ? WS_FLAG_HIDE_ALLIANCE[urand(0, 2)] : WS_FLAG_HIDE_HORDE[urand(0, 2)], 5.0f);
+                        }
+                        orderHandled = true;
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            if (orderHandled)
+            {
+                // target already chosen by the order above
+            }
+            else if (!hasFlag && isEscort && teamFC && teamFC != bot)
             {
                 // Escorts stick with their flag carrier regardless of flag state
                 target.Relocate(teamFC->GetPositionX(), teamFC->GetPositionY(), teamFC->GetPositionZ());
@@ -4057,9 +4118,9 @@ bool BGTactics::protectFC()
     if (!teamFC || teamFC == bot)
         return false;
 
-    // Only dedicated escorts glue themselves to the carrier;
-    // everyone else helps via "attack team fc attacker" when close
-    if (!isWsEscortRole())
+    // Only dedicated escorts (or bots under a "defend fc" order) glue themselves
+    // to the carrier; everyone else helps via "attack team fc attacker" when close
+    if (!isWsEscortRole() && wsActiveStrategyOrder(context) != BG_STRATEGY_ORDER_DEFEND_FC)
         return false;
 
     float fcX = teamFC->GetPositionX();
@@ -4552,5 +4613,119 @@ bool WsgAnnounceIncomingAction::Execute(Event event)
     WorldPacket data;
     ChatHandler::BuildChatPacket(data, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, msg);
     group->BroadcastPacket(&data, false);
+    return true;
+}
+
+// One fixed line per order: identical text makes responders countable at a glance
+static char const* bgStrategyAnnounceText(uint8 order)
+{
+    switch (order)
+    {
+        case BG_STRATEGY_ORDER_ATTACK_FC:
+            return "Going after their flag carrier!";
+        case BG_STRATEGY_ORDER_ATTACK_BASE:
+            return "Pushing into their flag room!";
+        case BG_STRATEGY_ORDER_DEFEND_FC:
+            return "Sticking with our flag carrier!";
+        case BG_STRATEGY_ORDER_DEFEND_BASE:
+            return "Falling back to defend our flag room!";
+        default:
+            return nullptr;
+    }
+}
+
+bool BgStrategyCommandAction::Execute(Event event)
+{
+    Battleground* bg = bot->GetBattleground();
+    if (!bg || bg->GetStatus() != STATUS_IN_PROGRESS)
+        return false;
+
+    BattlegroundTypeId bgType = bg->GetBgTypeID();
+    if (bgType == BATTLEGROUND_RB)
+        bgType = bg->GetBgTypeID(true);
+
+    // WSG only for now; other battlegrounds ignore the order
+    if (bgType != BATTLEGROUND_WS)
+        return false;
+
+    Player* requester = event.getOwner();
+    if (requester && requester->GetTeamId() != bot->GetTeamId())
+        return false;
+
+    std::string const param = event.getParam();
+
+    uint8 order = BG_STRATEGY_ORDER_NONE;
+    if (param == "attack fc")
+        order = BG_STRATEGY_ORDER_ATTACK_FC;
+    else if (param == "attack base")
+        order = BG_STRATEGY_ORDER_ATTACK_BASE;
+    else if (param == "defend fc")
+        order = BG_STRATEGY_ORDER_DEFEND_FC;
+    else if (param == "defend base")
+        order = BG_STRATEGY_ORDER_DEFEND_BASE;
+    else
+        return false;  // silent on bad input: every bot on the team hears this
+
+    // Flag carriers keep running the flag
+    if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))
+        return false;
+
+    // Orders about a flag carrier need one to exist right now
+    if (order == BG_STRATEGY_ORDER_ATTACK_FC && !AI_VALUE(Unit*, "enemy flag carrier"))
+        return false;
+
+    if (order == BG_STRATEGY_ORDER_DEFEND_FC)
+    {
+        Unit* teamFC = AI_VALUE(Unit*, "team flag carrier");
+        if (!teamFC || teamFC == bot)
+            return false;
+    }
+
+    time_t now = time(nullptr);
+    time_t duration = time_t(sPlayerbotAIConfig.bgStrategyOrderDuration);
+    BgStrategyOrderData data = context->GetValue<BgStrategyOrderData>("bg strategy order")->Get();
+
+    // One compliance roll per order per duration window, so repeating the
+    // call can't ratchet the whole team toward 100% compliance
+    if (data.lastCalledOrder == order && now < data.lastRollTime + duration)
+        return false;
+
+    data.lastCalledOrder = order;
+    data.lastRollTime = now;
+
+    bool complies = urand(0, 99) < sPlayerbotAIConfig.bgStrategyComplianceChance;
+    if (complies)
+    {
+        data.order = order;
+        data.expires = now + duration;
+    }
+
+    context->GetValue<BgStrategyOrderData>("bg strategy order")->Set(data);
+
+    if (!complies)
+        return false;
+
+    // Recompute the objective now rather than at the next 60s tactics tick
+    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
+    PositionInfo pos = posMap["bg objective"];
+    pos.Reset();
+    posMap["bg objective"] = pos;
+
+    if (!bot->IsInCombat())
+    {
+        bot->StopMoving();
+        bot->GetMotionMaster()->Clear();
+    }
+
+    if (char const* text = bgStrategyAnnounceText(order))
+    {
+        if (Group* group = bot->GetGroup(); group && group->isBGGroup())
+        {
+            WorldPacket packet;
+            ChatHandler::BuildChatPacket(packet, CHAT_MSG_BATTLEGROUND, LANG_UNIVERSAL, bot, nullptr, text);
+            group->BroadcastPacket(&packet, false);
+        }
+    }
+
     return true;
 }

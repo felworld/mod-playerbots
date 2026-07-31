@@ -462,6 +462,8 @@ public:
     uint32 wpvpReinforcementDeaths;
     float wpvpReinforcementChance;
     bool wpvpEmoteAlertEnabled;
+    uint32 bgStrategyComplianceChance;
+    uint32 bgStrategyOrderDuration;
     std::array<uint32, MAX_CLASSES> wpvpClassTruceChance;
     uint32 wpvpTruceOathbreakerChance;
     uint32 wpvpKillSwitchDefaultMinutes;

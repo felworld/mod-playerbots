@@ -161,4 +161,16 @@ public:
     bool isUseful() override;
 };
 
+// "bg strategy <attack fc|attack base|defend fc|defend base>" chat command:
+// an explicit tactics callout ("inc!", "get their fc") that each bot follows
+// with configurable probability for a limited time, announcing compliance in
+// battleground chat so the caller can see who is responding. WSG only for now.
+class BgStrategyCommandAction : public Action
+{
+public:
+    BgStrategyCommandAction(PlayerbotAI* botAI) : Action(botAI, "bg strategy") {}
+
+    bool Execute(Event event) override;
+};
+
 #endif
