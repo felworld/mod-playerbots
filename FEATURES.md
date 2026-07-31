@@ -145,6 +145,20 @@ per-player cooldown so nobody gets pestered.
 `AiPlayerbot.QuestCompetitionInvite` (default on) and
 `AiPlayerbot.QuestCompetitionInviteCooldown` in `playerbots.conf.dist`.
 
+## Busy capital cities
+
+Bots that find themselves in a friendly (own-faction or neutral) capital
+mostly stay a while, wandering between the bank, auction house, inn, and
+vendor NPCs or sitting down to rest, instead of immediately rolling their
+next activity somewhere out in the world. Combined with upstream's
+periodic teleport-to-a-city-banker (`AiPlayerbot.ProbTeleToBankers`),
+this keeps a standing crowd around the Orgrimmar and Stormwind bank/AH/inn
+districts, the way capitals feel on a busy server — while bots still
+eventually leave, so the faces turn over. `AiPlayerbot.CityDwellChance`
+(default 0.8) is the per-reroll probability of staying; bots re-roll about
+every 5 minutes, so the mean visit is `5min / (1 - chance)` (~25 minutes
+at the default). Set to 0 to disable.
+
 ## World PvP excursions
 
 Random bots occasionally travel to enemy or contested

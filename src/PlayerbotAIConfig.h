@@ -430,6 +430,7 @@ public:
     bool autoDoQuests;
     bool enableNewRpgStrategy;
     std::unordered_map<NewRpgStatus, uint32> RpgStatusProbWeight;
+    float cityDwellChance;
     // World PvP excursions (RPG_GO_WPVP)
     uint32 wpvpMinBotLevel;
     float wpvpHomeZoneChance;

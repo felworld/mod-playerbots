@@ -72,6 +72,13 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             if (bot->GetZoneId() == ZONE_MOONGLADE)
                 return RandomChangeStatus({RPG_WANDER_NPC, RPG_REST, RPG_TRAVEL_FLIGHT});
 
+            // Capitals should feel busy: a bot idling in a friendly capital
+            // usually keeps pottering around the bank/AH/inn district instead
+            // of rolling an activity that would take it out of the city.
+            if (sTravelMgr.IsFriendlyCapital(bot->GetZoneId(), bot->GetTeamId()) &&
+                roll_chance_f(sPlayerbotAIConfig.cityDwellChance * 100.0f))
+                return RandomChangeStatus({RPG_WANDER_NPC, RPG_REST});
+
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,
                                        RPG_TRAVEL_FLIGHT, RPG_REST, RPG_OUTDOOR_PVP, RPG_GO_WPVP, RPG_DUEL_SPOT,
                                        RPG_GO_MOONGLADE});

@@ -1079,6 +1079,14 @@ AiPlayerbot.RpgStatusProbWeight.GoWpvp = 1
 AiPlayerbot.RpgStatusProbWeight.DuelSpot = 2
 AiPlayerbot.RpgStatusProbWeight.GoMoonglade = 7
 
+# Chance that a bot idling in a friendly (own-faction or neutral) capital city
+# keeps hanging around nearby NPCs (bank/AH/inn district) or resting, instead
+# of rolling an activity that takes it out of the city. Bots re-roll roughly
+# every 5 minutes, so the average dwell time is 5min / (1 - chance).
+# Higher values keep capitals busier; 0 disables.
+# Default: 0.8
+AiPlayerbot.CityDwellChance = 0.8
+
 #
 # World PvP excursions (GoWpvp): a random bot occasionally teleports to a spot
 # 180-280yd outside an enemy or contested travel hub, walks the rest of the way

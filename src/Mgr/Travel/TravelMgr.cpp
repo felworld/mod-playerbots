@@ -4556,6 +4556,12 @@ std::vector<WorldLocation> TravelMgr::GetCityLocations(Player* bot)
     return fallbackLocations;
 }
 
+bool TravelMgr::IsFriendlyCapital(uint32 zoneId, TeamId team) const
+{
+    Capital const* capital = FindCapitalByZone(zoneId);
+    return capital && (capital->team == team || capital->team == TEAM_NEUTRAL);
+}
+
 void TravelMgr::PrepareZone2LevelBracket()
 {
     // Classic WoW - starter zones

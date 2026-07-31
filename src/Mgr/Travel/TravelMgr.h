@@ -909,6 +909,9 @@ public:
         return true;
     }
     std::vector<WorldLocation> GetCityLocations(Player* bot);
+    // Whether the zone is a capital city the given team can idle in
+    // (own-faction or neutral).
+    bool IsFriendlyCapital(uint32 zoneId, TeamId team) const;
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
     bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
     const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }
