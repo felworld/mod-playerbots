@@ -145,6 +145,22 @@ per-player cooldown so nobody gets pestered.
 `AiPlayerbot.QuestCompetitionInvite` (default on) and
 `AiPlayerbot.QuestCompetitionInviteCooldown` in `playerbots.conf.dist`.
 
+## Chest roll-offs
+
+In a group that contains a real player, bots don't ninja-loot world
+chests anymore: when the group spots a lootable chest, every bot that
+could open it does a visible `/roll` (1–100) and only the highest
+roller walks over and opens it. The real player can enter the contest
+too by typing `/roll` within the ~5-second window — and if they win,
+the bots leave the chest alone (bots re-consider it after 60 seconds if
+the winner never collects, so a passed-up chest doesn't stay locked
+forever). Only genuinely contested chests get a roll-off: gathering
+nodes, quest chests, and chests with group loot rules (whose contents
+already go through real need/greed rolls) are exempt, as are all-bot
+groups, which loot the way they always did.
+`AiPlayerbot.ChestRollEnable` in `playerbots.conf.dist` (default off
+upstream-style; enabled in the Felworld config tree).
+
 ## Busy capital cities
 
 Bots that find themselves in a friendly (own-faction or neutral) capital

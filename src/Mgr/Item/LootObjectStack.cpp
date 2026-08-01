@@ -6,6 +6,7 @@
 
 #include "LootObjectStack.h"
 
+#include "ChestRollMgr.h"
 #include "LootMgr.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
@@ -408,6 +409,13 @@ LootObject LootObjectStack::GetNearest(float maxDistance)
 
         if (!lootObject.IsLootPossible(bot))
             continue;
+
+        // Grouped chest roll-off: hold while a /roll contest for this chest
+        // is pending or was lost to another group member. Reaching here
+        // means the bot could open it, so only capable openers enter.
+        if (GameObject* go = worldObj->ToGameObject())
+            if (!sChestRollMgr->MayLoot(bot, go, lootObject.skillId))
+                continue;
 
         nearestDistance = distance;
         nearest = lootObject;

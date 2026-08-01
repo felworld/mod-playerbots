@@ -41,6 +41,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Quest-competition groups](FEATURES.md#quest-competition-groups)** — a
   bot competing with you for spawns invites you to group and grinds
   alongside you as a peer.
+- **[Chest roll-offs](FEATURES.md#chest-roll-offs)** — grouped bots `/roll`
+  for world chests instead of ninja-looting them, and you can roll too;
+  the highest roller opens it.
 - **[Busy capital cities](FEATURES.md#busy-capital-cities)** — bots in a
   friendly capital linger around the bank/AH/inn district instead of
   immediately heading back out, keeping Orgrimmar and Stormwind populated.

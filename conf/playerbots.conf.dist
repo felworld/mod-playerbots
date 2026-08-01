@@ -302,6 +302,16 @@ AiPlayerbot.TwoRoundsGearInit = 0
 # Default: 0 (disabled)
 AiPlayerbot.FreeMethodLoot = 0
 
+# Grouped bots roll off world chests instead of ninja-looting them: when a
+# group that contains a real player spots a lootable chest, every bot that
+# could open it does a visible /roll (1-100) and only the highest roller
+# opens it. The real player can join the contest by typing /roll within the
+# ~5 second window; if the player wins, the bots leave the chest alone (it
+# frees up again after 60 seconds if the winner never collects). Gathering
+# nodes, quest chests and chests with group loot rules are exempt.
+# Default: 0 (disabled)
+AiPlayerbot.ChestRollEnable = 0
+
 # Bots' Roll level bots will use for items they Need (0 = pass, 1 = greed, 2 = need)
 # Default: 1 (greed)
 AiPlayerbot.LootNeedRollLevel = 1

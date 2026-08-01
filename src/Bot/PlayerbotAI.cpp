@@ -17,6 +17,7 @@
 #include "ChannelMgr.h"
 #include "CharacterPackets.h"
 #include "ChatHelper.h"
+#include "ChestRollMgr.h"
 #include "CheckMountStateAction.h"
 #include "Common.h"
 #include "CreatureData.h"
@@ -1294,6 +1295,23 @@ void PlayerbotAI::HandleBotOutgoingPacket(WorldPacket const& packet)
             p >> delaytime;
             if (delaytime <= 1000)
                 IncreaseNextCheckDelay(delaytime);
+            return;
+        }
+        case MSG_RANDOM_ROLL:
+        {
+            WorldPacket p(packet);
+            p.rpos(0);
+            uint32 rollMin, rollMax, result;
+            ObjectGuid roller;
+            p >> rollMin >> rollMax >> result >> roller;
+
+            // Bots record their own rolls when they make them; only a real
+            // player's /roll can join a chest roll-off from here.
+            Player* player = ObjectAccessor::FindPlayer(roller);
+            if (!player || GET_PLAYERBOT_AI(player))
+                return;
+
+            sChestRollMgr->RecordPlayerRoll(player, rollMin, rollMax, result);
             return;
         }
         case SMSG_EMOTE:  // do not react to NPC emotes
