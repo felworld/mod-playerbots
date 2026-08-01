@@ -163,6 +163,7 @@ public:
         creators["far from loot target"] = &TriggerContext::far_from_loot_target;
         creators["can loot"] = &TriggerContext::can_loot;
         creators["giveaway pending"] = &TriggerContext::giveaway_pending;
+        creators["trade deal pending"] = &TriggerContext::trade_deal_pending;
         creators["swimming"] = &TriggerContext::swimming;
         creators["target changed"] = &TriggerContext::target_changed;
 
@@ -340,6 +341,7 @@ private:
     static Trigger* can_loot(PlayerbotAI* botAI) { return new CanLootTrigger(botAI); }
     static Trigger* far_from_loot_target(PlayerbotAI* botAI) { return new FarFromCurrentLootTrigger(botAI); }
     static Trigger* giveaway_pending(PlayerbotAI* botAI) { return new GiveawayPendingTrigger(botAI); }
+    static Trigger* trade_deal_pending(PlayerbotAI* botAI) { return new TradeDealPendingTrigger(botAI); }
     static Trigger* far_from_master(PlayerbotAI* botAI) { return new FarFromMasterTrigger(botAI); }
     static Trigger* behind_target(PlayerbotAI* botAI) { return new IsBehindTargetTrigger(botAI); }
     static Trigger* not_behind_target(PlayerbotAI* botAI) { return new IsNotBehindTargetTrigger(botAI); }

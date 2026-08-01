@@ -26,6 +26,7 @@
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "Timer.h"
+#include "TradeOfferMgr.h"
 #include "TravelMgr.h"
 #include "WpvpDefense.h"
 
@@ -75,8 +76,12 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             // Capitals should feel busy: a bot idling in a friendly capital
             // usually keeps pottering around the bank/AH/inn district instead
             // of rolling an activity that would take it out of the city.
+            // A market anchor (a recent Trade ad or a committed WTS/WTB deal)
+            // makes the dwell guaranteed - no porting out while a buyer may
+            // be typing a reply.
             if (sTravelMgr.IsFriendlyCapital(bot->GetZoneId(), bot->GetTeamId()) &&
-                roll_chance_f(sPlayerbotAIConfig.cityDwellChance * 100.0f))
+                (sTradeOfferMgr->IsAnchored(bot->GetGUID()) ||
+                 roll_chance_f(sPlayerbotAIConfig.cityDwellChance * 100.0f)))
                 return RandomChangeStatus({RPG_WANDER_NPC, RPG_REST});
 
             return RandomChangeStatus({RPG_GO_CAMP, RPG_GO_GRIND, RPG_WANDER_RANDOM, RPG_WANDER_NPC, RPG_DO_QUEST,

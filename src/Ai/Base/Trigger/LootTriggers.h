@@ -43,4 +43,12 @@ public:
     bool IsActive() override;
 };
 
+class TradeDealPendingTrigger : public Trigger
+{
+public:
+    TradeDealPendingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "trade deal pending") {}
+
+    bool IsActive() override;
+};
+
 #endif

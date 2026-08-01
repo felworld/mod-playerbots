@@ -17,6 +17,7 @@
 #include "Playerbots.h"
 #include "RandomPlayerbotMgr.h"
 #include "SetCraftAction.h"
+#include "TradeOfferMgr.h"
 
 bool TradeStatusAction::Execute(Event event)
 {
@@ -26,6 +27,29 @@ bool TradeStatusAction::Execute(Event event)
         return false;
 
     PlayerbotAI* traderBotAI = GET_PLAYERBOT_AI(trader);
+
+    // A committed WTS/WTB deal admits its counterparty - and only them - past
+    // the stranger gates; TradeFulfillAction owns placing goods and accepting,
+    // so nothing else here needs to run for a deal trade.
+    if (sTradeOfferMgr->HasDealWith(bot->GetGUID(), trader->GetGUID()))
+    {
+        WorldPacket p(event.getPacket());
+        p.rpos(0);
+        uint32 status;
+        p >> status;
+
+        if (status == TRADE_STATUS_BEGIN_TRADE)
+        {
+            if (!bot->HasInArc(CAST_ANGLE_IN_FRONT, trader, sPlayerbotAIConfig.sightDistance))
+                bot->SetFacingToObject(trader);
+
+            WorldPacket beginPacket;
+            bot->GetSession()->HandleBeginTradeOpcode(beginPacket);
+            return true;
+        }
+
+        return false;
+    }
 
     // Allow the master and group members to trade
     if (trader != master && !traderBotAI && (!bot->GetGroup() || !bot->GetGroup()->IsMember(trader->GetGUID())))

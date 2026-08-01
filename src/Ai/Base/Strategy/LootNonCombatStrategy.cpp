@@ -16,6 +16,7 @@ void LootNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("can loot", { NextAction("open loot", 8.0f) }));
     triggers.push_back(new TriggerNode("often", { NextAction("add all loot", 5.0f) }));
     triggers.push_back(new TriggerNode("giveaway pending", { NextAction("give away roll win", 6.5f) }));
+    triggers.push_back(new TriggerNode("trade deal pending", { NextAction("fulfill trade deal", 6.4f) }));
 }
 
 void GatherStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

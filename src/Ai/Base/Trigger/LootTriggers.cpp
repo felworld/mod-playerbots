@@ -10,6 +10,7 @@
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include "TradeOfferMgr.h"
 
 bool LootAvailableTrigger::IsActive()
 {
@@ -52,3 +53,5 @@ bool FarFromCurrentLootTrigger::IsActive()
 bool CanLootTrigger::IsActive() { return AI_VALUE(bool, "can loot"); }
 
 bool GiveawayPendingTrigger::IsActive() { return sGiveawayMgr->HasPending(bot->GetGUID()); }
+
+bool TradeDealPendingTrigger::IsActive() { return sTradeOfferMgr->HasPending(bot->GetGUID()); }
