@@ -321,6 +321,34 @@ AiPlayerbot.ChestRollEnable = 0
 # Default: 0 (disabled)
 AiPlayerbot.RollWinGiveawayChance = 0
 
+#
+# WTS/WTB trading. Bots answer "!wts <itemlink> [count] [price]" as buyers and
+# "!wtb <itemlink> [count] [price]" as sellers; with a sane concrete price the
+# deal commits and the bot walks over and completes it through a real trade
+# window. "!appraise <itemlink>" and "!sellables" are read-only queries;
+# "!sellto"/"!buyfrom <player> <itemlink> [count] <price>" are the explicit
+# commitment commands. Advertising or engaging stamps a market anchor that
+# keeps the bot pottering around a friendly capital (see CityDwellChance)
+# instead of porting out while a reply may be coming.
+
+# How long (seconds) a Trade-channel ad or a market chat exchange keeps the
+# bot anchored in town. Renewed on every engagement.
+# Default: 120
+AiPlayerbot.TradeAdAnchorSeconds = 120
+
+# Anchor duration (seconds, random in [min, max]) once a deal is actually
+# committed, so the bot stays put long enough to meet up and trade.
+# Default: 300, 600
+AiPlayerbot.TradeDealAnchorMinSeconds = 300
+AiPlayerbot.TradeDealAnchorMaxSeconds = 600
+
+# Whether bots keyword-match "WTB ..." in chat and whisper stock offers
+# (upstream behavior). Turn off in LLM sessions, where LLM-driven bots read
+# the ad and answer through the market commands instead - keeping both on
+# double-responds.
+# Default: 1 (enabled)
+AiPlayerbot.KeywordTradeReplies = 1
+
 # Bots' Roll level bots will use for items they Need (0 = pass, 1 = greed, 2 = need)
 # Default: 1 (greed)
 AiPlayerbot.LootNeedRollLevel = 1

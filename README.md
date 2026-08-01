@@ -47,6 +47,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Roll-win giveaways](FEATURES.md#roll-win-giveaways)** — a bot that
   wins a roll on gear it can't use sometimes trades it to the group
   member who actually needs it.
+- **[City market trading](FEATURES.md#city-market-trading)** — bots buy
+  and sell for real: `!wts`/`!wtb` offers get appraised at market-ish
+  prices, and a committed deal ends with the bot walking over and
+  trading items for gold through an actual trade window.
 - **[Busy capital cities](FEATURES.md#busy-capital-cities)** — bots in a
   friendly capital linger around the bank/AH/inn district instead of
   immediately heading back out, keeping Orgrimmar and Stormwind populated.
@@ -101,6 +105,10 @@ Spoken to a bot (with the `!` prefix, like every
 - `!conjure food` / `!conjure water`, `!portal <city>`, `!ritual` — mage
   and warlock class services (conjured goods handed to you, city portals,
   summoning rituals).
+- `!wts` / `!wtb <itemlink> [count] [price]`, `!appraise <itemlink>`,
+  `!sellables`, `!sellto` / `!buyfrom <player> <itemlink> [count] <price>`
+  — real buying and selling with bots, fulfilled through actual trade
+  windows.
 
 GM / console:
 

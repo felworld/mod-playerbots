@@ -177,6 +177,45 @@ containing a real player. `AiPlayerbot.RollWinGiveawayChance` in
 `playerbots.conf.dist` (0–1 probability per eligible win; default 0,
 set to 0.6 in the Felworld config tree).
 
+## City market trading
+
+Bots buy and sell with players (and each other) for real, through actual
+trade windows. Whisper a bot `!wts <itemlink> [count] [price]` and it
+answers as a buyer: if the item is genuinely useful to it — an equipment
+upgrade, a reagent it ran out of, a consumable it is low on — it quotes a
+price or, when you named a sane one, commits on the spot, walks over, and
+pays you through a trade window. `!wtb <itemlink> [count] [price]` is the
+mirror: the bot sells from its tradeable spare stock (the things it was
+otherwise going to vendor). `!appraise <itemlink>` asks what an item is to
+that bot and what it would pay or ask; `!sellables` lists its stock and
+wants with quotes; `!sellto`/`!buyfrom <player> <itemlink> [count] <price>`
+are the explicit commitment commands (master-only for players; mod-llm's
+`commit_trade` tool uses them after a chat negotiation).
+
+Everything mechanical is deterministic: prices come from
+mod-ah-bot-plus's valuation when that module is enabled (already jittered
+per call, so quotes never exactly match AH listings), falling back to a
+vendor-price heuristic; a bot never sells below half its own quote or
+vendor price, never pays more than double its quote, and caps purchases
+by the same free-gold budget it reserves for repairs and training. A
+committed deal is fulfilled like the roll-win giveaway: the bot walks up,
+opens the trade, places the agreed stacks or gold, and only accepts while
+your side of the window actually covers the deal — a short-changed offer
+just times out. Deals are same-city only (the counterparty must be within
+walking distance); sell counts round up to whole stacks, with the
+overshoot thrown in.
+
+Posting or engaging with market chatter stamps a short anchor
+(`AiPlayerbot.TradeAdAnchorSeconds`, default 2 minutes, renewed on
+engagement) that makes the [busy-capitals](#busy-capital-cities) dwell
+guaranteed instead of 80%, so an advertising bot doesn't port out while a
+buyer is typing; a committed deal extends it
+(`AiPlayerbot.TradeDealAnchor{Min,Max}Seconds`, default 5–10 minutes).
+`AiPlayerbot.KeywordTradeReplies` gates upstream's keyword-matched "WTB"
+chat responder, which should be off in LLM sessions where
+[mod-llm](https://github.com/felworld/mod-llm) drives ad reading, Trade
+chatter, and negotiation on top of these commands.
+
 ## Busy capital cities
 
 Bots that find themselves in a friendly (own-faction or neutral) capital
@@ -524,6 +563,13 @@ with the `!` prefix described above:
 - `!conjure food` / `!conjure water`, `!portal <city>`, `!ritual` — the
   mage and warlock class services described in
   [Class service commands](#class-service-commands).
+- `!wts <itemlink> [count] [price]` / `!wtb <itemlink> [count] [price]` —
+  sell to or buy from a bot for real; with a sane concrete price the bot
+  commits, walks over, and completes the trade. `!appraise <itemlink>` and
+  `!sellables` query what a bot wants, has, and would pay or ask;
+  `!sellto` / `!buyfrom <player> <itemlink> [count] <price>` commit a
+  negotiated deal (master/LLM only). Detailed in
+  [City market trading](#city-market-trading).
 
 GM / console commands:
 
