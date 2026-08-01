@@ -410,6 +410,7 @@ public:
 
     bool freeMethodLoot;
     bool chestRollEnable;
+    float rollWinGiveawayChance;
     int32 lootNeedRollLevel;
     bool lootGreedRollLevel;
     bool lootRollRecipe;

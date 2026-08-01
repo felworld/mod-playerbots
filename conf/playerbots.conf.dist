@@ -312,6 +312,15 @@ AiPlayerbot.FreeMethodLoot = 0
 # Default: 0 (disabled)
 AiPlayerbot.ChestRollEnable = 0
 
+# Chance that a bot which won a group loot roll on a weapon or armor piece it
+# has no use for hands the item over to a group member who would genuinely
+# upgrade with it (judged by class, spec and current gear) - the real player
+# included, who gets a trade window and the bot's explanation. Bots honor the
+# BoP trade window on soulbound roll wins. Only applies in groups that
+# contain a real player. 0 disables, 1 means every such win is offered.
+# Default: 0 (disabled)
+AiPlayerbot.RollWinGiveawayChance = 0
+
 # Bots' Roll level bots will use for items they Need (0 = pass, 1 = greed, 2 = need)
 # Default: 1 (greed)
 AiPlayerbot.LootNeedRollLevel = 1

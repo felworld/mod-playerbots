@@ -161,6 +161,22 @@ groups, which loot the way they always did.
 `AiPlayerbot.ChestRollEnable` in `playerbots.conf.dist` (default off
 upstream-style; enabled in the Felworld config tree).
 
+## Roll-win giveaways
+
+A bot that wins a group loot roll on a weapon or armor piece it has no
+use for — vendor trash to it, but a genuine upgrade for someone else in
+the roll — sometimes walks over and hands it to them. The judgment uses
+the same class/spec/current-gear scoring bots use for their own votes,
+applied to every roll participant including members who passed (polite
+players pass on things they could use). The real player is the
+preferred recipient: the bot runs up, opens a trade with the item in
+it, and says why; bot recipients accept silently. Soulbound roll wins
+respect the 2-hour BoP trade window, so only members who were eligible
+for the original loot can receive them. Only active in groups
+containing a real player. `AiPlayerbot.RollWinGiveawayChance` in
+`playerbots.conf.dist` (0–1 probability per eligible win; default 0,
+set to 0.6 in the Felworld config tree).
+
 ## Busy capital cities
 
 Bots that find themselves in a friendly (own-faction or neutral) capital

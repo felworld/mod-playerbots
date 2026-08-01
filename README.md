@@ -44,6 +44,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Chest roll-offs](FEATURES.md#chest-roll-offs)** — grouped bots `/roll`
   for world chests instead of ninja-looting them, and you can roll too;
   the highest roller opens it.
+- **[Roll-win giveaways](FEATURES.md#roll-win-giveaways)** — a bot that
+  wins a roll on gear it can't use sometimes trades it to the group
+  member who actually needs it.
 - **[Busy capital cities](FEATURES.md#busy-capital-cities)** — bots in a
   friendly capital linger around the bank/AH/inn district instead of
   immediately heading back out, keeping Orgrimmar and Stormwind populated.

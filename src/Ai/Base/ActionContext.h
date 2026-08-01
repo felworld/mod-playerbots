@@ -39,6 +39,7 @@
 #include "GenericActions.h"
 #include "GenericSpellActions.h"
 #include "GiveItemAction.h"
+#include "GiveawayAction.h"
 #include "GreetAction.h"
 #include "GuildAcceptAction.h"
 #include "GuildCreateActions.h"
@@ -166,6 +167,7 @@ public:
         creators["return"] = &ActionContext::_return;
         creators["move to loot"] = &ActionContext::move_to_loot;
         creators["open loot"] = &ActionContext::open_loot;
+        creators["give away roll win"] = &ActionContext::give_away_roll_win;
         creators["guard"] = &ActionContext::guard;
         creators["return to stay position"] = &ActionContext::return_to_stay_position;
         creators["move out of enemy contact"] = &ActionContext::move_out_of_enemy_contact;
@@ -365,6 +367,7 @@ private:
     static Action* return_to_stay_position(PlayerbotAI* botAI) { return new ReturnToStayPositionAction(botAI); }
     static Action* open_loot(PlayerbotAI* botAI) { return new OpenLootAction(botAI); }
     static Action* move_to_loot(PlayerbotAI* botAI) { return new MoveToLootAction(botAI); }
+    static Action* give_away_roll_win(PlayerbotAI* botAI) { return new GiveawayAction(botAI); }
     static Action* _return(PlayerbotAI* botAI) { return new ReturnAction(botAI); }
     static Action* shoot(PlayerbotAI* botAI) { return new CastShootAction(botAI); }
     static Action* melee(PlayerbotAI* botAI) { return new MeleeAction(botAI); }

@@ -35,4 +35,12 @@ public:
     bool IsActive() override;
 };
 
+class GiveawayPendingTrigger : public Trigger
+{
+public:
+    GiveawayPendingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "giveaway pending") {}
+
+    bool IsActive() override;
+};
+
 #endif

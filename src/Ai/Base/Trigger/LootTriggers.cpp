@@ -6,6 +6,7 @@
 
 #include "LootTriggers.h"
 
+#include "GiveawayMgr.h"
 #include "LootObjectStack.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -49,3 +50,5 @@ bool FarFromCurrentLootTrigger::IsActive()
 }
 
 bool CanLootTrigger::IsActive() { return AI_VALUE(bool, "can loot"); }
+
+bool GiveawayPendingTrigger::IsActive() { return sGiveawayMgr->HasPending(bot->GetGUID()); }

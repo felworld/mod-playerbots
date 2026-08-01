@@ -23,6 +23,8 @@
 #include "DatabaseEnv.h"
 #include "DatabaseLoader.h"
 #include "DuelChallenge.h"
+#include "GiveawayMgr.h"
+#include "Group.h"
 #include "GuildTaskMgr.h"
 #include "PlayerScript.h"
 #include "PlayerbotAIConfig.h"
@@ -94,8 +96,15 @@ public:
         PLAYERHOOK_ON_GIVE_EXP,
         PLAYERHOOK_ON_BEFORE_TELEPORT,
         PLAYERHOOK_ON_UPDATE_ZONE,
-        PLAYERHOOK_ON_DUEL_END
+        PLAYERHOOK_ON_DUEL_END,
+        PLAYERHOOK_ON_GROUP_ROLL_REWARD_ITEM
     }) {}
+
+    void OnPlayerGroupRollRewardItem(Player* player, Item* item, uint32 /*count*/, RollVote /*voteType*/,
+        Roll* roll) override
+    {
+        sGiveawayMgr->OnRollRewardItem(player, item, roll);
+    }
 
     void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type) override
     {
