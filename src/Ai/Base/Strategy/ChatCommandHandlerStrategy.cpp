@@ -156,6 +156,11 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("cdebug");
     supported.push_back("cs");
     supported.push_back("wts");
+    supported.push_back("wtb");
+    supported.push_back("appraise");
+    supported.push_back("sellables");
+    supported.push_back("sellto");
+    supported.push_back("buyfrom");
     supported.push_back("hire");
     supported.push_back("craft");
     supported.push_back("flag");

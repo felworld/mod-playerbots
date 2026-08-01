@@ -197,7 +197,10 @@ void ChatReplyAction::ChatReplyDo(Player* bot, uint32& type, uint32& guid1, std:
         return;
     }
 
-    if (msg.starts_with("WTB") && HandleWTBItemsReply(bot, chatChannelSource, msg, name))
+    // Keyword-matched WTB replies double-respond alongside LLM-driven bots,
+    // which read the ad and answer through the market commands instead.
+    if (sPlayerbotAIConfig.keywordTradeReplies && msg.starts_with("WTB") &&
+        HandleWTBItemsReply(bot, chatChannelSource, msg, name))
     {
         return;
     }

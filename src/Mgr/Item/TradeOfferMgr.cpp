@@ -14,6 +14,7 @@
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Random.h"
 #include "SpellInfo.h"
@@ -398,5 +399,150 @@ std::vector<Want> CollectWants(PlayerbotAI* botAI)
     }
 
     return wants;
+}
+
+namespace
+{
+    // Fulfillment is same-city walking distance; farther bites get a chat
+    // reply from the LLM layer instead of a cross-continent hike.
+    constexpr float TRADE_DEAL_MAX_DISTANCE = 300.0f;
+
+    // Only whole stacks cross a trade window, so a sell plan rounds the
+    // request up to the cheapest covering set: one just-big-enough stack when
+    // it exists, otherwise small stacks piled up. Returns the unit total, 0
+    // when the bot cannot cover the request.
+    uint32 PlanSellCount(PlayerbotAI* botAI, uint32 itemId, uint32 requested)
+    {
+        std::vector<Item*> items = botAI->GetAiObjectContext()
+            ->GetValue<std::vector<Item*>>("inventory items", ChatHelper::FormatQItem(itemId))->Get();
+
+        std::vector<uint32> stacks;
+        for (Item* item : items)
+            if (item->CanBeTraded())
+                stacks.push_back(item->GetCount());
+
+        std::sort(stacks.begin(), stacks.end());
+
+        uint32 singleCover = 0;
+        for (uint32 stack : stacks)
+            if (stack >= requested)
+            {
+                singleCover = stack;
+                break;
+            }
+
+        uint32 pileCover = 0;
+        for (uint32 stack : stacks)
+        {
+            pileCover += stack;
+            if (pileCover >= requested)
+                break;
+        }
+        if (pileCover < requested)
+            pileCover = 0;
+
+        if (singleCover && (!pileCover || singleCover <= pileCover))
+            return singleCover;
+        return pileCover;
+    }
+}
+
+bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
+    uint32 count, uint32 price, bool selling, std::string& error)
+{
+    Player* bot = botAI->GetBot();
+
+    if (!proto)
+    {
+        error = "no such item";
+        return false;
+    }
+
+    if (!counterparty || counterparty == bot || !counterparty->IsInWorld() || !counterparty->IsAlive())
+    {
+        error = "no such trader here";
+        return false;
+    }
+
+    if (counterparty->GetMapId() != bot->GetMapId() ||
+        bot->GetDistance(counterparty) > TRADE_DEAL_MAX_DISTANCE)
+    {
+        error = "they are too far away to meet up";
+        return false;
+    }
+
+    if (counterparty->GetTeamId() != bot->GetTeamId())
+    {
+        error = "cannot trade across factions";
+        return false;
+    }
+
+    if (!count || !price)
+    {
+        error = "a deal needs an amount and a price";
+        return false;
+    }
+
+    Appraisal appraisal = Appraise(botAI, proto);
+    if (selling)
+    {
+        if (appraisal.wants)
+        {
+            error = "you need that item yourself";
+            return false;
+        }
+
+        if (!SaneSellPrice(proto, count, price))
+        {
+            error = "price too low to sell at";
+            return false;
+        }
+
+        uint32 planned = PlanSellCount(botAI, proto->ItemId, count);
+        if (!planned)
+        {
+            error = "not enough of the item to cover the deal";
+            return false;
+        }
+        count = planned;
+    }
+    else
+    {
+        if (!appraisal.wants)
+        {
+            error = "you have no use for that item";
+            return false;
+        }
+
+        if (!SaneBuyPrice(proto, count, price))
+        {
+            error = "price too high to pay";
+            return false;
+        }
+
+        if (price > SpendableMoney(botAI))
+        {
+            error = "you cannot spare that much gold";
+            return false;
+        }
+    }
+
+    if (!sTradeOfferMgr->AddDeal(bot, counterparty, proto->ItemId, count, price, selling))
+    {
+        error = "you already have a trade in progress";
+        return false;
+    }
+
+    std::string item = ChatHelper::FormatItem(proto, count > 1 ? count : 0);
+    std::string money = ChatHelper::formatMoney(price);
+    std::string confirmation = selling
+        ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+              "trade_deal_sell_confirm", "Deal - %item for %money. Stay put, I'm bringing it over.",
+              {{"%item", item}, {"%money", money}})
+        : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+              "trade_deal_buy_confirm", "Deal - %money for %item. Stay put, I'm coming to you.",
+              {{"%item", item}, {"%money", money}});
+    bot->Whisper(confirmation, LANG_UNIVERSAL, counterparty);
+    return true;
 }
 }

@@ -77,6 +77,7 @@
 #include "TellPvpStatsAction.h"
 #include "TellTargetAction.h"
 #include "TradeAction.h"
+#include "TradeDealActions.h"
 #include "TrainerAction.h"
 #include "UnequipAction.h"
 #include "UseItemAction.h"
@@ -195,6 +196,11 @@ public:
         creators["cdebug"] = &ChatActionContext::debug;
         creators["cs"] = &ChatActionContext::cs;
         creators["wts"] = &ChatActionContext::wts;
+        creators["wtb"] = &ChatActionContext::wtb;
+        creators["appraise"] = &ChatActionContext::appraise;
+        creators["sellables"] = &ChatActionContext::sellables;
+        creators["sellto"] = &ChatActionContext::sellto;
+        creators["buyfrom"] = &ChatActionContext::buyfrom;
         creators["hire"] = &ChatActionContext::hire;
         creators["craft"] = &ChatActionContext::craft;
         creators["flag"] = &ChatActionContext::flag;
@@ -232,6 +238,11 @@ private:
     static Action* craft(PlayerbotAI* botAI) { return new SetCraftAction(botAI); }
     static Action* hire(PlayerbotAI* botAI) { return new HireAction(botAI); }
     static Action* wts(PlayerbotAI* botAI) { return new WtsAction(botAI); }
+    static Action* wtb(PlayerbotAI* botAI) { return new WtbAction(botAI); }
+    static Action* appraise(PlayerbotAI* botAI) { return new AppraiseAction(botAI); }
+    static Action* sellables(PlayerbotAI* botAI) { return new SellablesAction(botAI); }
+    static Action* sellto(PlayerbotAI* botAI) { return new SellToAction(botAI); }
+    static Action* buyfrom(PlayerbotAI* botAI) { return new BuyFromAction(botAI); }
     static Action* cs(PlayerbotAI* botAI) { return new CustomStrategyEditAction(botAI); }
     static Action* debug(PlayerbotAI* botAI) { return new DebugAction(botAI); }
     static Action* mail(PlayerbotAI* botAI) { return new MailAction(botAI); }

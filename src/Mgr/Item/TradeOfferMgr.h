@@ -119,6 +119,13 @@ namespace MarketQuote
     // The bot's WTB list: profession/spell reagents it has run out of and
     // consumables it carries but is running low on.
     std::vector<Want> CollectWants(PlayerbotAI* botAI);
+
+    // Registers a deal in TradeOfferMgr after deterministic validation
+    // (counterparty reachable, direction makes sense for the bot, price
+    // within the sanity bounds, gold/stock actually available) and whispers
+    // the counterparty a confirmation. On failure sets `error`.
+    bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
+        uint32 count, uint32 price, bool selling, std::string& error);
 }
 
 #endif

@@ -6,56 +6,75 @@
 
 #include "WtsAction.h"
 
-#include "AiFactory.h"
+#include "ChatHelper.h"
 #include "Event.h"
-#include "ItemUsageValue.h"
-#include "ItemVisitors.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "TradeDealActions.h"
+#include "TradeOfferMgr.h"
 
+#include <algorithm>
+
+// `!wts <itemlink> [count] [price]`: the sender is selling; the bot answers
+// as a buyer. With a sane concrete price the deal commits and the bot walks
+// over to complete it through a real trade window; without one it quotes
+// what it would pay. (Upstream this action only whispered a vendor-price
+// offer it never honored.)
 bool WtsAction::Execute(Event event)
 {
     Player* owner = event.getOwner();
     if (!owner)
         return false;
 
-    std::ostringstream out;
-    std::string const text = event.getParam();
-
     if (!sRandomPlayerbotMgr.IsRandomBot(bot))
         return false;
 
-    std::string const link = event.getParam();
-
-    ItemIds itemIds = chat->parseItems(link);
-    if (itemIds.empty())
+    TradeDealParse::Request request;
+    if (!TradeDealParse::Parse(event.getParam(), request))
         return false;
 
-    for (ItemIds::iterator i = itemIds.begin(); i != itemIds.end(); i++)
+    sTradeOfferMgr->RenewAdAnchor(bot->GetGUID());
+
+    std::string item = ChatHelper::FormatItem(request.proto);
+    MarketQuote::Appraisal appraisal = MarketQuote::Appraise(botAI, request.proto);
+    if (!appraisal.wants || !appraisal.bidEach)
     {
-        uint32 itemId = *i;
-        ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemId);
-        if (!proto)
-            continue;
-
-        std::ostringstream out;
-        out << itemId;
-        ItemUsage usage = AI_VALUE2(ItemUsage, "item usage", out.str());
-        if (usage == ITEM_USAGE_NONE)
-            continue;
-
-        int32 buyPrice = proto->BuyPrice * sRandomPlayerbotMgr.GetBuyMultiplier(bot);
-        if (!buyPrice)
-            continue;
-
-        if (urand(0, 15) > 2)
-            continue;
-
-        std::ostringstream tell;
-        tell << "I'll buy " << chat->FormatItem(proto) << " for " << chat->formatMoney(buyPrice);
-
-        // ignore random bot chat filter
-        bot->Whisper(tell.str(), LANG_UNIVERSAL, owner);
+        bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "trade_wts_no_thanks", "Thanks, but %item is %reason.",
+                         {{"%item", item}, {"%reason", appraisal.reason}}),
+                     LANG_UNIVERSAL, owner);
+        return true;
     }
 
+    uint32 budget = MarketQuote::SpendableMoney(botAI);
+    uint32 offer = uint32(std::min<uint64>(uint64(appraisal.bidEach) * request.count, budget));
+    if (!offer)
+    {
+        bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "trade_wts_broke", "I could use %item, but I'm flat broke right now.",
+                         {{"%item", item}}),
+                     LANG_UNIVERSAL, owner);
+        return true;
+    }
+
+    if (request.price)
+    {
+        std::string error;
+        if (MarketQuote::Commit(botAI, owner, request.proto, request.count, request.price, false, error))
+            return true;
+
+        bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "trade_wts_counter", "Can't do that price for %item - best I can offer is %money.",
+                         {{"%item", ChatHelper::FormatItem(request.proto, request.count > 1 ? request.count : 0)},
+                          {"%money", ChatHelper::formatMoney(offer)}}),
+                     LANG_UNIVERSAL, owner);
+        return true;
+    }
+
+    bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                     "trade_wts_offer", "I'll buy %item for %money. Deal?",
+                     {{"%item", ChatHelper::FormatItem(request.proto, request.count > 1 ? request.count : 0)},
+                      {"%money", ChatHelper::formatMoney(offer)}}),
+                 LANG_UNIVERSAL, owner);
     return true;
 }

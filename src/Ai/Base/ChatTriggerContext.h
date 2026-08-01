@@ -134,6 +134,11 @@ public:
         creators["cdebug"] = &ChatTriggerContext::cdebug;
         creators["cs"] = &ChatTriggerContext::cs;
         creators["wts"] = &ChatTriggerContext::wts;
+        creators["wtb"] = &ChatTriggerContext::wtb;
+        creators["appraise"] = &ChatTriggerContext::appraise;
+        creators["sellables"] = &ChatTriggerContext::sellables;
+        creators["sellto"] = &ChatTriggerContext::sellto;
+        creators["buyfrom"] = &ChatTriggerContext::buyfrom;
         // creators["hire"] = &ChatTriggerContext::hire;  // Not correctly implemented at this time, would cause crash and other issues.
         creators["craft"] = &ChatTriggerContext::craft;
         creators["flag"] = &ChatTriggerContext::craft;
@@ -173,6 +178,11 @@ private:
     static Trigger* craft(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "craft"); }
     static Trigger* hire(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "hire"); }
     static Trigger* wts(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wts"); }
+    static Trigger* wtb(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "wtb"); }
+    static Trigger* appraise(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "appraise"); }
+    static Trigger* sellables(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "sellables"); }
+    static Trigger* sellto(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "sellto"); }
+    static Trigger* buyfrom(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "buyfrom"); }
     static Trigger* cs(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cs"); }
     static Trigger* debug(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "debug"); }
     static Trigger* cdebug(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "cdebug"); }
