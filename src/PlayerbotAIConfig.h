@@ -411,6 +411,10 @@ public:
     bool freeMethodLoot;
     bool chestRollEnable;
     float rollWinGiveawayChance;
+    uint32 tradeAdAnchorSeconds;
+    uint32 tradeDealAnchorMinSeconds;
+    uint32 tradeDealAnchorMaxSeconds;
+    bool keywordTradeReplies;
     int32 lootNeedRollLevel;
     bool lootGreedRollLevel;
     bool lootRollRecipe;

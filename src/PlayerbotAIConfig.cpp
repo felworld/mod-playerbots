@@ -719,6 +719,10 @@ bool PlayerbotAIConfig::Initialize()
     freeMethodLoot = sConfigMgr->GetOption<bool>("AiPlayerbot.FreeMethodLoot", false);
     chestRollEnable = sConfigMgr->GetOption<bool>("AiPlayerbot.ChestRollEnable", false);
     rollWinGiveawayChance = sConfigMgr->GetOption<float>("AiPlayerbot.RollWinGiveawayChance", 0.0f);
+    tradeAdAnchorSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.TradeAdAnchorSeconds", 120);
+    tradeDealAnchorMinSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.TradeDealAnchorMinSeconds", 300);
+    tradeDealAnchorMaxSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.TradeDealAnchorMaxSeconds", 600);
+    keywordTradeReplies = sConfigMgr->GetOption<bool>("AiPlayerbot.KeywordTradeReplies", true);
     lootNeedRollLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.LootNeedRollLevel", 1);
     lootRollRecipe = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollRecipe", false);
     lootRollDisenchant = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollDisenchant", false);
