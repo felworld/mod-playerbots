@@ -325,11 +325,16 @@ AiPlayerbot.RollWinGiveawayChance = 0
 # WTS/WTB trading. Bots answer "!wts <itemlink> [count] [price]" as buyers and
 # "!wtb <itemlink> [count] [price]" as sellers; with a sane concrete price the
 # deal commits and the bot walks over and completes it through a real trade
-# window. "!appraise <itemlink>" and "!sellables" are read-only queries;
-# "!sellto"/"!buyfrom <player> <itemlink> [count] <price>" are the explicit
-# commitment commands. Advertising or engaging stamps a market anchor that
-# keeps the bot pottering around a friendly capital (see CityDwellChance)
-# instead of porting out while a reply may be coming.
+# window. Deals only ever commit against a real player (bot-to-bot haggling
+# stays chat ambience). A counterparty beyond walking range is met by
+# simulated travel: fulfillment holds for a ride-time estimate (up to ~4
+# minutes cross-continent), then the bot arrives a couple hundred yards out
+# - never in view of a real player - and walks in. "!appraise <itemlink>"
+# and "!sellables" are read-only queries; "!sellto"/"!buyfrom <player>
+# <itemlink> [count] <price>" are the explicit commitment commands.
+# Advertising or engaging stamps a market anchor that keeps the bot
+# pottering around a friendly capital (see CityDwellChance) instead of
+# porting out while a reply may be coming.
 
 # How long (seconds) a Trade-channel ad or a market chat exchange keeps the
 # bot anchored in town. Renewed on every engagement.

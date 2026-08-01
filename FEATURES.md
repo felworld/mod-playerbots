@@ -179,18 +179,20 @@ set to 0.6 in the Felworld config tree).
 
 ## City market trading
 
-Bots buy and sell with players (and each other) for real, through actual
-trade windows. Whisper a bot `!wts <itemlink> [count] [price]` and it
-answers as a buyer: if the item is genuinely useful to it — an equipment
-upgrade, a reagent it ran out of, a consumable it is low on — it quotes a
-price or, when you named a sane one, commits on the spot, walks over, and
-pays you through a trade window. `!wtb <itemlink> [count] [price]` is the
-mirror: the bot sells from its tradeable spare stock (the things it was
-otherwise going to vendor). `!appraise <itemlink>` asks what an item is to
-that bot and what it would pay or ask; `!sellables` lists its stock and
-wants with quotes; `!sellto`/`!buyfrom <player> <itemlink> [count] <price>`
-are the explicit commitment commands (master-only for players; mod-llm's
-`commit_trade` tool uses them after a chat negotiation).
+Bots buy and sell with players for real, through actual trade windows.
+Whisper a bot `!wts <itemlink> [count] [price]` and it answers as a buyer:
+if the item is genuinely useful to it — an equipment upgrade, a reagent it
+ran out of, a consumable it is low on — it quotes a price or, when you
+named a sane one, commits on the spot, comes over, and pays you through a
+trade window. `!wtb <itemlink> [count] [price]` is the mirror: the bot
+sells from its tradeable spare stock (the things it was otherwise going to
+vendor). `!appraise <itemlink>` asks what an item is to that bot and what
+it would pay or ask; `!sellables` lists its stock and wants with quotes;
+`!sellto`/`!buyfrom <player> <itemlink> [count] <price>` are the explicit
+commitment commands (master-only for players; mod-llm's `commit_trade`
+tool uses them after a chat negotiation). Deals only ever commit against a
+real player — bots posting ads at each other stays chat ambience, no goods
+move.
 
 Everything mechanical is deterministic: prices come from
 mod-ah-bot-plus's valuation when that module is enabled (already jittered
@@ -201,9 +203,18 @@ by the same free-gold budget it reserves for repairs and training. A
 committed deal is fulfilled like the roll-win giveaway: the bot walks up,
 opens the trade, places the agreed stacks or gold, and only accepts while
 your side of the window actually covers the deal — a short-changed offer
-just times out. Deals are same-city only (the counterparty must be within
-walking distance); sell counts round up to whole stacks, with the
-overshoot thrown in.
+just times out. Sell counts round up to whole stacks, with the overshoot
+thrown in.
+
+A counterparty beyond walking range gets met the way the
+[world-PvP excursions](#world-pvp-excursions) travel: the deal holds for a
+simulated ride (distance-paced on the same continent, a flat ~4 minutes
+for a boat/zeppelin hop; the confirmation whisper names the bot's current
+zone and asks for a few minutes), then the bot arrives a couple hundred
+yards out — never where a real player could watch the blink — and walks
+in to trade. Local deals expire in 2 minutes, traveled ones get the ride
+plus 5; a bot holding a deal also stops rolling flight paths or cross-zone
+treks until it's done.
 
 Posting or engaging with market chatter stamps a short anchor
 (`AiPlayerbot.TradeAdAnchorSeconds`, default 2 minutes, renewed on

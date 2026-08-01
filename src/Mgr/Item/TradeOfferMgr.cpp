@@ -9,8 +9,10 @@
 #include "AuctionHouseBot.h"
 #include "BudgetValues.h"
 #include "ChatHelper.h"
+#include "DBCStores.h"
 #include "Item.h"
 #include "ItemUsageValue.h"
+#include "Map.h"
 #include "ObjectMgr.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
@@ -27,6 +29,13 @@ namespace
 {
 constexpr time_t TRADE_DEAL_TIMEOUT_SECS = 120;
 
+// Cross-city deals: the simulated ride to a far-away counterparty (flat for
+// a cross-continent boat/zeppelin hop, distance-paced on the same map) and
+// the walking time left after arrival to actually close the window.
+constexpr time_t TRADE_TRAVEL_RIDE_MIN_SECS = 10;
+constexpr time_t TRADE_TRAVEL_RIDE_MAX_SECS = 240;
+constexpr time_t TRADE_TRAVEL_WALK_GRACE_SECS = 300;
+
 // Deterministic guardrails around committed prices: however the negotiation
 // went, a bot never sells for less than half its own quote (or below vendor
 // price) and never pays more than double it.
@@ -40,7 +49,8 @@ TradeOfferMgr* TradeOfferMgr::instance()
     return &instance;
 }
 
-bool TradeOfferMgr::AddDeal(Player* bot, Player* counterparty, uint32 itemId, uint32 count, uint32 price, bool selling)
+bool TradeOfferMgr::AddDeal(Player* bot, Player* counterparty, uint32 itemId, uint32 count, uint32 price, bool selling,
+    time_t departAt)
 {
     if (!bot || !counterparty || !itemId || !count)
         return false;
@@ -57,7 +67,10 @@ bool TradeOfferMgr::AddDeal(Player* bot, Player* counterparty, uint32 itemId, ui
         deal.count = count;
         deal.price = price;
         deal.selling = selling;
-        deal.expiresAt = time(nullptr) + TRADE_DEAL_TIMEOUT_SECS;
+        deal.expiresAt = departAt ? departAt + TRADE_TRAVEL_WALK_GRACE_SECS
+                                  : time(nullptr) + TRADE_DEAL_TIMEOUT_SECS;
+        deal.departAt = departAt;
+        deal.teleported = false;
         deal.attempted = false;
     }
 
@@ -102,6 +115,14 @@ void TradeOfferMgr::MarkAttempted(ObjectGuid botGuid)
     auto it = _deals.find(botGuid);
     if (it != _deals.end())
         it->second.attempted = true;
+}
+
+void TradeOfferMgr::MarkTeleported(ObjectGuid botGuid)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _deals.find(botGuid);
+    if (it != _deals.end())
+        it->second.teleported = true;
 }
 
 void TradeOfferMgr::Clear(ObjectGuid botGuid)
@@ -403,8 +424,10 @@ std::vector<Want> CollectWants(PlayerbotAI* botAI)
 
 namespace
 {
-    // Fulfillment is same-city walking distance; farther bites get a chat
-    // reply from the LLM layer instead of a cross-continent hike.
+    // Within this range a deal closes on foot; a counterparty further out
+    // (another city, another continent) is met by simulated travel instead:
+    // fulfillment holds for a ride-time estimate, then the bot blinks over
+    // unobserved and walks the last stretch in (TradeFulfillAction).
     constexpr float TRADE_DEAL_MAX_DISTANCE = 300.0f;
 
     // Only whole stacks cross a trade window, so a sell plan rounds the
@@ -464,10 +487,11 @@ bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
         return false;
     }
 
-    if (counterparty->GetMapId() != bot->GetMapId() ||
-        bot->GetDistance(counterparty) > TRADE_DEAL_MAX_DISTANCE)
+    // Only real players are worth the hand-off; between bots the haggling
+    // itself is the ambience, and a formal deal would tie both up for nothing.
+    if (GET_PLAYERBOT_AI(counterparty))
     {
-        error = "they are too far away to meet up";
+        error = "no need to arrange a hand-off with them - a word between regulars settles it";
         return false;
     }
 
@@ -475,6 +499,27 @@ bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
     {
         error = "cannot trade across factions";
         return false;
+    }
+
+    // Local deals close on foot. A counterparty out of walking range means a
+    // trip: hold fulfillment for a simulated ride, as long as both ends are
+    // out in the open world.
+    time_t departAt = 0;
+    bool local = counterparty->GetMapId() == bot->GetMapId() &&
+        bot->GetDistance(counterparty) <= TRADE_DEAL_MAX_DISTANCE;
+    if (!local)
+    {
+        if (bot->GetMap()->Instanceable() || counterparty->GetMap()->Instanceable())
+        {
+            error = "they are somewhere you cannot reach";
+            return false;
+        }
+
+        time_t rideSecs = counterparty->GetMapId() == bot->GetMapId()
+            ? time_t(bot->GetDistance(counterparty) / 15.0f)  // ground-mount pace
+            : TRADE_TRAVEL_RIDE_MAX_SECS;                     // boat/zeppelin hop plus the ride
+        rideSecs = std::clamp(rideSecs, TRADE_TRAVEL_RIDE_MIN_SECS, TRADE_TRAVEL_RIDE_MAX_SECS);
+        departAt = time(nullptr) + rideSecs;
     }
 
     if (!count || !price)
@@ -527,7 +572,7 @@ bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
         }
     }
 
-    if (!sTradeOfferMgr->AddDeal(bot, counterparty, proto->ItemId, count, price, selling))
+    if (!sTradeOfferMgr->AddDeal(bot, counterparty, proto->ItemId, count, price, selling, departAt))
     {
         error = "you already have a trade in progress";
         return false;
@@ -535,13 +580,30 @@ bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
 
     std::string item = ChatHelper::FormatItem(proto, count > 1 ? count : 0);
     std::string money = ChatHelper::formatMoney(price);
-    std::string confirmation = selling
-        ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
-              "trade_deal_sell_confirm", "Deal - %item for %money. Stay put, I'm bringing it over.",
-              {{"%item", item}, {"%money", money}})
-        : PlayerbotTextMgr::instance().GetBotTextOrDefault(
-              "trade_deal_buy_confirm", "Deal - %money for %item. Stay put, I'm coming to you.",
-              {{"%item", item}, {"%money", money}});
+    std::string confirmation;
+    if (departAt)
+    {
+        std::string zone = botAI->GetLocalizedAreaName(GetAreaEntryByAreaID(bot->GetZoneId()));
+        confirmation = selling
+            ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                  "trade_deal_sell_travel_confirm",
+                  "Deal - %item for %money. I'm over in %zone right now - on my way, give me a few minutes.",
+                  {{"%item", item}, {"%money", money}, {"%zone", zone}})
+            : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                  "trade_deal_buy_travel_confirm",
+                  "Deal - %money for %item. I'm over in %zone right now - on my way, give me a few minutes.",
+                  {{"%item", item}, {"%money", money}, {"%zone", zone}});
+    }
+    else
+    {
+        confirmation = selling
+            ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                  "trade_deal_sell_confirm", "Deal - %item for %money. Stay put, I'm bringing it over.",
+                  {{"%item", item}, {"%money", money}})
+            : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                  "trade_deal_buy_confirm", "Deal - %money for %item. Stay put, I'm coming to you.",
+                  {{"%item", item}, {"%money", money}});
+    }
     bot->Whisper(confirmation, LANG_UNIVERSAL, counterparty);
     return true;
 }

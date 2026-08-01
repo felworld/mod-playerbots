@@ -8,14 +8,19 @@
 
 #include "ChatHelper.h"
 #include "Event.h"
+#include "Map.h"
+#include "NewRpgWpvp.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "Random.h"
+#include "SharedDefines.h"
 #include "TradeData.h"
 #include "TradeOfferMgr.h"
 
 #include <algorithm>
+#include <cmath>
 
 namespace
 {
@@ -56,13 +61,28 @@ bool TradeFulfillAction::Execute(Event /*event*/)
     }
 
     Player* counterparty = ObjectAccessor::FindPlayer(deal.counterpartyGuid);
-    if (!counterparty || !counterparty->IsInWorld() || !counterparty->IsAlive() ||
-        counterparty->GetMapId() != bot->GetMapId() ||
-        bot->GetDistance(counterparty) > TRADE_FULFILL_MAX_DISTANCE)
+    if (!counterparty || !counterparty->IsInWorld())
     {
         sTradeOfferMgr->Clear(bot->GetGUID());
         return false;
     }
+
+    if (counterparty->GetMapId() != bot->GetMapId() ||
+        bot->GetDistance(counterparty) > TRADE_FULFILL_MAX_DISTANCE)
+    {
+        // Only an untraveled cross-city deal is entitled to be this far out;
+        // a local deal (or one that already ported in) doesn't chase a
+        // counterparty who wandered off.
+        if (!deal.departAt || deal.teleported)
+        {
+            sTradeOfferMgr->Clear(bot->GetGUID());
+            return false;
+        }
+        return TravelTo(counterparty, deal);
+    }
+
+    if (!counterparty->IsAlive())
+        return false;  // wait it out; the deal expires if they stay dead
 
     if (!deal.selling && bot->GetMoney() < deal.price)
     {
@@ -71,7 +91,13 @@ bool TradeFulfillAction::Execute(Event /*event*/)
     }
 
     if (bot->GetDistance(counterparty) > INTERACTION_DISTANCE)
+    {
+        // A travel deal's port-in point is a couple hundred yards out - use
+        // the far mover for the walk-in, it copes with maze-like city paths.
+        if (bot->GetDistance(counterparty) > pathFinderDis)
+            return MoveFarTo(WorldPosition(counterparty));
         return MoveNear(counterparty, INTERACTION_DISTANCE / 2);
+    }
 
     if (!bot->GetTrader())
     {
@@ -165,5 +191,50 @@ bool TradeFulfillAction::Execute(Event /*event*/)
         bot->GetSession()->HandleAcceptTradeOpcode(packet);
     }
 
+    return true;
+}
+
+bool TradeFulfillAction::TravelTo(Player* counterparty, PendingTradeDeal const& deal)
+{
+    // Still "riding": the trip is simulated by simply not being there yet.
+    if (time(nullptr) < deal.departAt)
+        return false;
+
+    if (bot->IsBeingTeleported() || bot->IsInFlight() || bot->GetMap()->Instanceable() ||
+        counterparty->GetMap()->Instanceable())
+        return false;
+
+    // Never blink where a real player could watch it happen - at either end.
+    if (botAI->HasPlayerNearby(150.0f))
+        return false;
+
+    // Land a believable walk short of the counterparty (who is themselves a
+    // real player, so the ring stays outside the 150yd guard); if the
+    // terrain refuses, retry with a fresh bearing next tick.
+    WorldLocation hub(counterparty->GetMapId(), counterparty->GetPositionX(), counterparty->GetPositionY(),
+        counterparty->GetPositionZ(), counterparty->GetOrientation());
+    float bearing = frand(0.0f, 2.0f * float(M_PI));
+    WorldPosition landing;
+    if (!SampleGroundNear(counterparty->GetMap(), hub, bearing, float(M_PI), 180.0f, 280.0f, 60.0f, landing) &&
+        !SampleGroundNear(counterparty->GetMap(), hub, bearing, float(M_PI), 160.0f, 260.0f, 120.0f, landing))
+        return false;
+
+    if (RealPlayerNear(landing, 150.0f))
+        return false;
+
+    // Reset(true) wipes rpgInfo, dropping any stale old-map payload along
+    // with it - exactly what arriving on a fresh map needs.
+    bot->GetMotionMaster()->Clear();
+    botAI->Reset(true);
+    bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+
+    if (!bot->TeleportTo(landing))
+        return false;
+
+    bot->SendMovementFlagUpdate();
+    sTradeOfferMgr->MarkTeleported(bot->GetGUID());
+    LOG_DEBUG("playerbots", "[TradeDeal] Bot {} ported in near {} to close a deal (map {} {:.1f},{:.1f},{:.1f})",
+        bot->GetName(), counterparty->GetName(), landing.GetMapId(), landing.GetPositionX(),
+        landing.GetPositionY(), landing.GetPositionZ());
     return true;
 }

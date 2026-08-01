@@ -18,8 +18,8 @@ class Player;
 class PlayerbotAI;
 struct ItemTemplate;
 
-// A player-to-bot (or bot-to-bot) trade the bot has committed to: item(s)
-// for gold across a real trade window. One deal per bot at a time.
+// A trade the bot has committed to with a real player: item(s) for gold
+// across a real trade window. One deal per bot at a time.
 struct PendingTradeDeal
 {
     ObjectGuid counterpartyGuid;
@@ -28,6 +28,8 @@ struct PendingTradeDeal
     uint32 price = 0;       // copper, for the whole deal
     bool selling = false;   // true: the bot hands over the item(s) and takes the money
     time_t expiresAt = 0;
+    time_t departAt = 0;    // cross-city deal: earliest "arrival" (simulated ride time); 0 = local
+    bool teleported = false; // cross-city deal: the guarded teleport already happened
     bool attempted = false; // goods/gold were placed in a trade window at least once
 };
 
@@ -43,13 +45,17 @@ public:
     static TradeOfferMgr* instance();
 
     // Registers a deal and stamps the (long) committed-deal anchor.
+    // departAt != 0 marks a cross-city deal: fulfillment holds until then
+    // (the simulated ride) and the expiry leaves walking time on top.
     // Fails when the bot already has a pending deal.
-    bool AddDeal(Player* bot, Player* counterparty, uint32 itemId, uint32 count, uint32 price, bool selling);
+    bool AddDeal(Player* bot, Player* counterparty, uint32 itemId, uint32 count, uint32 price, bool selling,
+        time_t departAt = 0);
 
     bool HasPending(ObjectGuid botGuid);
     bool GetPending(ObjectGuid botGuid, PendingTradeDeal& deal);
     bool HasDealWith(ObjectGuid botGuid, ObjectGuid traderGuid);
     void MarkAttempted(ObjectGuid botGuid);
+    void MarkTeleported(ObjectGuid botGuid);
     void Clear(ObjectGuid botGuid);
 
     // Market anchor: posting an ad (or engaging with a reply) keeps the bot

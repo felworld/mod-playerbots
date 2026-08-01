@@ -67,6 +67,12 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
     switch (status)
     {
         case RPG_IDLE:
+            // A committed trade deal keeps the bot close: no flights or
+            // cross-zone treks while a customer is waiting (the fulfill
+            // action handles any actual trip itself).
+            if (sTradeOfferMgr->HasPending(bot->GetGUID()))
+                return RandomChangeStatus({RPG_WANDER_NPC, RPG_REST});
+
             // Moonglade has no grind mobs and only walking exits (the Timbermaw
             // tunnel), so restrict the roll to statuses that keep bots pottering
             // around Nighthaven until they take the druid flight path out.

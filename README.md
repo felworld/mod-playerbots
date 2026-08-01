@@ -48,9 +48,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   wins a roll on gear it can't use sometimes trades it to the group
   member who actually needs it.
 - **[City market trading](FEATURES.md#city-market-trading)** — bots buy
-  and sell for real: `!wts`/`!wtb` offers get appraised at market-ish
-  prices, and a committed deal ends with the bot walking over and
-  trading items for gold through an actual trade window.
+  and sell with players for real: `!wts`/`!wtb` offers get appraised at
+  market-ish prices, and a committed deal ends with the bot coming over —
+  cross-city if need be — and trading items for gold through an actual
+  trade window.
 - **[Busy capital cities](FEATURES.md#busy-capital-cities)** — bots in a
   friendly capital linger around the bank/AH/inn district instead of
   immediately heading back out, keeping Orgrimmar and Stormwind populated.

@@ -7,21 +7,28 @@
 #ifndef PLAYERBOTS_TRADEFULFILLACTION_H
 #define PLAYERBOTS_TRADEFULFILLACTION_H
 
-#include "MovementActions.h"
+#include "NewRpgBaseAction.h"
 
 class PlayerbotAI;
+class Player;
+struct PendingTradeDeal;
 
 // Completes a pending WTS/WTB deal queued in TradeOfferMgr: walk to the
 // counterparty, open a trade window, put in the agreed goods (selling) or
 // gold (buying), and accept - but only while the counterparty's side of the
-// window actually matches the deal.
-class TradeFulfillAction : public MovementAction
+// window actually matches the deal. A cross-city deal first travels: wait
+// out the simulated ride, teleport near the counterparty while unobserved
+// at both ends (the WPvP-excursion trick), then walk the last stretch in.
+class TradeFulfillAction : public NewRpgBaseAction
 {
 public:
-    TradeFulfillAction(PlayerbotAI* botAI) : MovementAction(botAI, "fulfill trade deal") {}
+    TradeFulfillAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "fulfill trade deal") {}
 
     bool Execute(Event event) override;
     bool isUseful() override;
+
+private:
+    bool TravelTo(Player* counterparty, PendingTradeDeal const& deal);
 };
 
 #endif
