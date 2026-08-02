@@ -28,15 +28,9 @@ public:
         if (!attacker->IsAlive())
             return;
 
-        if (foundHighPriority)
+        if (CheckPriority(attacker))
             return;
 
-        if (IsHighPriority(attacker))
-        {
-            result = attacker;
-            foundHighPriority = true;
-            return;
-        }
         if (!result || CalcThreatGap(attacker, threatMgr) > CalcThreatGap(result, &result->GetThreatMgr()))
             result = attacker;
     }
@@ -71,15 +65,9 @@ public:
         if (!attacker->IsAlive())
             return;
 
-        if (foundHighPriority)
+        if (CheckPriority(attacker))
             return;
 
-        if (IsHighPriority(attacker))
-        {
-            result = attacker;
-            foundHighPriority = true;
-            return;
-        }
         float expectedLifeTime = attacker->GetHealth() / dps_;
         // Unit* victim = attacker->GetVictim();
         if (!result || IsBetter(attacker, result))
@@ -153,15 +141,9 @@ public:
         if (!attacker->IsAlive())
             return;
 
-        if (foundHighPriority)
+        if (CheckPriority(attacker))
             return;
 
-        if (IsHighPriority(attacker))
-        {
-            result = attacker;
-            foundHighPriority = true;
-            return;
-        }
         float expectedLifeTime = attacker->GetHealth() / dps_;
         // Unit* victim = attacker->GetVictim();
         if (!result || IsBetter(attacker, result))
@@ -223,15 +205,9 @@ public:
         if (!attacker->IsAlive())
             return;
 
-        if (foundHighPriority)
+        if (CheckPriority(attacker))
             return;
 
-        if (IsHighPriority(attacker))
-        {
-            result = attacker;
-            foundHighPriority = true;
-            return;
-        }
         float expectedLifeTime = attacker->GetHealth() / dps_;
         // Unit* victim = attacker->GetVictim();
         if (!result || IsBetter(attacker, result))

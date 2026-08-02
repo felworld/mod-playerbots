@@ -9,6 +9,7 @@
 #include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 #include "ServerFacade.h"
+#include "TargetValue.h"
 
 Unit* SnareTargetValue::Calculate()
 {
@@ -24,38 +25,34 @@ Unit* SnareTargetValue::Calculate()
         if (bot->GetDistance(unit) > botAI->GetRange("spell"))
             continue;
 
-        Unit* chaseTarget;
-        switch (unit->GetMotionMaster()->GetCurrentMovementGeneratorType())
+        // Covers fear as well as the two flee-for-assistance movements, so a low-health runner heading
+        // for its friends gets snared just like a feared mob.
+        if (IsFleeingFromCombat(unit))
+            return unit;
+
+        if (unit->GetMotionMaster()->GetCurrentMovementGeneratorType() == CHASE_MOTION_TYPE)
         {
-            case FLEEING_MOTION_TYPE:
-                return unit;
-            case CHASE_MOTION_TYPE:
+            Unit* chaseTarget = ServerFacade::instance().GetChaseTarget(unit);
+            if (!chaseTarget)
+                continue;
+            Player* chaseTargetPlayer = ObjectAccessor::FindPlayer(chaseTarget->GetGUID());
+            // check if need to snare
+            bool shouldSnare = true;
+
+            // do not slow down if bot is melee and mob/bot attack each other
+            if (chaseTargetPlayer && !botAI->IsRanged(bot) && chaseTargetPlayer == bot)
+                shouldSnare = false;
+
+            if (!unit->isMoving())
+                shouldSnare = false;
+
+            if (unit->HasAuraType(SPELL_AURA_MOD_ROOT))
+                shouldSnare = false;
+
+            if (chaseTargetPlayer && shouldSnare && !botAI->IsTank(chaseTargetPlayer))
             {
-                chaseTarget = ServerFacade::instance().GetChaseTarget(unit);
-                if (!chaseTarget)
-                    continue;
-                Player* chaseTargetPlayer = ObjectAccessor::FindPlayer(chaseTarget->GetGUID());
-                // check if need to snare
-                bool shouldSnare = true;
-
-                // do not slow down if bot is melee and mob/bot attack each other
-                if (chaseTargetPlayer && !botAI->IsRanged(bot) && chaseTargetPlayer == bot)
-                    shouldSnare = false;
-
-                if (!unit->isMoving())
-                    shouldSnare = false;
-
-                if (unit->HasAuraType(SPELL_AURA_MOD_ROOT))
-                    shouldSnare = false;
-
-                if (chaseTargetPlayer && shouldSnare && !botAI->IsTank(chaseTargetPlayer))
-                {
-                    return unit;
-                }
-                break;
+                return unit;
             }
-            default:
-                break;
         }
     }
 

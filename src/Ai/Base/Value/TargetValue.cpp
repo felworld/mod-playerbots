@@ -7,7 +7,10 @@
 #include "TargetValue.h"
 
 #include "CombatManager.h"
+#include "Creature.h"
 #include "LastMovementValue.h"
+#include "Map.h"
+#include "MotionMaster.h"
 #include "ObjectGuid.h"
 #include "Playerbots.h"
 #include "RtiTargetValue.h"
@@ -31,6 +34,36 @@ GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionT
     }
 
     return exclusions;
+}
+
+bool IsFleeingForAssistance(Unit* unit)
+{
+    if (!unit || !unit->IsCreature())
+        return false;
+
+    switch (unit->GetMotionMaster()->GetCurrentMovementGeneratorType())
+    {
+        // Running to the assist creature, then the short pause once it gets there.
+        case ASSISTANCE_MOTION_TYPE:
+        case ASSISTANCE_DISTRACT_MOTION_TYPE:
+        // No assist creature was in range, so the mob just runs for a fixed time instead. Fear auras
+        // never land here - they pass isFear, which yields an untimed FLEEING_MOTION_TYPE.
+        case TIMED_FLEEING_MOTION_TYPE:
+            return true;
+        default:
+            return false;
+    }
+}
+
+bool IsFleeingFromCombat(Unit* unit)
+{
+    if (!unit)
+        return false;
+
+    if (unit->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLEEING_MOTION_TYPE)
+        return true;
+
+    return IsFleeingForAssistance(unit);
 }
 
 Unit* FindTargetStrategy::GetResult() { return result; }
@@ -122,14 +155,16 @@ void FindTargetStrategy::GetPlayerCount(Unit* creature, uint32* tankCount, uint3
     dpsCountCache[creature] = *dpsCount;
 }
 
-bool FindTargetStrategy::IsHighPriority(Unit* attacker)
+TargetPriority FindTargetStrategy::GetPriority(Unit* attacker)
 {
-    if (Group* group = botAI->GetBot()->GetGroup())
+    Player* bot = botAI->GetBot();
+
+    if (Group* group = bot->GetGroup())
     {
         ObjectGuid guid = group->GetTargetIcon(7);
         if (guid && attacker->GetGUID() == guid)
         {
-            return true;
+            return TargetPriority::Marked;
         }
     }
     GuidVector prioritizedTargets = botAI->GetAiObjectContext()->GetValue<GuidVector>("prioritized targets")->Get();
@@ -137,16 +172,44 @@ bool FindTargetStrategy::IsHighPriority(Unit* attacker)
     {
         if (targetGuid && attacker->GetGUID() == targetGuid)
         {
-            return true;
+            return TargetPriority::Marked;
         }
     }
 
     // Outside battlegrounds, any enemy player among our attackers is a world-PvP
     // assailant — they outrank whatever mob we were already fighting.
-    if (attacker->IsPlayer() && !botAI->GetBot()->InBattleground())
+    if (attacker->IsPlayer() && !bot->InBattleground())
+        return TargetPriority::Marked;
+
+    // Kill the runner before it drags the rest of the room back. Instances only: out in the world a
+    // fleeing mob is simply leaving, and chasing it is how bots pull half a zone. Bosses are left to
+    // their scripts — a scripted retreat is not an add pull and must not override a mark.
+    if (IsFleeingForAssistance(attacker))
+    {
+        Creature* creature = attacker->ToCreature();
+        Map* map = bot->GetMap();
+        if (map && map->IsDungeon() && !creature->isWorldBoss() && !creature->IsDungeonBoss())
+            return TargetPriority::FleeingForAssistance;
+    }
+
+    return TargetPriority::Normal;
+}
+
+bool FindTargetStrategy::IsHighPriority(Unit* attacker) { return GetPriority(attacker) != TargetPriority::Normal; }
+
+bool FindTargetStrategy::CheckPriority(Unit* attacker)
+{
+    if (highestPriority == TargetPriority::Marked)
         return true;
 
-    return false;
+    TargetPriority const priority = GetPriority(attacker);
+    if (priority > highestPriority)
+    {
+        highestPriority = priority;
+        result = attacker;
+    }
+
+    return highestPriority != TargetPriority::Normal;
 }
 
 WorldPosition LastLongMoveValue::Calculate()

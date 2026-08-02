@@ -18,6 +18,25 @@ enum class TargetValueExclusionType : uint8;
 
 GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type);
 
+// Ranked override of the normal target scoring. Higher wins, and a lower rank never displaces a
+// higher one, so a deliberate mark keeps beating an opportunistic pick regardless of attacker order.
+enum class TargetPriority : uint8
+{
+    Normal = 0,
+    // A creature that broke off combat to fetch reinforcements - kill it before the adds arrive.
+    FleeingForAssistance = 1,
+    // Deliberate picks: skull mark, prioritized targets, world-PvP assailants.
+    Marked = 2
+};
+
+// True when the unit is a creature running for reinforcements (Creature::DoFleeToGetAssistance, i.e.
+// SMART_ACTION_FLEE_FOR_ASSIST). Plain FLEEING_MOTION_TYPE is deliberately excluded: fear auras always
+// use it, so matching it would make bots attack crowd-controlled mobs and break the CC.
+bool IsFleeingForAssistance(Unit* unit);
+
+// Any "running away from us" movement, fear included. Safe for snares, which do not break crowd control.
+bool IsFleeingFromCombat(Unit* unit);
+
 class FindTargetStrategy
 {
 public:
@@ -27,14 +46,19 @@ public:
     virtual TargetValueExclusionType GetExclusionType();
     virtual void CheckAttacker(Unit* attacker, ThreatManager* threatMgr) = 0;
     void GetPlayerCount(Unit* creature, uint32* tankCount, uint32* dpsCount);
+    TargetPriority GetPriority(Unit* attacker);
     bool IsHighPriority(Unit* attacker);
 
 protected:
+    // Applies the priority override for this attacker. Returns true when a priority target has been
+    // locked in and the caller should skip its own scoring.
+    bool CheckPriority(Unit* attacker);
+
     Unit* result;
     PlayerbotAI* botAI;
     std::map<Unit*, uint32> tankCountCache;
     std::map<Unit*, uint32> dpsCountCache;
-    bool foundHighPriority = false;
+    TargetPriority highestPriority = TargetPriority::Normal;
 };
 
 class FindNonCcTargetStrategy : public FindTargetStrategy
