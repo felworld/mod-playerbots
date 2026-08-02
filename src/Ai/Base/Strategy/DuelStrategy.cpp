@@ -18,6 +18,12 @@ void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // before anything else.
     triggers.push_back(
         new TriggerNode("duel out of bounds", { NextAction("move inside duel bounds", ACTION_EMERGENCY) }));
+    // The 3s countdown is the window to take an opening position: warriors
+    // back off to Charge range, hunters drop a trap and step out to shot
+    // range, casters make room for an opening cast. Stealth openers
+    // (rogues, feral druids) are wired in their class strategies instead.
+    triggers.push_back(
+        new TriggerNode("duel countdown", { NextAction("prepare duel", ACTION_EMERGENCY) }));
 }
 
 DuelStrategy::DuelStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}

@@ -214,6 +214,18 @@ public:
     bool isUseful() override;
 };
 
+class PrepareDuelAction : public MovementAction
+{
+public:
+    PrepareDuelAction(PlayerbotAI* botAI) : MovementAction(botAI, "prepare duel") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    float OpeningDistance();
+};
+
 class MoveOutOfEnemyContactAction : public MovementAction
 {
 public:

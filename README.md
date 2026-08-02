@@ -73,9 +73,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   turn from mobs to their assailant, hold a soulstone res while the
   killer lurks, wait out corpse campers instead of rezzing into them, and
   put recreational duels on hold while a fight rages nearby.
-- **[Stealth duel openers](FEATURES.md#stealth-duel-openers)** — rogues
-  restealth and feral druids Prowl during the pre-duel countdown, opening
-  their duels from stealth like a player would.
+- **[Duel openers](FEATURES.md#duel-openers)** — bots use the pre-duel
+  countdown like a player would: rogues and ferals stealth, warriors back
+  off to Charge range, hunters trap their starting spot and step out,
+  casters make room for an opening cast.
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.

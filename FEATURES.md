@@ -399,14 +399,28 @@ in the open world; this cluster of fixes makes them react like people:
 No config knobs; the thresholds (40 yards, one minute, two minutes, three
 minutes) are fixed.
 
-## Stealth duel openers
+## Duel openers
 
-A rogue or feral druid that agreed to a duel just stood in the open and
-traded first hits when the count reached zero. Both now use the 3-second
-countdown the way a player would: rogues restealth (the periodic
-out-of-combat fidget that used to strip stealth right back off now leaves
-duelists alone) and feral druids shift to cat form and Prowl, so either
-side of the challenge opens its duel from stealth. No config knob.
+A bot that agreed to a duel just stood in the open and traded first hits
+when the count reached zero. Bots now use the 3-second countdown the way a
+player would, by class:
+
+- **Rogues** restealth (the periodic out-of-combat fidget that used to
+  strip stealth right back off now leaves duelists alone); **feral
+  druids** shift to cat form and Prowl. Either side of the challenge opens
+  its duel from stealth.
+- **Warriors** back off to Charge range.
+- **Hunters** drop a Freezing Trap at their feet, then step out past the
+  minimum ranged-attack range — the opponent crosses the trapped starting
+  spot on the way in.
+- **Casters** (mages, warlocks, priests, elemental/resto shamans,
+  balance/resto druids) make room for an opening cast.
+
+Opening distances are measured from the duel flag — the midpoint of the
+duel — so two repositioning duelists add their preferred ranges instead of
+chasing each other's backpedal, and everyone stays well inside the duel
+bounds. Paladins, death knights, and enhancement shamans open from where
+they stand. No config knob.
 
 ## Duel consumable etiquette
 

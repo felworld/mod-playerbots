@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <string>
 
+#include "AiFactory.h"
 #include "Corpse.h"
 #include "Event.h"
 #include "FleeManager.h"
@@ -177,7 +178,11 @@ constexpr float DUEL_ARENA_RECOVER_RADIUS = 30.0f;
 
 GameObject* MovementAction::GetDuelArenaFlag()
 {
-    if (!bot->duel || bot->duel->State != DUEL_STATE_IN_PROGRESS)
+    // The 50yd flee rule applies from the moment the flag spawns
+    // (Player::CheckDuelDistance never looks at the state), so countdown
+    // positioning needs the same clamp as in-progress combat movement.
+    if (!bot->duel ||
+        (bot->duel->State != DUEL_STATE_IN_PROGRESS && bot->duel->State != DUEL_STATE_COUNTDOWN))
         return nullptr;
 
     return bot->GetMap()->GetGameObject(bot->GetGuidValue(PLAYER_DUEL_ARBITER));
@@ -2686,6 +2691,70 @@ bool MoveInsideDuelBoundsAction::Execute(Event /*event*/)
 bool MoveInsideDuelBoundsAction::isUseful()
 {
     return bot->duel && bot->duel->State == DUEL_STATE_IN_PROGRESS && bot->duel->OutOfBoundsTime;
+}
+
+float PrepareDuelAction::OpeningDistance()
+{
+    switch (bot->getClass())
+    {
+        case CLASS_WARRIOR:
+            return 7.0f;   // puts an opponent at the flag inside Charge's 8-25yd band
+        case CLASS_HUNTER:
+            return 18.0f;  // well clear of the 5yd ranged minimum
+        case CLASS_MAGE:
+        case CLASS_PRIEST:
+        case CLASS_WARLOCK:
+            return 15.0f;  // room for an opening cast
+        case CLASS_SHAMAN:
+            return AiFactory::GetPlayerSpecTab(bot) == SHAMAN_TAB_ENHANCEMENT ? 0.0f : 15.0f;
+        case CLASS_DRUID:
+            // Ferals open from Prowl instead (GenericDruidNonCombatStrategy).
+            return AiFactory::GetPlayerSpecTab(bot) == DRUID_TAB_FERAL ? 0.0f : 15.0f;
+        default:
+            return 0.0f;   // the other melee open the duel from where they stand
+    }
+}
+
+bool PrepareDuelAction::Execute(Event /*event*/)
+{
+    GameObject* flag = GetDuelArenaFlag();
+    if (!flag)
+        return false;
+
+    // A hunter lays a trap at its feet before backing off - the opponent
+    // crosses the starting spot on the way in.
+    if (bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell("freezing trap", bot))
+        return botAI->CastSpell("freezing trap", bot);
+
+    float range = OpeningDistance();
+    if (range <= 0.0f)
+        return false;
+
+    // Back away to the class's opening range, measured from the flag: the
+    // flag marks the duel's midpoint, so two repositioning duelists add
+    // their preferred ranges instead of chasing each other's backpedal.
+    float angle = flag->GetAngle(bot);
+    float x = flag->GetPositionX() + std::cos(angle) * range;
+    float y = flag->GetPositionY() + std::sin(angle) * range;
+    float z = bot->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+    return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+}
+
+bool PrepareDuelAction::isUseful()
+{
+    if (!bot->duel || bot->duel->State != DUEL_STATE_COUNTDOWN)
+        return false;
+
+    if (bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell("freezing trap", bot))
+        return true;
+
+    float range = OpeningDistance();
+    if (range <= 0.0f)
+        return false;
+
+    GameObject* flag = GetDuelArenaFlag();
+    return flag && bot->GetDistance2d(flag) < range - 1.0f;
 }
 
 bool MoveOutOfEnemyContactAction::Execute(Event /*event*/)
