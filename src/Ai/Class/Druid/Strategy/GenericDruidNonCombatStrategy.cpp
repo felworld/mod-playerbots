@@ -24,6 +24,7 @@ public:
         creators["abolish poison on party"] = &abolish_poison_on_party;
         creators["revive"] = &revive;
         creators["aquatic form"] = &aquatic_form;
+        creators["prowl"] = &prowl;
     }
 
 private:
@@ -98,6 +99,14 @@ private:
     {
         return new ActionNode("aquatic form",
                               /*P*/ { NextAction("caster form") },
+                              /*A*/ {},
+                              /*C*/ {});
+    }
+
+    static ActionNode* prowl([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode("prowl",
+                              /*P*/ { NextAction("cat form") },
                               /*A*/ {},
                               /*C*/ {});
     }
@@ -180,8 +189,15 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
     if (specTab == DRUID_TAB_BALANCE || specTab == DRUID_TAB_RESTORATION)
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
     if (specTab == DRUID_TAB_FERAL)
+    {
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));
 
+        // A feral druid opens a duel from Prowl, same as a rogue's
+        // restealth: the 3s countdown after the accept is the window (the
+        // non-combat engine runs until the duel starts). The prowl node
+        // shifts into cat form first via the factory prerequisite above.
+        triggers.push_back(new TriggerNode("duel countdown", { NextAction("prowl", ACTION_EMERGENCY) }));
+    }
 }
 
 GenericDruidBuffStrategy::GenericDruidBuffStrategy(PlayerbotAI* botAI) : NonCombatStrategy(botAI)

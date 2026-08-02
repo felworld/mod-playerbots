@@ -101,6 +101,7 @@ public:
         creators["has nearest adds"] = &TriggerContext::has_nearest_adds;
         creators["enemy player near"] = &TriggerContext::enemy_player_near;
         creators["duel out of bounds"] = &TriggerContext::duel_out_of_bounds;
+        creators["duel countdown"] = &TriggerContext::duel_countdown;
 
         creators["tank assist"] = &TriggerContext::TankAssist;
         creators["lose aggro"] = &TriggerContext::LoseAggro;
@@ -389,6 +390,7 @@ private:
     static Trigger* has_nearest_adds(PlayerbotAI* botAI) { return new HasNearestAddsTrigger(botAI); }
     static Trigger* enemy_player_near(PlayerbotAI* botAI) { return new EnemyPlayerNear(botAI); }
     static Trigger* duel_out_of_bounds(PlayerbotAI* botAI) { return new DuelOutOfBoundsTrigger(botAI); }
+    static Trigger* duel_countdown(PlayerbotAI* botAI) { return new DuelCountdownTrigger(botAI); }
     static Trigger* Random(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "random", 20); }
     static Trigger* seldom(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "seldom", 300); }
     static Trigger* often(PlayerbotAI* botAI) { return new RandomTrigger(botAI, "often", 5); }

@@ -22,6 +22,11 @@ bool DuelOutOfBoundsTrigger::IsActive()
     return bot->duel && bot->duel->State == DUEL_STATE_IN_PROGRESS && bot->duel->OutOfBoundsTime;
 }
 
+bool DuelCountdownTrigger::IsActive()
+{
+    return bot->duel && bot->duel->State == DUEL_STATE_COUNTDOWN;
+}
+
 bool PlayerHasNoFlag::IsActive()
 {
     if (botAI->GetBot()->InBattleground())

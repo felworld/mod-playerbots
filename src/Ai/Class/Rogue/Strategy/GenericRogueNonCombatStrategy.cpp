@@ -48,4 +48,10 @@ void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
                         { NextAction("use deadly poison on off hand", 19.0f) }));
 
     triggers.push_back(new TriggerNode("often", { NextAction("unstealth", 30.0f) }));
+
+    // A rogue opens a duel from stealth: the 3s countdown after the accept
+    // is the window to restealth (the non-combat engine runs until the duel
+    // actually starts). UnstealthAction stays out of the way for the
+    // duration of the duel.
+    triggers.push_back(new TriggerNode("duel countdown", { NextAction("stealth", ACTION_EMERGENCY) }));
 }

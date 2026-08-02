@@ -399,6 +399,15 @@ in the open world; this cluster of fixes makes them react like people:
 No config knobs; the thresholds (40 yards, one minute, two minutes, three
 minutes) are fixed.
 
+## Stealth duel openers
+
+A rogue or feral druid that agreed to a duel just stood in the open and
+traded first hits when the count reached zero. Both now use the 3-second
+countdown the way a player would: rogues restealth (the periodic
+out-of-combat fidget that used to strip stealth right back off now leaves
+duelists alone) and feral druids shift to cat form and Prowl, so either
+side of the challenge opens its duel from stealth. No config knob.
+
 ## Duel consumable etiquette
 
 Classic dueling culture has an unwritten "no pots" rule, and upstream bots

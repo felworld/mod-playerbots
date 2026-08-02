@@ -29,6 +29,16 @@ public:
     bool IsActive() override;
 };
 
+// Active during the 3s countdown between duel acceptance and the duel
+// actually starting - the window where an opener can be prepared.
+class DuelCountdownTrigger : public Trigger
+{
+public:
+    DuelCountdownTrigger(PlayerbotAI* botAI) : Trigger(botAI, "duel countdown", 1) {}
+
+    bool IsActive() override;
+};
+
 class PlayerHasNoFlag : public Trigger
 {
 public:

@@ -50,6 +50,12 @@ bool UnstealthAction::isUseful()
     if (botAI->rpgInfo.GetStatus() == RPG_GO_WPVP)
         return false;
 
+    // Stealth is the whole point of the pre-duel countdown; the duel
+    // opponent is same-faction, so the enemy-players scan below never
+    // covers this case.
+    if (bot->duel && bot->duel->State != DUEL_STATE_COMPLETED)
+        return false;
+
     // Don't throw away the stealth advantage while enemy players are around
     if (bot->InBattleground() || bot->IsPvP())
     {
