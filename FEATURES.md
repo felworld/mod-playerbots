@@ -28,6 +28,45 @@ like a questing partner instead of slaughtering everything in sight.
 Toggled with the `!grind quests` chat command
 ([below](#commands-added-in-this-fork)).
 
+## Runner focus fire
+
+When a dungeon mob breaks off at low health to fetch reinforcements, DPS
+bots now switch to it and burn it down before the adds arrive, and
+snare-capable classes (Concussive Shot, Hammer of Justice, Hamstring)
+aim their slows at it. Previously such runners were invisible to bot
+targeting: the "flee for assistance" behavior looks nothing like a
+feared mob under the hood, and the runner's sprint out of attack range
+actively deprioritized it. A skull raid mark still outranks the runner —
+a deliberate kill order is never overridden — and tanks ignore it and
+keep holding the pack. Fear-based crowd control is unaffected (feared
+mobs move differently from runners at the engine level), and the
+behavior only applies inside instances, so open-world fleeing mobs are
+simply allowed to leave.
+
+## Pet group etiquette
+
+Hunter, warlock, death knight, frost mage, and enhancement shaman pets
+behave like a considerate group member's pet in dungeons. They assist
+the owner's current target instead of free-engaging whatever the core
+pet AI fancies, never initiate combat on an unpulled mob in instanced
+group content, and get called back to heel when their owner disengages
+rather than dragging their aggro into the next pack. Taunt autocasts —
+Growl, Torment, Suffering, Anguish, all ranks — are switched off while
+grouped in an instance (and back on when solo, where a pet tanking for
+its owner is the point), and a pet configured aggressive via
+`AiPlayerbot.DefaultPetStance` is clamped to defensive while grouped.
+
+## Dependable LFD port-in
+
+Bots that queue through the Dungeon Finder now reliably arrive in the
+dungeon. The core teleports a freshly formed group exactly once and
+silently skips anyone who happens to be falling, fighting, dead, or on a
+vehicle at that instant — common states for a wandering bot — so groups
+could form with a member stranded outside. Stranded bots now notice and
+retry every few seconds until they land. A bot that's mid-fight when the
+group-ready proposal pops also no longer declines it (which dissolved
+the proposal for everyone); it defers and accepts once the fight ends.
+
 ## Warsong Gulch teamwork
 
 Warsong Gulch bots play the objective like a team. Upstream's

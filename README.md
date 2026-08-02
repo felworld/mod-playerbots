@@ -25,6 +25,16 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Quest-aware grinding](FEATURES.md#quest-aware-grinding)** — `!grind
   quests` makes a bot pull only mobs its group still needs, like a questing
   partner.
+- **[Runner focus fire](FEATURES.md#runner-focus-fire)** — DPS bots burn
+  down a dungeon mob fleeing for reinforcements before the adds arrive,
+  without ever overriding a skull mark or breaking fear CC.
+- **[Pet group etiquette](FEATURES.md#pet-group-etiquette)** — bot pets
+  assist their owner's target, keep taunts off in instanced groups, and
+  heel on disengage instead of body-pulling the next pack.
+- **[Dependable LFD port-in](FEATURES.md#dependable-lfd-port-in)** —
+  bots stranded outside their Dungeon Finder instance retry the teleport
+  until they land, and a mid-fight bot defers a group-ready proposal
+  instead of declining it for everyone.
 - **[Warsong Gulch teamwork](FEATURES.md#warsong-gulch-teamwork)** —
   flag-carrier escorts and peels, flag-room defenders, roles re-decided on
   death, stealthy approaches, incoming callouts in BG chat, and a
