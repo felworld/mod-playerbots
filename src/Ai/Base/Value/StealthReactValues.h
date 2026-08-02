@@ -23,6 +23,13 @@ class Unit;
 // the bot's awareness isn't either.
 bool CanDetectStealth360(Player* bot, Unit* target);
 
+// The distance at which the seer's front-arc stealth detection reaches the
+// stealther - the range half of WorldObject::CanDetectStealthOf. Beyond it
+// (or anywhere out of the seer's front 180°) the stealther is invisible.
+// Returns MAX_PLAYER_STEALTH_DETECT_RANGE when the seer pierces stealth
+// outright (a detect-stealth aura such as Flare).
+float StealthDetectionRange(Unit const* seer, Unit const* stealther);
+
 // An emote owed to a stealther the bot just startled at, stashed by the
 // startle action to fire a beat later. timeMs of 0 means "none".
 struct StealthSpotEvent

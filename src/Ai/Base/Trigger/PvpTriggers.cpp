@@ -27,6 +27,15 @@ bool DuelCountdownTrigger::IsActive()
     return bot->duel && bot->duel->State == DUEL_STATE_COUNTDOWN;
 }
 
+bool StealthedApproachTrigger::IsActive()
+{
+    if (!bot->HasStealthAura())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->IsPlayer() && target->IsAlive();
+}
+
 bool PlayerHasNoFlag::IsActive()
 {
     if (botAI->GetBot()->InBattleground())

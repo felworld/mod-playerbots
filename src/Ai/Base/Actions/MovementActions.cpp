@@ -37,6 +37,7 @@
 #include "SpellAuraEffects.h"
 #include "SpellInfo.h"
 #include "Stances.h"
+#include "StealthReactValues.h"
 #include "Timer.h"
 #include "Unit.h"
 #include "Vehicle.h"
@@ -2693,6 +2694,16 @@ bool MoveInsideDuelBoundsAction::isUseful()
     return bot->duel && bot->duel->State == DUEL_STATE_IN_PROGRESS && bot->duel->OutOfBoundsTime;
 }
 
+namespace
+{
+// The distance at which the seer's front-arc detection would reveal this
+// stealther, padded so pathing wobble doesn't clip the ring's edge.
+float StealthSafeDistance(Unit const* seer, Unit const* stealther)
+{
+    return StealthDetectionRange(seer, stealther) + 3.0f;
+}
+}
+
 float PrepareDuelAction::OpeningDistance()
 {
     switch (bot->getClass())
@@ -2721,6 +2732,21 @@ bool PrepareDuelAction::Execute(Event /*event*/)
     if (!flag)
         return false;
 
+    // A stealthed opener (rogue, feral druid) slips out of the opponent's
+    // detection ring while the countdown runs; circling behind waits until
+    // the duel starts (StealthFlankAction), keeping the window in which
+    // the opponent could spot the shimmer as short as possible.
+    if (Player* opponent = bot->HasStealthAura() ? bot->duel->Opponent : nullptr)
+    {
+        float safe = StealthSafeDistance(opponent, bot);
+        float angle = opponent->GetAngle(bot);
+        float x = opponent->GetPositionX() + std::cos(angle) * safe;
+        float y = opponent->GetPositionY() + std::sin(angle) * safe;
+        float z = bot->GetPositionZ();
+        bot->UpdateAllowedPositionZ(x, y, z);
+        return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_FORCED);
+    }
+
     // A hunter lays a trap at its feet before backing off - the opponent
     // crosses the starting spot on the way in.
     if (bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell("freezing trap", bot))
@@ -2746,6 +2772,12 @@ bool PrepareDuelAction::isUseful()
     if (!bot->duel || bot->duel->State != DUEL_STATE_COUNTDOWN)
         return false;
 
+    if (bot->HasStealthAura())
+    {
+        Player* opponent = bot->duel->Opponent;
+        return opponent && bot->GetExactDist(opponent) < StealthSafeDistance(opponent, bot) - 0.5f;
+    }
+
     if (bot->getClass() == CLASS_HUNTER && botAI->CanCastSpell("freezing trap", bot))
         return true;
 
@@ -2755,6 +2787,104 @@ bool PrepareDuelAction::isUseful()
 
     GameObject* flag = GetDuelArenaFlag();
     return flag && bot->GetDistance2d(flag) < range - 1.0f;
+}
+
+Unit* StealthFlankAction::GetFlankTarget()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsPlayer() || !target->IsAlive() || target->GetMap() != bot->GetMap())
+        return nullptr;
+
+    // Once the target is on the bot - fighting it or bearing down on it -
+    // footwork is over; open from wherever we stand.
+    if (target->GetVictim() == bot)
+        return nullptr;
+
+    if (target->isMoving() && target->HasInArc(M_PI, bot))
+        return nullptr;
+
+    return target;
+}
+
+bool StealthFlankAction::Execute(Event /*event*/)
+{
+    Unit* target = GetFlankTarget();
+    if (!target)
+        return false;
+
+    // Behind the target's front arc the bot is invisible at any distance:
+    // walk straight in on its back for the opener.
+    if (!target->HasInArc(M_PI, bot))
+    {
+        float x, y, z;
+        target->GetNearPoint(bot, x, y, z, 0.0f, 2.0f,
+                             Position::NormalizeOrientation(target->GetOrientation() + M_PI));
+        if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                                                            bot->GetPositionZ(), x, y, z))
+            return false;
+
+        return MoveTo(bot->GetMapId(), x, y, z, false, false, false, true, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    float safe = StealthSafeDistance(target, bot);
+    float dist = bot->GetExactDist(target);
+
+    // Inside the ring and in front: back straight out before anything else.
+    if (dist < safe - 0.5f)
+    {
+        float angle = target->GetAngle(bot);
+        float x = target->GetPositionX() + std::cos(angle) * safe;
+        float y = target->GetPositionY() + std::sin(angle) * safe;
+        float z = bot->GetPositionZ();
+        bot->UpdateAllowedPositionZ(x, y, z);
+        return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+    }
+
+    // Circle toward the target's rear along the shorter side, hugging the
+    // ring's edge so the trip stays as short as staying hidden allows.
+    float toBot = target->GetAngle(bot);
+    float rear = Position::NormalizeOrientation(target->GetOrientation() + M_PI);
+    float delta = Position::NormalizeOrientation(toBot - rear);
+    constexpr float step = M_PI / 4.0f;
+
+    float next;
+    if (delta <= step || 2.0f * M_PI - delta <= step)
+        next = rear;
+    else if (delta < M_PI)
+        next = toBot - step;
+    else
+        next = toBot + step;
+
+    float radius = std::max(safe, std::min(dist, safe + 4.0f));
+    float x = target->GetPositionX() + std::cos(next) * radius;
+    float y = target->GetPositionY() + std::sin(next) * radius;
+    float z = bot->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+    if (!bot->GetMap()->CheckCollisionAndGetValidCoords(bot, bot->GetPositionX(), bot->GetPositionY(),
+                                                        bot->GetPositionZ(), x, y, z))
+        return false;
+
+    return MoveTo(bot->GetMapId(), x, y, z, false, false, false, false, MovementPriority::MOVEMENT_COMBAT);
+}
+
+bool StealthFlankAction::isUseful()
+{
+    if (!bot->HasStealthAura())
+        return false;
+
+    Unit* target = GetFlankTarget();
+    if (!target)
+        return false;
+
+    // A detect-stealth aura (Flare and kin) makes sneaking up impossible.
+    if (StealthDetectionRange(target, bot) >= MAX_PLAYER_STEALTH_DETECT_RANGE)
+        return false;
+
+    // In position: at the target's back within melee reach, ready to open.
+    if (!target->HasInArc(M_PI, bot) && bot->IsWithinMeleeRange(target))
+        return false;
+
+    return true;
 }
 
 bool MoveOutOfEnemyContactAction::Execute(Event /*event*/)

@@ -21,7 +21,9 @@ void DuelStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // The 3s countdown is the window to take an opening position: warriors
     // back off to Charge range, hunters drop a trap and step out to shot
     // range, casters make room for an opening cast. Stealth openers
-    // (rogues, feral druids) are wired in their class strategies instead.
+    // (rogues, feral druids) stealth via their class strategies, then
+    // "prepare duel" slips them out of the opponent's detection ring;
+    // circling behind waits for the duel to start (StealthFlankAction).
     triggers.push_back(
         new TriggerNode("duel countdown", { NextAction("prepare duel", ACTION_EMERGENCY) }));
 }

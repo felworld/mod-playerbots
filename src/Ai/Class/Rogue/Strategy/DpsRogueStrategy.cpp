@@ -201,6 +201,18 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Entering combat already stealthed (duel countdown, ambush) swaps in
+    // the stealthed strategy for the opener; its "no stealth" node swaps
+    // back once stealth drops. Without this, nothing ever flips forward.
+    triggers.push_back(
+        new TriggerNode(
+            "in stealth",
+            {
+                NextAction("check stealth", ACTION_EMERGENCY)
+            }
+        )
+    );
+
     triggers.push_back(
         new TriggerNode(
             "expose armor",
@@ -269,6 +281,17 @@ std::vector<NextAction> StealthedRogueStrategy::getDefaultActions()
 
 void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // While the target hasn't noticed the bot, work around behind it for
+    // the opener instead of walking straight in; must outrank the assist
+    // strategies' straight-line "reach melee" (ACTION_MOVE).
+    triggers.push_back(
+        new TriggerNode(
+            "stealthed approach",
+            {
+                NextAction("stealth flank", ACTION_MOVE + 8)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "combo points 5 available",

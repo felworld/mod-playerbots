@@ -74,9 +74,14 @@ is in [FEATURES.md](FEATURES.md). In brief:
   killer lurks, wait out corpse campers instead of rezzing into them, and
   put recreational duels on hold while a fight rages nearby.
 - **[Duel openers](FEATURES.md#duel-openers)** — bots use the pre-duel
-  countdown like a player would: rogues and ferals stealth, warriors back
-  off to Charge range, hunters trap their starting spot and step out,
-  casters make room for an opening cast.
+  countdown like a player would: rogues and ferals stealth and slip out
+  of detection range, warriors back off to Charge range, hunters trap
+  their starting spot and step out, casters make room for an opening
+  cast.
+- **[Stealth flanking](FEATURES.md#stealth-flanking)** — a stealthed bot
+  closing on a player circles outside its target's detection ring and
+  opens from behind instead of walking the shimmer straight into their
+  face — in duels, battlegrounds, and world PvP alike.
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.

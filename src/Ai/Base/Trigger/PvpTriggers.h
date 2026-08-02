@@ -39,6 +39,17 @@ public:
     bool IsActive() override;
 };
 
+// Active while the bot is stealthed with a live player target - the window
+// where flanking around to the target's back (StealthFlankAction) beats
+// walking straight in. Fires in duels, battlegrounds, and world PvP alike.
+class StealthedApproachTrigger : public Trigger
+{
+public:
+    StealthedApproachTrigger(PlayerbotAI* botAI) : Trigger(botAI, "stealthed approach", 1) {}
+
+    bool IsActive() override;
+};
+
 class PlayerHasNoFlag : public Trigger
 {
 public:

@@ -140,7 +140,10 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
         return false;
 
     Unit* oldTarget = context->GetValue<Unit*>("current target")->Get();
-    bool shouldMelee = bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot);
+    // A stealthed bot holds its swings while it works into position
+    // (StealthFlankAction) - starting auto-attack would spend the stealth
+    // opener on a white hit the moment it reaches melee range.
+    bool shouldMelee = (bot->IsWithinMeleeRange(target) || botAI->IsMelee(bot)) && !bot->HasStealthAura();
 
     bool sameTarget = oldTarget == target && bot->GetVictim() == target;
     bool inCombat = botAI->GetState() == BOT_STATE_COMBAT;

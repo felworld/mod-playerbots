@@ -175,6 +175,7 @@ public:
         creators["move out of enemy contact"] = &ActionContext::move_out_of_enemy_contact;
         creators["move inside duel bounds"] = &ActionContext::move_inside_duel_bounds;
         creators["prepare duel"] = &ActionContext::prepare_duel;
+        creators["stealth flank"] = &ActionContext::stealth_flank;
         creators["set facing"] = &ActionContext::set_facing;
         creators["set behind"] = &ActionContext::set_behind;
         creators["attack duel opponent"] = &ActionContext::attack_duel_opponent;
@@ -436,6 +437,7 @@ private:
     static Action* move_out_of_enemy_contact(PlayerbotAI* botAI) { return new MoveOutOfEnemyContactAction(botAI); }
     static Action* move_inside_duel_bounds(PlayerbotAI* botAI) { return new MoveInsideDuelBoundsAction(botAI); }
     static Action* prepare_duel(PlayerbotAI* botAI) { return new PrepareDuelAction(botAI); }
+    static Action* stealth_flank(PlayerbotAI* botAI) { return new StealthFlankAction(botAI); }
     static Action* set_facing(PlayerbotAI* botAI) { return new SetFacingTargetAction(botAI); }
     static Action* set_behind(PlayerbotAI* botAI) { return new SetBehindTargetAction(botAI); }
     static Action* say(PlayerbotAI* botAI) { return new SayAction(botAI); }

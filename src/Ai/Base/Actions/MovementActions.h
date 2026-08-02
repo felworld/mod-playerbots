@@ -226,6 +226,22 @@ private:
     float OpeningDistance();
 };
 
+// While stealthed against a player who hasn't spotted the bot, work around
+// to the target's back the way a rogue would: stay outside the detection
+// ring while crossing the target's front arc, then close in from behind
+// for the opener. Used in duels, battlegrounds, and world PvP alike.
+class StealthFlankAction : public MovementAction
+{
+public:
+    StealthFlankAction(PlayerbotAI* botAI) : MovementAction(botAI, "stealth flank") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+private:
+    Unit* GetFlankTarget();
+};
+
 class MoveOutOfEnemyContactAction : public MovementAction
 {
 public:

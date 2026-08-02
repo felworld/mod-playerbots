@@ -76,6 +76,38 @@ bool CanDetectStealth360(Player* bot, Unit* target)
     return true;
 }
 
+float StealthDetectionRange(Unit const* seer, Unit const* stealther)
+{
+    // Detection needs the stealther within range for every flagged stealth
+    // type (CanDetectStealthOf bails on the first type out of range), so
+    // the effective ring is the minimum over the types.
+    float range = 0.0f;
+
+    for (uint32 i = 0; i < TOTAL_STEALTH_TYPES; ++i)
+    {
+        if (!(stealther->m_stealth.GetFlags() & (1 << i)))
+            continue;
+
+        if (seer->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
+            return MAX_PLAYER_STEALTH_DETECT_RANGE;
+
+        int32 detectionValue = 30;
+        detectionValue += int32(seer->getLevelForTarget(stealther) - 1) * 5;
+        detectionValue += seer->m_stealthDetect.GetValue(StealthType(i));
+        detectionValue -= stealther->m_stealth.GetValue(StealthType(i));
+
+        float visibilityRange = float(detectionValue) * 0.3f + seer->GetCombatReach();
+        if (seer->IsPlayer() && visibilityRange > MAX_PLAYER_STEALTH_DETECT_RANGE)
+            visibilityRange = MAX_PLAYER_STEALTH_DETECT_RANGE;
+
+        if (range == 0.0f || visibilityRange < range)
+            range = visibilityRange;
+    }
+
+    // Point-blank the seer always sees through stealth, whatever the math.
+    return std::max(range, seer->GetCombatReach());
+}
+
 Unit* StealtherSpottedValue::Calculate()
 {
     if (!sPlayerbotAIConfig.enableStealthReactions)

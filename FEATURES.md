@@ -415,7 +415,11 @@ player would, by class:
 - **Rogues** restealth (the periodic out-of-combat fidget that used to
   strip stealth right back off now leaves duelists alone); **feral
   druids** shift to cat form and Prowl. Either side of the challenge opens
-  its duel from stealth.
+  its duel from stealth — and since stealthing point-blank in someone's
+  face just shows them the shimmer, the stealther then slips out of the
+  opponent's detection ring for the rest of the countdown and circles
+  behind once the duel begins (see
+  [Stealth flanking](#stealth-flanking)).
 - **Warriors** back off to Charge range.
 - **Hunters** drop a Freezing Trap at their feet, then step out past the
   minimum ranged-attack range — the opponent crosses the trapped starting
@@ -428,6 +432,29 @@ duel — so two repositioning duelists add their preferred ranges instead of
 chasing each other's backpedal, and everyone stays well inside the duel
 bounds. Paladins, death knights, and enhancement shamans open from where
 they stand. No config knob.
+
+## Stealth flanking
+
+A stealthed bot used to run straight at its target's face, which defeats
+the point: stealth detection is frontal-only and reaches roughly 9 yards
+at equal level, so the target watches the shimmer walk the whole way in.
+Now a stealthed rogue or prowling feral closing on a player who hasn't
+engaged it does the footwork a real one would: it backs out of the
+target's detection ring if it starts inside, circles around the ring's
+edge across the front arc (behind the 180° arc a stealther is invisible
+at any range), then walks straight in on the target's back for the
+Ambush/Cheap Shot/Pounce opener. The ring is computed with the same math
+the server uses for real detection — level difference plus stealth and
+detect auras — so a Subtlety rogue hugs a tighter circle and a
+higher-level target forces a wider one, and a target with outright
+stealth detection up (a hunter's Flare) can't be flanked at all. Bots
+also hold their auto-attack swings while stealthed, so arriving in melee
+range no longer spends the opener on a white hit. The behavior is the
+same wherever stealth happens: duels (where the countdown back-off above
+feeds straight into it), battlegrounds, and world PvP. Along the way this
+fixes an upstream bug where the rogue's stealthed-opener combat strategy
+never activated at all — nothing ever swapped it in when a rogue entered
+a fight stealthed. No config knob.
 
 ## Duel consumable etiquette
 

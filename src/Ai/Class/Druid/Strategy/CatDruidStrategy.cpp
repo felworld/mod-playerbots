@@ -113,6 +113,16 @@ void CatDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // While prowling against a target that hasn't noticed the bot, work
+    // around behind it for the Pounce/Ravage opener instead of walking
+    // straight in; must outrank straight-line "reach melee" (ACTION_MOVE).
+    triggers.push_back(
+        new TriggerNode(
+            "stealthed approach", {
+                NextAction("stealth flank", ACTION_MOVE + 8)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "enemy out of melee", {
