@@ -7,8 +7,11 @@
 #include "LfgActions.h"
 
 #include "AiFactory.h"
+#include "Group.h"
 #include "ItemVisitors.h"
 #include "LFGMgr.h"
+#include "LastMovementValue.h"
+#include "MotionMaster.h"
 #include "Opcodes.h"
 #include "Playerbots.h"
 #include "World.h"
@@ -198,32 +201,18 @@ bool LfgAcceptAction::Execute(Event event)
 {
     uint32 id = AI_VALUE(uint32, "lfg proposal");
 
-    // Try accept if already stored
+    // Retry a proposal we deferred on an earlier tick
     if (id)
     {
-        if (bot->IsInCombat() || bot->isDead())
+        // Proposal is no longer pending (all accepted, someone declined, or it expired) - forget it
+        // so "lfg proposal active" stops firing.
+        if (sLFGMgr->GetState(bot->GetGUID()) != LFG_STATE_PROPOSAL)
         {
-            WorldPacket* packet = new WorldPacket(CMSG_LFG_PROPOSAL_RESULT);
-            *packet << id << false;
-            bot->GetSession()->QueuePacket(packet);
-            return true;
+            botAI->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(0);
+            return false;
         }
 
-        botAI->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(0);
-        bot->ClearUnitState(UNIT_STATE_ALL_STATE);
-
-        WorldPacket* packet = new WorldPacket(CMSG_LFG_PROPOSAL_RESULT);
-        *packet << id << true;
-        bot->GetSession()->QueuePacket(packet);
-
-        if (RandomPlayerbotMgr::instance().IsRandomBot(bot) && !bot->GetGroup())
-        {
-            RandomPlayerbotMgr::instance().Refresh(bot);
-            botAI->ResetStrategies();
-        }
-
-        botAI->Reset();
-        return true;
+        return AcceptProposal(id);
     }
 
     // If we get the proposal packet, accept immediately
@@ -235,34 +224,37 @@ bool LfgAcceptAction::Execute(Event event)
         p >> dungeonId >> state >> id;
 
         if (id)
-        {
-            if (bot->IsInCombat() || bot->isDead())
-            {
-                WorldPacket* packet = new WorldPacket(CMSG_LFG_PROPOSAL_RESULT);
-                *packet << id << false;
-                bot->GetSession()->QueuePacket(packet);
-                return true;
-            }
-
-            botAI->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(0);
-            bot->ClearUnitState(UNIT_STATE_ALL_STATE);
-
-            WorldPacket* packet = new WorldPacket(CMSG_LFG_PROPOSAL_RESULT);
-            *packet << id << true;
-            bot->GetSession()->QueuePacket(packet);
-
-            if (RandomPlayerbotMgr::instance().IsRandomBot(bot) && !bot->GetGroup())
-            {
-                RandomPlayerbotMgr::instance().Refresh(bot);
-                botAI->ResetStrategies();
-            }
-
-            botAI->Reset();
-            return true;
-        }
+            return AcceptProposal(id);
     }
 
     return false;
+}
+
+bool LfgAcceptAction::AcceptProposal(uint32 proposalId)
+{
+    // Declining kills the proposal for the whole group, so a bot that is merely busy right now must
+    // defer instead: remember the id and let "lfg proposal active" retry until the proposal expires.
+    if (bot->IsInCombat() || bot->isDead())
+    {
+        botAI->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(proposalId);
+        return false;
+    }
+
+    botAI->GetAiObjectContext()->GetValue<uint32>("lfg proposal")->Set(0);
+    bot->ClearUnitState(UNIT_STATE_ALL_STATE);
+
+    WorldPacket* packet = new WorldPacket(CMSG_LFG_PROPOSAL_RESULT);
+    *packet << proposalId << true;
+    bot->GetSession()->QueuePacket(packet);
+
+    if (RandomPlayerbotMgr::instance().IsRandomBot(bot) && !bot->GetGroup())
+    {
+        RandomPlayerbotMgr::instance().Refresh(bot);
+        botAI->ResetStrategies();
+    }
+
+    botAI->Reset();
+    return true;
 }
 
 bool LfgLeaveAction::Execute(Event /*event*/)
@@ -300,6 +292,81 @@ bool LfgTeleportAction::Execute(Event event)
     *packet << out;
     bot->GetSession()->QueuePacket(packet);
     // sLFGMgr->TeleportPlayer(bot, out);
+
+    return true;
+}
+
+void LfgEnterDungeonAction::ClearTeleportBlockers()
+{
+    // LFGMgr::TeleportPlayer refuses to move a player that is falling / jumping or riding a vehicle.
+    // A wandering bot is very often mid-spline when its LFG group forms, which is exactly why the
+    // core's one-shot teleport misses it.
+    if (bot->GetVehicle())
+        bot->ExitVehicle();
+
+    bot->GetMotionMaster()->Clear();
+    bot->StopMoving();
+    AI_VALUE(LastMovement&, "last movement").clear();
+
+    bot->SetFallInformation(0, bot->GetPositionZ());
+    bot->RemoveUnitMovementFlag(MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR);
+    bot->ClearUnitState(UNIT_STATE_ALL_STATE);
+}
+
+bool LfgEnterDungeonAction::isUseful()
+{
+    Group* group = bot->GetGroup();
+    if (!group || !group->isLFGGroup())
+        return false;
+
+    if (!bot->IsInWorld() || !bot->IsAlive() || bot->IsBeingTeleported())
+        return false;
+
+    if (sLFGMgr->GetState(group->GetGUID()) != LFG_STATE_DUNGEON)
+        return false;
+
+    uint32 mapId = sLFGMgr->GetDungeonMapId(group->GetGUID());
+    return mapId && bot->GetMapId() != mapId;
+}
+
+bool LfgEnterDungeonAction::Execute(Event /*event*/)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    ClearTeleportBlockers();
+
+    LOG_DEBUG("playerbots", "Bot {} <{}>: retrying LFG teleport into map {} (currently on map {})",
+              bot->GetGUID().ToString().c_str(), bot->GetName().c_str(),
+              sLFGMgr->GetDungeonMapId(group->GetGUID()), bot->GetMapId());
+
+    WorldPacket* packet = new WorldPacket(CMSG_LFG_TELEPORT);
+    *packet << (bool)false;
+    bot->GetSession()->QueuePacket(packet);
+
+    return true;
+}
+
+bool LfgTeleportDeniedAction::Execute(Event event)
+{
+    uint32 reason = 0;
+
+    WorldPacket p(event.getPacket());
+    if (!p.empty())
+    {
+        p.rpos(0);
+        p >> reason;
+    }
+
+    LOG_DEBUG("playerbots", "Bot {} <{}>: LFG teleport denied (reason {}), will retry",
+              bot->GetGUID().ToString().c_str(), bot->GetName().c_str(), reason);
+
+    // Don't re-send the teleport straight away - that would just bounce off the same blocker. Clean
+    // up what we can and let the "lfg outside dungeon" trigger retry on its own interval, and only
+    // when we are really stuck outside (a denied teleport *out* must not disturb the bot).
+    if (LfgEnterDungeonAction::isUseful())
+        ClearTeleportBlockers();
 
     return true;
 }

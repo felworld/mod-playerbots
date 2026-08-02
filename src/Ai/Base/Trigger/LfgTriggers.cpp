@@ -6,9 +6,43 @@
 
 #include "LfgTriggers.h"
 
+#include "Group.h"
+#include "LFGMgr.h"
 #include "Playerbots.h"
 
+using namespace lfg;
+
 bool LfgProposalActiveTrigger::IsActive() { return AI_VALUE(uint32, "lfg proposal"); }
+
+bool LfgOutsideDungeonTrigger::IsActive()
+{
+    Group* group = bot->GetGroup();
+    if (!group || !group->isLFGGroup())
+        return false;
+
+    if (!bot->IsInWorld() || !bot->IsAlive() || bot->IsBeingTeleported())
+        return false;
+
+    // Only while the group is actually running the dungeon: not while it is still forming
+    // (rolecheck / queued / proposal) and not once it has been completed.
+    if (sLFGMgr->GetState(group->GetGUID()) != LFG_STATE_DUNGEON)
+        return false;
+
+    uint32 mapId = sLFGMgr->GetDungeonMapId(group->GetGUID());
+    if (!mapId || bot->GetMapId() == mapId)
+        return false;
+
+    // Never drag a bot away from a real player who deliberately stayed outside - only follow a
+    // master who is already inside.
+    if (botAI->HasRealPlayerMaster())
+    {
+        Player* master = botAI->GetMaster();
+        if (!master || !master->IsInWorld() || master->GetMapId() != mapId)
+            return false;
+    }
+
+    return true;
+}
 
 bool UnknownDungeonTrigger::IsActive()
 {

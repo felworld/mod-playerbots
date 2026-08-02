@@ -31,6 +31,9 @@ public:
 
     bool Execute(Event event) override;
     bool isUseful() override { return true; }
+
+protected:
+    bool AcceptProposal(uint32 proposalId);
 };
 
 class LfgRoleCheckAction : public LfgJoinAction
@@ -57,6 +60,34 @@ public:
     LfgTeleportAction(PlayerbotAI* botAI) : Action(botAI, "lfg teleport") {}
 
     bool Execute(Event event) override;
+};
+
+// Retries the port into the dungeon for a bot that is still outside it. The core only teleports the
+// group once (LFGMgr::MakeNewGroup) and drops the bot silently when that attempt is refused.
+class LfgEnterDungeonAction : public Action
+{
+public:
+    LfgEnterDungeonAction(PlayerbotAI* botAI, std::string const name = "lfg enter dungeon")
+        : Action(botAI, name)
+    {
+    }
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+
+protected:
+    void ClearTeleportBlockers();
+};
+
+// SMSG_LFG_TELEPORT_DENIED handler: makes the failure visible and pre-clears whatever we can, so the
+// next "lfg outside dungeon" retry has a chance of succeeding.
+class LfgTeleportDeniedAction : public LfgEnterDungeonAction
+{
+public:
+    LfgTeleportDeniedAction(PlayerbotAI* botAI) : LfgEnterDungeonAction(botAI, "lfg teleport denied") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override { return true; }
 };
 
 #endif

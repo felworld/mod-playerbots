@@ -178,6 +178,8 @@ public:
         creators["medium group heal setting"] = &TriggerContext::medium_group_heal_occasion;
         creators["invalid target"] = &TriggerContext::invalid_target;
         creators["lfg proposal active"] = &TriggerContext::lfg_proposal_active;
+        creators["lfg outside dungeon"] = &TriggerContext::lfg_outside_dungeon;
+        creators["lfg teleport denied"] = &TriggerContext::lfg_teleport_denied;
 
         creators["unknown dungeon"] = &TriggerContext::unknown_dungeon;
 
@@ -310,6 +312,8 @@ private:
     static Trigger* has_rpg_target(PlayerbotAI* botAI) { return new HasRpgTargetTrigger(botAI); }
     static Trigger* collision(PlayerbotAI* botAI) { return new CollisionTrigger(botAI); }
     static Trigger* lfg_proposal_active(PlayerbotAI* botAI) { return new LfgProposalActiveTrigger(botAI); }
+    static Trigger* lfg_outside_dungeon(PlayerbotAI* botAI) { return new LfgOutsideDungeonTrigger(botAI); }
+    static Trigger* lfg_teleport_denied(PlayerbotAI* botAI) { return new LfgTeleportDeniedTrigger(botAI); }
     static Trigger* unknown_dungeon(PlayerbotAI* botAI) { return new UnknownDungeonTrigger(botAI); }
     static Trigger* invalid_target(PlayerbotAI* botAI) { return new InvalidTargetTrigger(botAI); }
     static Trigger* critical_aoe_heal(PlayerbotAI* botAI)

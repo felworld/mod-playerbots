@@ -81,6 +81,7 @@ WorldPacketHandlerStrategy::WorldPacketHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("uninvite");
     supported.push_back("lfg role check");
     supported.push_back("lfg teleport");
+    supported.push_back("lfg teleport denied");
     supported.push_back("random bot update");
     supported.push_back("inventory change failure");
     supported.push_back("bg status");

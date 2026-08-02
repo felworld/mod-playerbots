@@ -15,6 +15,10 @@ void LfgStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("seldom", { NextAction("lfg leave", relevance) }));
     triggers.push_back(new TriggerNode(
         "unknown dungeon", { NextAction("give leader in dungeon", relevance) }));
+    // The core only teleports the group in once, at group formation, and fails silently. Retry until
+    // the bot is actually on the dungeon map.
+    triggers.push_back(new TriggerNode(
+        "lfg outside dungeon", { NextAction("lfg enter dungeon", relevance + 1) }));
 }
 
 LfgStrategy::LfgStrategy(PlayerbotAI* botAI) : PassThroughStrategy(botAI) {}
