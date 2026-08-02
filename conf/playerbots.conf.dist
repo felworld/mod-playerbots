@@ -347,6 +347,17 @@ AiPlayerbot.TradeAdAnchorSeconds = 120
 AiPlayerbot.TradeDealAnchorMinSeconds = 300
 AiPlayerbot.TradeDealAnchorMaxSeconds = 600
 
+# What a bot charges a stranger (in copper, jittered +/-20% per quote) for
+# class services: a mage portal ("!portal <city>") or a warlock summon
+# ("!ritual"). Portals collect the tip through a trade window before the
+# cast - the mage travels over first if the customer is in another city;
+# summons run the ritual first and collect when the customer lands. The
+# bot's own circle (master, group, guild) is never charged. 0 keeps the
+# service circle-only, refusing strangers.
+# Default: 5000 (50s portal), 10000 (1g summon)
+AiPlayerbot.ClassService.PortalTip = 5000
+AiPlayerbot.ClassService.SummonTip = 10000
+
 # Whether bots keyword-match "WTB ..." in chat and whisper stock offers
 # (upstream behavior). Turn off in LLM sessions, where LLM-driven bots read
 # the ad and answer through the market commands instead - keeping both on

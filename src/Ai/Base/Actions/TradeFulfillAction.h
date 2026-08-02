@@ -19,6 +19,11 @@ struct PendingTradeDeal;
 // window actually matches the deal. A cross-city deal first travels: wait
 // out the simulated ride, teleport near the counterparty while unobserved
 // at both ends (the WPvP-excursion trick), then walk the last stretch in.
+//
+// Service deals ride the same flow with an empty bot side of the window:
+// a portal deal casts the portal once the tip has actually landed, and a
+// summon deal never chases the customer - the ritual is what brings them
+// into collection range.
 class TradeFulfillAction : public NewRpgBaseAction
 {
 public:
@@ -29,6 +34,7 @@ public:
 
 private:
     bool TravelTo(Player* counterparty, PendingTradeDeal const& deal);
+    bool DeliverPortal(PendingTradeDeal const& deal);
 };
 
 #endif

@@ -22,6 +22,7 @@
 #include "Playerbots.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
+#include "TradeOfferMgr.h"
 #include "Util.h"
 #include "WorldPacket.h"
 
@@ -86,6 +87,27 @@ bool GroupHasRealPlayers(Group* group)
     }
 
     return false;
+}
+
+// The bot's own circle rides free: its master, groupmates, and guildmates.
+// A real player outside it is a paying customer for portals and summons.
+bool IsServiceCircle(PlayerbotAI* botAI, Player* requester)
+{
+    Player* bot = botAI->GetBot();
+    if (requester == botAI->GetMaster())
+        return true;
+
+    Group* group = bot->GetGroup();
+    if (group && group->IsMember(requester->GetGUID()) && !group->isBGGroup() && !group->isBFGroup())
+        return true;
+
+    return bot->GetGuildId() && bot->GetGuildId() == requester->GetGuildId();
+}
+
+bool IsRealCustomer(Player* requester)
+{
+    PlayerbotAI* requesterAI = GET_PLAYERBOT_AI(requester);
+    return !requesterAI || requesterAI->IsRealPlayer();
 }
 }
 
@@ -248,9 +270,23 @@ bool ConjureItemAction::Requeue(Player* requester, std::string const& kind, uint
 
 bool OpenPortalAction::Execute(Event event)
 {
+    Player* requester = event.getOwner() ? event.getOwner() : GetMaster();
+    if (!requester)
+        return false;
+
+    // The command is unsecured, so the asker may be a stranger TellError
+    // would never reach - answer whoever actually asked.
+    auto tell = [this, requester](std::string const& text)
+    {
+        if (requester == GetMaster())
+            botAI->TellError(text);
+        else
+            WhisperTo(bot, requester, text);
+    };
+
     if (bot->getClass() != CLASS_MAGE)
     {
-        botAI->TellError("I am not a mage - I cannot open portals");
+        tell("I am not a mage - I cannot open portals");
         return false;
     }
 
@@ -275,7 +311,7 @@ bool OpenPortalAction::Execute(Event event)
 
     if (portals.empty())
     {
-        botAI->TellError("I have not learned any portal spells");
+        tell("I have not learned any portal spells");
         return false;
     }
 
@@ -304,8 +340,34 @@ bool OpenPortalAction::Execute(Event event)
                 out << ", ";
             out << portals[i].second;
         }
-        botAI->TellMasterNoFacing(out.str());
+        if (requester == GetMaster())
+            botAI->TellMasterNoFacing(out.str());
+        else
+            WhisperTo(bot, requester, out.str());
         return false;
+    }
+
+    // A real player outside the bot's circle buys the portal: the deal
+    // collects the tip through a trade window - traveling over first when
+    // they are in another city - and the cast follows the payment.
+    if (IsRealCustomer(requester) && requester != bot && !IsServiceCircle(botAI, requester))
+    {
+        if (!sRandomPlayerbotMgr.IsRandomBot(bot) || !sPlayerbotAIConfig.classServicePortalTip)
+        {
+            WhisperTo(bot, requester, "I only open portals for my own group and guild");
+            return false;
+        }
+
+        if (sTradeOfferMgr->HasDealWith(bot->GetGUID(), requester->GetGUID()))
+            return true;  // already arranged; fulfillment is on it
+
+        std::string error;
+        if (!MarketQuote::CommitService(botAI, requester, TradeService::Portal, spellId, city, error))
+        {
+            WhisperTo(bot, requester, "No portal - " + error + ".");
+            return false;
+        }
+        return true;
     }
 
     if (!bot->HasItemCount(ITEM_RUNE_OF_PORTALS, 1))
@@ -313,11 +375,14 @@ bool OpenPortalAction::Execute(Event event)
 
     if (!botAI->CanCastSpell(spellId, bot, true) || !botAI->CastSpell(spellId, bot))
     {
-        botAI->TellError("I cannot open that portal right now");
+        tell("I cannot open that portal right now");
         return false;
     }
 
-    botAI->TellMasterNoFacing("Opening a portal to " + city + " - step through before it fades");
+    if (requester == GetMaster())
+        botAI->TellMasterNoFacing("Opening a portal to " + city + " - step through before it fades");
+    else
+        WhisperTo(bot, requester, "Opening a portal to " + city + " - step through before it fades");
     return true;
 }
 
@@ -355,6 +420,29 @@ bool RitualOfSummoningAction::Execute(Event event)
     {
         WhisperTo(bot, requester, "I have not learned Ritual of Summoning");
         return false;
+    }
+
+    // A stranger's summon is a paid service: quote and register the deal
+    // before the ritual machinery starts. The tip is collected by trade once
+    // they land (they are far away by definition, so it cannot come first).
+    // Requeued polls skip past this via HasDealWith, and once the requester
+    // accepts the group invite they count as circle.
+    if (IsRealCustomer(requester) && requester != bot && !IsServiceCircle(botAI, requester) &&
+        !sTradeOfferMgr->HasDealWith(bot->GetGUID(), requester->GetGUID()))
+    {
+        if (!sRandomPlayerbotMgr.IsRandomBot(bot) || !sPlayerbotAIConfig.classServiceSummonTip)
+        {
+            WhisperTo(bot, requester, "I only run summoning rituals for my own group and guild");
+            return false;
+        }
+
+        std::string error;
+        if (!MarketQuote::CommitService(botAI, requester, TradeService::Summon,
+                SPELL_RITUAL_OF_SUMMONING, "", error))
+        {
+            WhisperTo(bot, requester, "No summon - " + error + ".");
+            return false;
+        }
     }
 
     Group* group = bot->GetGroup();

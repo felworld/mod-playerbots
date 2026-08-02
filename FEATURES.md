@@ -520,7 +520,9 @@ member — issued as explicit commands to your bots:
 - `!portal <city>` (mage) — the bot casts the matching Portal spell
   (`!portal stormwind`, `!portal shattrath`, …); step through before it
   fades. `!portal` alone lists the destinations it knows — it can only
-  open portals its faction and level have learned.
+  open portals its faction and level have learned. Anyone can whisper it
+  to a world bot: strangers get quoted a tip instead of a free cast (see
+  below).
 - `!ritual` (warlock) — summons *you* with a real Ritual of Summoning:
   the warlock begins the channel and two group bots standing with it
   click the summoning portal, so wherever you are you get the standard
@@ -537,7 +539,25 @@ member — issued as explicit commands to your bots:
   ungrouped world bots into the group for the ritual, like asking
   strangers at a summoning stone — they click, then quietly leave the
   group a minute later. (An internal `use summoning portal` command also
-  makes group bots click a ritual *you* cast as a warlock.)
+  makes group bots click a ritual *you* cast as a warlock.) Strangers
+  are quoted a tip, payable after they land (see below).
+
+Portals and summons are favors inside the bot's own circle — its master,
+group, and guild ride free — and a paid service for everyone else, the
+way players tip for them on a busy server. A stranger's `!portal <city>`
+gets a quoted tip (`AiPlayerbot.ClassService.PortalTip`, default 50s,
+jittered ±20%) collected through a real trade window before the cast —
+and the mage travels over first, the same simulated ride as a
+[cross-city trade deal](#city-market-trading), when the customer is in
+another city. A stranger's `!ritual` quotes the summon tip
+(`AiPlayerbot.ClassService.SummonTip`, default 1g) and runs the ritual
+first — payment can't precede a summon, since the customer is far away by
+definition — then the warlock collects by trade once they land; skipping
+out on the bill just means the deal expires (and only world bots sell,
+never someone's alt). Setting a tip to 0 keeps that service circle-only,
+refusing strangers. Service deals share the one-deal-per-bot slot, the
+market anchor, and the fulfillment machinery of
+[city market trading](#city-market-trading).
 
 Reagents are the one concession to convenience: a bot missing the Rune of
 Portals or Soul Shard a spell consumes produces one in its bags first —

@@ -29,6 +29,10 @@ namespace
 {
 constexpr time_t TRADE_DEAL_TIMEOUT_SECS = 120;
 
+// A paid summon needs room for the group invite (up to a minute), the
+// ritual, and the customer accepting and settling up after they land.
+constexpr time_t TRADE_SERVICE_SUMMON_TIMEOUT_SECS = 300;
+
 // Cross-city deals: the simulated ride to a far-away counterparty (flat for
 // a cross-continent boat/zeppelin hop, distance-paced on the same map) and
 // the walking time left after arrival to actually close the window.
@@ -80,6 +84,37 @@ bool TradeOfferMgr::AddDeal(Player* bot, Player* counterparty, uint32 itemId, ui
     return true;
 }
 
+bool TradeOfferMgr::AddServiceDeal(Player* bot, Player* counterparty, TradeService service, uint32 serviceSpellId,
+    uint32 price, time_t departAt, time_t timeoutSecs)
+{
+    if (!bot || !counterparty || service == TradeService::None || !price)
+        return false;
+
+    {
+        std::lock_guard<std::mutex> lock(_mutex);
+        auto it = _deals.find(bot->GetGUID());
+        if (it != _deals.end() && time(nullptr) <= it->second.expiresAt)
+            return false;
+
+        PendingTradeDeal& deal = _deals[bot->GetGUID()];
+        deal = PendingTradeDeal();
+        deal.counterpartyGuid = counterparty->GetGUID();
+        deal.count = 0;
+        deal.price = price;
+        deal.selling = true;  // the customer's gold is the bot's side of the accept check
+        deal.service = service;
+        deal.serviceSpellId = serviceSpellId;
+        deal.expiresAt = departAt ? departAt + TRADE_TRAVEL_WALK_GRACE_SECS
+                                  : time(nullptr) + timeoutSecs;
+        deal.departAt = departAt;
+    }
+
+    ExtendAnchor(bot->GetGUID(), time(nullptr) +
+        urand(sPlayerbotAIConfig.tradeDealAnchorMinSeconds,
+            std::max(sPlayerbotAIConfig.tradeDealAnchorMinSeconds, sPlayerbotAIConfig.tradeDealAnchorMaxSeconds)));
+    return true;
+}
+
 bool TradeOfferMgr::HasPending(ObjectGuid botGuid)
 {
     PendingTradeDeal deal;
@@ -123,6 +158,26 @@ void TradeOfferMgr::MarkTeleported(ObjectGuid botGuid)
     auto it = _deals.find(botGuid);
     if (it != _deals.end())
         it->second.teleported = true;
+}
+
+void TradeOfferMgr::MarkAccepted(ObjectGuid botGuid, uint32 moneyAtAccept)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _deals.find(botGuid);
+    if (it != _deals.end())
+    {
+        it->second.attempted = true;
+        it->second.accepted = true;
+        it->second.moneyAtAccept = moneyAtAccept;
+    }
+}
+
+void TradeOfferMgr::MarkServicePaid(ObjectGuid botGuid)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _deals.find(botGuid);
+    if (it != _deals.end())
+        it->second.servicePaid = true;
 }
 
 void TradeOfferMgr::Clear(ObjectGuid botGuid)
@@ -605,6 +660,116 @@ bool Commit(PlayerbotAI* botAI, Player* counterparty, ItemTemplate const* proto,
                   {{"%item", item}, {"%money", money}});
     }
     bot->Whisper(confirmation, LANG_UNIVERSAL, counterparty);
+    return true;
+}
+
+uint32 ServiceTip(TradeService service)
+{
+    uint32 base = service == TradeService::Portal
+        ? sPlayerbotAIConfig.classServicePortalTip
+        : sPlayerbotAIConfig.classServiceSummonTip;
+    if (!base)
+        return 0;
+
+    return std::max<uint32>(1, base * urand(80, 120) / 100);
+}
+
+bool CommitService(PlayerbotAI* botAI, Player* counterparty, TradeService service,
+    uint32 serviceSpellId, std::string const& destination, std::string& error)
+{
+    Player* bot = botAI->GetBot();
+
+    if (!counterparty || counterparty == bot || !counterparty->IsInWorld() || !counterparty->IsAlive())
+    {
+        error = "no such customer here";
+        return false;
+    }
+
+    // Services are sold to real players only; between bots a favor is free
+    // or it is nothing.
+    if (GET_PLAYERBOT_AI(counterparty))
+    {
+        error = "no charging one of your own - regulars sort each other out";
+        return false;
+    }
+
+    if (counterparty->GetTeamId() != bot->GetTeamId())
+    {
+        error = "cannot deal across factions";
+        return false;
+    }
+
+    uint32 price = ServiceTip(service);
+    if (!price)
+    {
+        error = "you do not charge for that";
+        return false;
+    }
+
+    bool local = counterparty->GetMapId() == bot->GetMapId() &&
+        bot->GetDistance(counterparty) <= TRADE_DEAL_MAX_DISTANCE;
+
+    time_t departAt = 0;
+    time_t timeoutSecs = TRADE_DEAL_TIMEOUT_SECS;
+    if (service == TradeService::Portal)
+    {
+        // Portals collect the tip face to face first, so a far-away customer
+        // means the same simulated trip an item deal takes.
+        if (!local)
+        {
+            if (bot->GetMap()->Instanceable() || counterparty->GetMap()->Instanceable())
+            {
+                error = "they are somewhere you cannot reach";
+                return false;
+            }
+
+            time_t rideSecs = counterparty->GetMapId() == bot->GetMapId()
+                ? time_t(bot->GetDistance(counterparty) / 15.0f)  // ground-mount pace
+                : TRADE_TRAVEL_RIDE_MAX_SECS;                     // boat/zeppelin hop plus the ride
+            rideSecs = std::clamp(rideSecs, TRADE_TRAVEL_RIDE_MIN_SECS, TRADE_TRAVEL_RIDE_MAX_SECS);
+            departAt = time(nullptr) + rideSecs;
+        }
+    }
+    else
+    {
+        // Summons reach anywhere - the ritual is the travel - but a customer
+        // already in walking range has no business buying one.
+        if (local)
+        {
+            error = "they are close enough to just walk over";
+            return false;
+        }
+        timeoutSecs = TRADE_SERVICE_SUMMON_TIMEOUT_SECS;
+    }
+
+    if (!sTradeOfferMgr->AddServiceDeal(bot, counterparty, service, serviceSpellId, price, departAt, timeoutSecs))
+    {
+        error = "you already have a deal in progress";
+        return false;
+    }
+
+    std::string money = ChatHelper::formatMoney(price);
+    std::string zone = botAI->GetLocalizedAreaName(GetAreaEntryByAreaID(bot->GetZoneId()));
+    std::string quote;
+    if (service == TradeService::Portal)
+    {
+        quote = departAt
+            ? PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                  "trade_service_portal_travel_quote",
+                  "A portal to %dest for %money. I'm over in %zone right now - on my way, give me a few minutes.",
+                  {{"%dest", destination}, {"%money", money}, {"%zone", zone}})
+            : PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                  "trade_service_portal_quote",
+                  "A portal to %dest - %money and it's yours. Trade me the coin and I'll open it right up.",
+                  {{"%dest", destination}, {"%money", money}});
+    }
+    else
+        quote = PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "trade_service_summon_quote",
+            "I can pull you here to %zone - %money for the ritual, settle up when you land.",
+            {{"%money", money}, {"%zone", zone}});
+
+    bot->Whisper(quote, LANG_UNIVERSAL, counterparty);
     return true;
 }
 }

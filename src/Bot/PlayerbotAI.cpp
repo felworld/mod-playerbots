@@ -1085,6 +1085,9 @@ bool PlayerbotAI::IsAllowedCommand(std::string const text)
         // Prefix-matches "ritual", "ritual wait ..." and "ritual depart": summoning
         // requesters are usually strangers to the warlock bot (the bot invites them).
         unsecuredCommands.insert("ritual");
+        // Strangers buy their portals (ClassService.PortalTip); the bot's own
+        // circle still gets them free.
+        unsecuredCommands.insert("portal");
     }
 
     for (std::set<std::string>::iterator i = unsecuredCommands.begin(); i != unsecuredCommands.end(); ++i)

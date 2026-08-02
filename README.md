@@ -88,7 +88,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   food and water walked over and handed to you, mage city portals, and
   a real warlock summoning ritual — whisper any warlock world bot and it
   invites you to its group for the summon, recruiting bystander bots as
-  portal clickers when needed.
+  portal clickers when needed. Portals and summons are free for the
+  bot's circle and sold to strangers for a configurable tip, collected
+  through a real trade window.
 - **[Faction-honest chat](FEATURES.md#faction-honest-chat)** — bots speak
   their faction's language, honor `AllowTwoSide.Interaction.Chat`, and
   ignore speech they couldn't understand.

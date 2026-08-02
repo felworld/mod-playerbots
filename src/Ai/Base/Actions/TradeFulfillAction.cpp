@@ -13,9 +13,12 @@
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
 #include "PlayerbotAIConfig.h"
+#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
 #include "Random.h"
 #include "SharedDefines.h"
+#include "SpellInfo.h"
+#include "SpellMgr.h"
 #include "TradeData.h"
 #include "TradeOfferMgr.h"
 
@@ -25,6 +28,10 @@
 namespace
 {
 constexpr float TRADE_FULFILL_MAX_DISTANCE = 300.0f;
+
+// Granted to the mage right before a paid portal cast, exactly like the
+// free-service path does (ClassServiceActions.cpp).
+constexpr uint32 ITEM_RUNE_OF_PORTALS = 17032;
 
 uint32 CountInTrade(TradeData* trade, uint32 itemId)
 {
@@ -45,17 +52,20 @@ bool TradeFulfillAction::Execute(Event /*event*/)
     if (!sTradeOfferMgr->GetPending(bot->GetGUID(), deal))
         return false;
 
-    ItemTemplate const* proto = sObjectMgr->GetItemTemplate(deal.itemId);
-    if (!proto)
+    if (deal.service == TradeService::None && !sObjectMgr->GetItemTemplate(deal.itemId))
     {
         sTradeOfferMgr->Clear(bot->GetGUID());
         return false;
     }
 
     // A closed window after goods/gold were placed means the trade finished
-    // or the counterparty backed out - either way this deal is over.
+    // or the counterparty backed out - either way this deal is over, except
+    // that a paid-up portal deal still owes the actual cast.
     if (deal.attempted && !bot->GetTrader())
     {
+        if (deal.service == TradeService::Portal)
+            return DeliverPortal(deal);
+
         sTradeOfferMgr->Clear(bot->GetGUID());
         return false;
     }
@@ -70,6 +80,12 @@ bool TradeFulfillAction::Execute(Event /*event*/)
     if (counterparty->GetMapId() != bot->GetMapId() ||
         bot->GetDistance(counterparty) > TRADE_FULFILL_MAX_DISTANCE)
     {
+        // A summon customer is far away until the ritual lands them here -
+        // the bot never chases, it waits (the deal expires if they never
+        // accept the summon).
+        if (deal.service == TradeService::Summon)
+            return false;
+
         // Only an untraveled cross-city deal is entitled to be this far out;
         // a local deal (or one that already ported in) doesn't chase a
         // counterparty who wandered off.
@@ -117,7 +133,8 @@ bool TradeFulfillAction::Execute(Event /*event*/)
     if (!trade)
         return false;
 
-    if (deal.selling)
+    // The bot's side of a service trade stays empty - only the tip moves.
+    if (deal.service == TradeService::None && deal.selling)
     {
         uint32 placed = CountInTrade(trade, deal.itemId);
         if (placed < deal.count)
@@ -165,7 +182,7 @@ bool TradeFulfillAction::Execute(Event /*event*/)
                 return false;  // could not cover the deal yet; retry until expiry
         }
     }
-    else if (trade->GetMoney() != deal.price)
+    else if (deal.service == TradeService::None && trade->GetMoney() != deal.price)
     {
         WorldPacket packet(CMSG_SET_TRADE_GOLD, 4);
         packet << deal.price;
@@ -185,12 +202,65 @@ bool TradeFulfillAction::Execute(Event /*event*/)
 
     if (satisfied && !trade->IsAccepted())
     {
+        // For a service the bot places nothing, so this accept is what marks
+        // the deal attempted - and the balance snapshot is what later tells a
+        // completed trade (balance rose by the tip) from a cancelled window.
+        if (deal.service != TradeService::None)
+            sTradeOfferMgr->MarkAccepted(bot->GetGUID(), bot->GetMoney());
+
         WorldPacket packet;
         uint32 status = TRADE_STATUS_TRADE_ACCEPT;
         packet << status;
         bot->GetSession()->HandleAcceptTradeOpcode(packet);
     }
 
+    return true;
+}
+
+bool TradeFulfillAction::DeliverPortal(PendingTradeDeal const& deal)
+{
+    if (!deal.servicePaid)
+    {
+        // The window just closed: only a completed trade raises the balance
+        // by the agreed tip - a cancel leaves it untouched, and an unpaid
+        // deal ends unserved.
+        if (!deal.accepted || bot->GetMoney() < deal.moneyAtAccept + deal.price)
+        {
+            sTradeOfferMgr->Clear(bot->GetGUID());
+            return false;
+        }
+        sTradeOfferMgr->MarkServicePaid(bot->GetGUID());
+    }
+
+    // The tip landed; all that remains is the cast, retried until it takes
+    // or the deal expires.
+    if (bot->isMoving())
+    {
+        bot->GetMotionMaster()->Clear();
+        bot->StopMoving();
+        return true;
+    }
+
+    if (!bot->HasItemCount(ITEM_RUNE_OF_PORTALS, 1))
+        bot->AddItem(ITEM_RUNE_OF_PORTALS, 1);
+
+    if (!botAI->CanCastSpell(deal.serviceSpellId, bot, true) || !botAI->CastSpell(deal.serviceSpellId, bot))
+        return true;
+
+    std::string city = "the city";
+    if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(deal.serviceSpellId))
+        if (std::string(spellInfo->SpellName[0]).rfind("Portal: ", 0) == 0)
+            city = std::string(spellInfo->SpellName[0]).substr(8);
+
+    Player* counterparty = ObjectAccessor::FindPlayer(deal.counterpartyGuid);
+    if (counterparty && counterparty->IsInWorld())
+        bot->Whisper(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                         "trade_service_portal_open",
+                         "There's your portal to %dest - step through before it fades.",
+                         {{"%dest", city}}),
+                     LANG_UNIVERSAL, counterparty);
+
+    sTradeOfferMgr->Clear(bot->GetGUID());
     return true;
 }
 

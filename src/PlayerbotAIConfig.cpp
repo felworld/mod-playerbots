@@ -722,6 +722,8 @@ bool PlayerbotAIConfig::Initialize()
     tradeAdAnchorSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.TradeAdAnchorSeconds", 120);
     tradeDealAnchorMinSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.TradeDealAnchorMinSeconds", 300);
     tradeDealAnchorMaxSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.TradeDealAnchorMaxSeconds", 600);
+    classServicePortalTip = sConfigMgr->GetOption<uint32>("AiPlayerbot.ClassService.PortalTip", 5000);
+    classServiceSummonTip = sConfigMgr->GetOption<uint32>("AiPlayerbot.ClassService.SummonTip", 10000);
     keywordTradeReplies = sConfigMgr->GetOption<bool>("AiPlayerbot.KeywordTradeReplies", true);
     lootNeedRollLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.LootNeedRollLevel", 1);
     lootRollRecipe = sConfigMgr->GetOption<bool>("AiPlayerbot.LootRollRecipe", false);

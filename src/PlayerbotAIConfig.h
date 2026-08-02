@@ -414,6 +414,8 @@ public:
     uint32 tradeAdAnchorSeconds;
     uint32 tradeDealAnchorMinSeconds;
     uint32 tradeDealAnchorMaxSeconds;
+    uint32 classServicePortalTip;
+    uint32 classServiceSummonTip;
     bool keywordTradeReplies;
     int32 lootNeedRollLevel;
     bool lootGreedRollLevel;
