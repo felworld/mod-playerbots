@@ -13,6 +13,7 @@
 #include "CreatureAI.h"
 #include "Playerbots.h"
 #include "CharmInfo.h"
+#include "PullStrategy.h"
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include <vector>
@@ -44,6 +45,32 @@ static std::vector<uint32> disabledPetSpells = {
     PET_DEVOUR_MAGIC_1, PET_DEVOUR_MAGIC_2, PET_DEVOUR_MAGIC_3,
     PET_DEVOUR_MAGIC_4, PET_DEVOUR_MAGIC_5, PET_DEVOUR_MAGIC_6, PET_DEVOUR_MAGIC_7, PET_SPIRIT_WOLF_LEAP
 };
+
+namespace
+{
+// A grouped bot is not the one holding threat. Mirrors the anti-body-pull guard in PetAttackTrigger.
+bool IsInstancedGroupContent(Player* bot)
+{
+    return bot && bot->GetGroup() && bot->GetMap() && bot->GetMap()->IsDungeon();
+}
+
+// Taunt detection follows the core (Spell::EffectTaunt uses SPELL_EFFECT_ATTACK_ME, PetAI keys taunt
+// behaviour off SPELL_AURA_MOD_TAUNT). SPELL_EFFECT_THREAT is added because on pets it only ever
+// backs a threat-grabbing ability (Growl, Torment, Suffering, Anguish), which is what we want off.
+bool IsPetTauntSpell(SpellInfo const* spellInfo)
+{
+    return spellInfo->HasEffect(SPELL_EFFECT_ATTACK_ME) || spellInfo->HasAura(SPELL_AURA_MOD_TAUNT) ||
+           spellInfo->HasEffect(SPELL_EFFECT_THREAT);
+}
+
+// PullStrategy parks the pet on REACT_PASSIVE for the duration of a pull; stance upkeep must not
+// undo that mid-pull.
+bool IsPullInProgress(PlayerbotAI* botAI)
+{
+    PullStrategy* strategy = PullStrategy::Get(botAI);
+    return strategy && (strategy->IsPullPendingToStart() || strategy->HasPullStarted() || strategy->HasTarget());
+}
+}
 
 bool MeleeAction::isUseful()
 {
@@ -79,6 +106,11 @@ bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
         if (autospellItr != pet->m_autospells.end())
             pet->m_autospells.erase(autospellItr);
     }
+    // Inside an instance with a group the tank owns threat: actively turn taunt autocasts off so a
+    // previously enabled Growl/Torment/Suffering/Anguish stops ripping mobs off the tank. Solo (or
+    // outdoors) they are left enabled - a lone pet tanking for its owner still wants them.
+    bool const suppressTaunts = IsInstancedGroupContent(bot);
+
     bool toggled = false;
     for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)
     {
@@ -99,6 +131,9 @@ bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
                 break;
             }
         }
+        if (shouldApply && suppressTaunts && IsPetTauntSpell(spellInfo))
+            shouldApply = false;
+
         bool isAutoCast = false;
         for (unsigned int& m_autospell : pet->m_autospells)
         {
@@ -122,6 +157,39 @@ bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
     return toggled;
 }
 
+bool PetAttackAction::isUseful()
+{
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    // Uncontrollable guardians (temporary summons without a pet bar) have no CharmInfo.
+    CharmInfo* charmInfo = pet->GetCharmInfo();
+    if (!charmInfo)
+        return false;
+
+    // A passive pet is either configured that way or parked by PullStrategy - do not fight it.
+    if (pet->GetReactState() == REACT_PASSIVE)
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return false;
+
+    // Already assisting on the right target - re-issuing the command would only cost a tick.
+    if (pet->GetVictim() == target && charmInfo->IsCommandAttack())
+        return false;
+
+    if (!bot->IsValidAttackTarget(target))
+        return false;
+
+    // Assist only: in an instance with a group the pet must never be the one starting a fight.
+    if (IsInstancedGroupContent(bot) && !target->IsInCombat())
+        return false;
+
+    return true;
+}
+
 bool PetAttackAction::Execute(Event /*event*/)
 {
     Guardian* pet = bot->GetGuardianPet();
@@ -132,11 +200,21 @@ bool PetAttackAction::Execute(Event /*event*/)
     if (pet->GetReactState() == REACT_PASSIVE)
         return false;
 
+    // Uncontrollable guardians (temporary summons without a pet bar) have no CharmInfo - nothing to
+    // command, and dereferencing it would crash.
+    CharmInfo* charmInfo = pet->GetCharmInfo();
+    if (!charmInfo)
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
         return false;
 
     if (!bot->IsValidAttackTarget(target))
+        return false;
+
+    // Assist only: in an instance with a group the pet must never be the one starting a fight.
+    if (IsInstancedGroupContent(bot) && !target->IsInCombat())
         return false;
 
     // This section has been commented because it was overriding the
@@ -147,11 +225,11 @@ bool PetAttackAction::Execute(Event /*event*/)
     pet->AttackStop();
     pet->SetTarget(target->GetGUID());
 
-    pet->GetCharmInfo()->SetIsCommandAttack(true);
-    pet->GetCharmInfo()->SetIsAtStay(false);
-    pet->GetCharmInfo()->SetIsFollowing(false);
-    pet->GetCharmInfo()->SetIsCommandFollow(false);
-    pet->GetCharmInfo()->SetIsReturning(false);
+    charmInfo->SetIsCommandAttack(true);
+    charmInfo->SetIsAtStay(false);
+    charmInfo->SetIsFollowing(false);
+    charmInfo->SetIsCommandFollow(false);
+    charmInfo->SetIsReturning(false);
 
     pet->ToCreature()->AI()->AttackStart(target);
     return true;
@@ -159,6 +237,11 @@ bool PetAttackAction::Execute(Event /*event*/)
 
 bool SetPetStanceAction::Execute(Event /*event*/)
 {
+    // A pull deliberately parks the pet on REACT_PASSIVE (PullStartAction) and restores the previous
+    // stance when it ends (PullEndAction) - stay out of the way until then.
+    if (IsPullInProgress(botAI))
+        return false;
+
     // Prepare a list to hold all controlled pet and guardian creatures
     std::vector<Creature*> targets;
 
@@ -214,15 +297,33 @@ bool SetPetStanceAction::Execute(Event /*event*/)
             break;
     }
 
-    // Apply the stance to all target creatures (pets/guardians)
+    // An aggressive pet in a group pulls whatever wanders into its range - clamp it to defensive so
+    // it only answers what is already attacking the bot (or what the bot is told to assist).
+    if (react == REACT_AGGRESSIVE && bot->GetGroup())
+    {
+        react = REACT_DEFENSIVE;
+        stanceText = "defensive (aggressive clamped while grouped)";
+    }
+
+    // Apply the stance to all target creatures (pets/guardians). This runs on a repeating trigger, so
+    // only touch creatures that are actually on the wrong stance.
+    bool changed = false;
     for (Creature* target : targets)
     {
+        if (target->GetReactState() == react)
+            continue;
+
         target->SetReactState(react);
         CharmInfo* charmInfo = target->GetCharmInfo();
         // If the creature has a CharmInfo, set the player-visible stance as well
         if (charmInfo)
             charmInfo->SetPlayerReactState(react);
+
+        changed = true;
     }
+
+    if (!changed)
+        return false;
 
     // If debug is enabled in config, inform the master of the new stance
     if (sPlayerbotAIConfig.petChatCommandDebug == 1)

@@ -76,18 +76,17 @@ bool DropTargetAction::Execute(Event /*event*/)
     }
     bot->AttackStop();
 
-    // if (Pet* pet = bot->GetPet())
-    // {
-    //     if (CreatureAI* creatureAI = ((Creature*)pet)->AI())
-    //     {
-    //         pet->SetReactState(REACT_PASSIVE);
-    //         pet->GetCharmInfo()->SetCommandState(COMMAND_FOLLOW);
-    //         pet->GetCharmInfo()->SetIsCommandFollow(true);
-    //         pet->AttackStop();
-    //         pet->GetCharmInfo()->IsReturning();
-    //         pet->GetMotionMaster()->MoveFollow(bot, PET_FOLLOW_DIST, pet->GetFollowAngle());
-    //     }
-    // }
+    // The bot just disengaged, but core PetAI keeps the pet on whatever last hit it - in a dungeon
+    // that walks the pet (and its aggro) into the next pack. Recall it to the owner instead; the
+    // "pet attack" trigger re-commands it as soon as the bot picks a new target.
+    // Note: the original version of this recall (disabled in 25da0af7) also forced REACT_PASSIVE and
+    // never restored it, which left pets permanently inert. Stance is deliberately untouched here,
+    // so a defensive pet still defends its owner while following.
+    if (Pet* pet = bot->GetPet())
+    {
+        if (pet->GetVictim())
+            botAI->PetFollow();
+    }
 
     return true;
 }

@@ -42,7 +42,8 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "has pet",
             {
-                NextAction("toggle pet spell", 60.0f)
+                NextAction("toggle pet spell", 60.0f),
+                NextAction("set pet stance", 59.0f)
             }
         )
     );
@@ -51,6 +52,15 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "new pet",
             {
                 NextAction("set pet stance", 60.0f)
+            }
+        )
+    );
+    // Keep the elemental on the bot's target instead of letting core PetAI pick its own attacker.
+    triggers.push_back(
+        new TriggerNode(
+            "target changed",
+            {
+                NextAction("pet assist", 15.0f)
             }
         )
     );

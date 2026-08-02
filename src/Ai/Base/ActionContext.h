@@ -314,6 +314,9 @@ public:
 
         creators["toggle pet spell"] = &ActionContext::toggle_pet_spell;
         creators["pet attack"] = &ActionContext::pet_attack;
+        // "pet attack" is also a chat command, and ChatActionContext is registered after this one, so
+        // that name resolves to the chat action. Strategies wire "pet assist" instead.
+        creators["pet assist"] = &ActionContext::pet_assist;
         creators["set pet stance"] = &ActionContext::set_pet_stance;
 
         creators["new rpg status update"] = &ActionContext::new_rpg_status_update;
@@ -560,6 +563,7 @@ private:
 
     static Action* toggle_pet_spell(PlayerbotAI* ai) { return new TogglePetSpellAutoCastAction(ai); }
     static Action* pet_attack(PlayerbotAI* ai) { return new PetAttackAction(ai); }
+    static Action* pet_assist(PlayerbotAI* ai) { return new PetAttackAction(ai, "pet assist"); }
     static Action* set_pet_stance(PlayerbotAI* ai) { return new SetPetStanceAction(ai); }
 
     static Action* new_rpg_status_update(PlayerbotAI* ai) { return new NewRpgStatusUpdateAction(ai); }

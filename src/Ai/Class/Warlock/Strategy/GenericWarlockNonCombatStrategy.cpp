@@ -79,7 +79,8 @@ GenericWarlockNonCombatStrategy::GenericWarlockNonCombatStrategy(PlayerbotAI* bo
 void GenericWarlockNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     NonCombatStrategy::InitTriggers(triggers);
-    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
+    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f),
+                                                    NextAction("set pet stance", 59.0f) }));
     triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
     triggers.push_back(new TriggerNode("no pet", { NextAction("fel domination", 30.0f) }));
     triggers.push_back(new TriggerNode("no soul shard", { NextAction("create soul shard", 60.0f) }));

@@ -92,7 +92,8 @@ void UnholyDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("no pet", { NextAction("raise dead", ACTION_NORMAL + 5) }));
     triggers.push_back(
-        new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f) }));
+        new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f),
+                                     NextAction("set pet stance", 59.0f) }));
     triggers.push_back(
         new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
 

@@ -576,7 +576,11 @@ public:
 class PetAttackTrigger : public Trigger
 {
 public:
-    PetAttackTrigger(PlayerbotAI* botAI) : Trigger(botAI, "pet attack") {}
+    // NOTE: the "pet attack" name is shadowed by ChatTriggerContext (registered later), so this
+    // trigger is currently unreachable - combat strategies drive the pet through the "target changed"
+    // trigger plus the "pet assist" action instead. Checked once per second if it is ever wired up:
+    // re-issuing the assist command is idempotent.
+    PetAttackTrigger(PlayerbotAI* botAI) : Trigger(botAI, "pet attack", 1000) {}
 
     virtual bool IsActive() override;
 };

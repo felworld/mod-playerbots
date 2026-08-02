@@ -29,11 +29,15 @@ public:
     virtual bool Execute(Event event) override;
 };
 
+// Sends the pet at the bot's current target ("assist"), instead of letting core PetAI pick a target
+// of its own. Registered twice: as "pet attack" (shadowed by the chat command of the same name) and
+// as "pet assist", which is the name combat strategies wire to.
 class PetAttackAction : public Action
 {
 public:
-    PetAttackAction(PlayerbotAI* ai) : Action(ai, "pet attack") {}
+    PetAttackAction(PlayerbotAI* ai, std::string const name = "pet attack") : Action(ai, name) {}
     virtual bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class SetPetStanceAction : public Action

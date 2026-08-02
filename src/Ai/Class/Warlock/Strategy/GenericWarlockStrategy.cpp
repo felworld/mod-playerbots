@@ -20,6 +20,15 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
+    // Keep the minion on the bot's target instead of letting core PetAI pick its own attacker.
+    triggers.push_back(
+        new TriggerNode(
+            "target changed",
+            {
+                NextAction("pet assist", 15.0f)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "low mana",

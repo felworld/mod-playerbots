@@ -54,6 +54,10 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     MeleeCombatStrategy::InitTriggers(triggers);
 
+    // Keep the ghoul on the bot's target instead of letting core PetAI pick its own attacker.
+    triggers.push_back(
+        new TriggerNode("target changed", { NextAction("pet assist", ACTION_NORMAL + 5) }));
+
     triggers.push_back(
         new TriggerNode("mind freeze", { NextAction("mind freeze", ACTION_HIGH + 1) }));
     triggers.push_back(

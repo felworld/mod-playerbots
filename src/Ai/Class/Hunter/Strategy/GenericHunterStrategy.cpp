@@ -57,6 +57,10 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     CombatStrategy::InitTriggers(triggers);
 
+    // Pet Triggers
+    // Keep the pet on the bot's target instead of letting core PetAI pick its own attacker.
+    triggers.push_back(new TriggerNode("target changed", { NextAction("pet assist", 15.0f) }));
+
     // Mark/Ammo/Mana Triggers
     triggers.push_back(new TriggerNode("no ammo", { NextAction("equip upgrades packet action", 30.0f) }));
     triggers.push_back(new TriggerNode("hunter's mark", { NextAction("hunter's mark", 29.5f) }));

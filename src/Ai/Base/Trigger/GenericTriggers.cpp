@@ -62,14 +62,23 @@ bool HasPetTrigger::IsActive()
 bool PetAttackTrigger::IsActive()
 {
     Guardian* pet = bot->GetGuardianPet();
-    if (!pet)
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    // Uncontrollable guardians have no CharmInfo and cannot be commanded at all.
+    CharmInfo* charmInfo = pet->GetCharmInfo();
+    if (!charmInfo)
+        return false;
+
+    // A passive pet is either configured that way or parked by PullStrategy - do not fight it.
+    if (pet->GetReactState() == REACT_PASSIVE)
         return false;
 
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target)
         return false;
 
-    if (pet->GetVictim() == target && pet->GetCharmInfo()->IsCommandAttack())
+    if (pet->GetVictim() == target && charmInfo->IsCommandAttack())
         return false;
 
     if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat())

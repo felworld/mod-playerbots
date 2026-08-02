@@ -135,7 +135,8 @@ void ShamanNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("water walking on party", { NextAction("water walking on party", 11.0f), }));
 
     // Pet Triggers
-    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f), }));
+    triggers.push_back(new TriggerNode("has pet", { NextAction("toggle pet spell", 60.0f),
+                                                    NextAction("set pet stance", 59.0f), }));
     triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 65.0f), }));
 }
 
