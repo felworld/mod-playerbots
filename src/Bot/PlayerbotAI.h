@@ -164,6 +164,12 @@ enum ChatChannelId
     GUILD_RECRUITMENT = 25,
 };
 
+// WorldDefense is created as a custom channel (id 0) under this fixed,
+// locale-independent name so clients give /join the normal custom-channel
+// UX; it must match the channels_rights row in the characters DB. Custom
+// channels carry no ChatChannelId — match this channel by name.
+constexpr char WORLD_DEFENSE_CHANNEL_NAME[] = "WorldDefense";
+
 enum RoguePoisonId
 {
     INSTANT_POISON      = 6947,

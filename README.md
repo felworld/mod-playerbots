@@ -62,7 +62,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   — gank sprees draw LocalDefense/WorldDefense callouts, defenders travel
   in to hunt the attacker, a beaten ganker can pull reinforcements, and
   emoting at an enemy rallies every bot that saw you do it — it all works
-  the same when the ganker is a real player.
+  the same when the ganker is a real player. WorldDefense itself becomes
+  a normal opt-in channel: `/join WorldDefense` works like any custom
+  channel.
 - **[Same-class truce](FEATURES.md#same-class-truce)** — some same-class
   pairs honor the "druids don't gank druids" code: no unprovoked attack,
   a `/salute` instead.

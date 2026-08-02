@@ -3023,6 +3023,19 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
     if (!cMgr)
         return false;
 
+    // WorldDefense exists as a custom channel (id 0, created at bot login),
+    // so the id-based matching below cannot find it — look it up by name.
+    if (chanId == ChatChannelId::WORLD_DEFENSE)
+    {
+        if (Channel* channel = cMgr->GetChannel(WORLD_DEFENSE_CHANNEL_NAME, nullptr, false))
+        {
+            channel->Say(bot->GetGUID(), msg.c_str(), LANG_UNIVERSAL);
+            return true;
+        }
+
+        return false;
+    }
+
     AreaTableEntry const* current_zone = GetCurrentZone();
     if (!current_zone)
         return false;
@@ -3047,11 +3060,11 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
 
             // Checks if the channel name contains the current zone
             const auto does_contains = channel->GetName().find(current_str_zone) != std::string::npos;
-            if (chanId != ChatChannelId::LOOKING_FOR_GROUP && chanId != ChatChannelId::WORLD_DEFENSE && !does_contains)
+            if (chanId != ChatChannelId::LOOKING_FOR_GROUP && !does_contains)
             {
                 continue;
             }
-            else if (chanId == ChatChannelId::LOOKING_FOR_GROUP || chanId == ChatChannelId::WORLD_DEFENSE)
+            else if (chanId == ChatChannelId::LOOKING_FOR_GROUP)
             {
                 // Here you can add the capital check if necessary
             }
@@ -6682,6 +6695,10 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
     {
         if (channelName == "World")
             return ChatChannelSource::SRC_WORLD;
+        // WorldDefense is a custom channel (id 0), so classify it by name
+        // like "World" — the id-based switch below cannot recognize it.
+        else if (channelName == WORLD_DEFENSE_CHANNEL_NAME)
+            return ChatChannelSource::SRC_WORLD_DEFENSE;
         else
         {
             ChannelMgr* cMgr = ChannelMgr::forTeam(bot->GetTeamId());
@@ -6706,10 +6723,6 @@ ChatChannelSource PlayerbotAI::GetChatChannelSource(Player* bot, uint32 type, st
                     case ChatChannelId::LOCAL_DEFENSE:
                     {
                         return ChatChannelSource::SRC_LOCAL_DEFENSE;
-                    }
-                    case ChatChannelId::WORLD_DEFENSE:
-                    {
-                        return ChatChannelSource::SRC_WORLD_DEFENSE;
                     }
                     case ChatChannelId::LOOKING_FOR_GROUP:
                     {

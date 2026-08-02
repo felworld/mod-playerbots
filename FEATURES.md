@@ -305,6 +305,14 @@ out, hunted, and — if the tables turn — reinforced exactly like a bot.
 the `!wpvp defend` chat command ([below](#commands-added-in-this-fork))
 lets you order a defense yourself.
 
+WorldDefense itself is made listenable: 3.3.5 clients treat the DBC
+channel as unjoinable (its vanilla PvP-rank gate left with the old honor
+system), so bots create it as an ordinary custom channel at login and the
+core never force-joins players into it. `/join WorldDefense` works like
+joining any player-made channel — join confirmation, `/chatlist` and
+chat-pane listing, `/leave` — with a `channels_rights` row in the
+characters DB suppressing join/leave announces and ownership.
+
 A quieter signal rides the same hunt machinery: a targeted emote at an
 enemy. When any friendly — player or bot — aims a text emote (`/point`,
 `/charge`, nearly anything — sincere respect gestures like `/salute` and

@@ -653,9 +653,16 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
                     break;
                 }
                 case ChatChannelId::LOOKING_FOR_GROUP:
-                case ChatChannelId::WORLD_DEFENSE:
                 {
                     new_channel = cMgr->GetJoinChannel(channel->pattern[locale], channel->ChannelID);
+                    break;
+                }
+                case ChatChannelId::WORLD_DEFENSE:
+                {
+                    // Created as a custom channel (id 0): with the DBC id the
+                    // client suppresses the normal /join UX (join
+                    // confirmation, channel lists) for players.
+                    new_channel = cMgr->GetJoinChannel(WORLD_DEFENSE_CHANNEL_NAME, 0);
                     break;
                 }
                 default:
