@@ -200,7 +200,14 @@ mod-ah-bot-plus's valuation when that module is enabled (already jittered
 per call, so quotes never exactly match AH listings), falling back to a
 vendor-price heuristic; a bot never sells below half its own quote or
 vendor price, never pays more than double its quote, and caps purchases
-by the same free-gold budget it reserves for repairs and training. A
+by the same free-gold budget it reserves for repairs and training.
+Quotes (service tips included) round down to whole silver — player trades
+deal in silver and gold, never loose copper — and an item that cannot
+fetch at least one silver has no market price at all: it gets vendored,
+not advertised or bought. Ad stock also skips leveling leftovers: an
+uncommon-or-worse item more than 20 levels below the bot stays out of its
+WTS lists (rare and better gear is hawked at any level), though a player
+who explicitly asks to buy such an item still gets a deal. A
 committed deal is fulfilled like the roll-win giveaway: the bot walks up,
 opens the trade, places the agreed stacks or gold, and only accepts while
 your side of the window actually covers the deal — a short-changed offer

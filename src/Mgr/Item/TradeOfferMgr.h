@@ -109,7 +109,10 @@ private:
 // exactly match AH listings) and fall back to a vendor-price heuristic.
 namespace MarketQuote
 {
-    // Per-unit prices in copper; 0 when the item has no sensible price.
+    // Per-unit prices in copper, rounded down to whole silver - player
+    // trades deal in silver and gold, never loose copper. 0 when the item
+    // has no sensible price, which includes anything worth less than one
+    // silver: such items get vendored, not traded.
     uint32 Ask(ItemTemplate const* proto);  // what a bot quotes when selling
     uint32 Bid(ItemTemplate const* proto);  // what a bot is willing to pay
 
@@ -146,7 +149,8 @@ namespace MarketQuote
     };
 
     // The bot's WTS stock: tradeable items it carries with no use for beyond
-    // selling them.
+    // selling them. Leveling leftovers stay out - an uncommon-or-worse item
+    // far below the bot's level is vendor fodder, not ad material.
     std::vector<Sellable> CollectSellables(PlayerbotAI* botAI);
 
     // The bot's WTB list: profession/spell reagents it has run out of and

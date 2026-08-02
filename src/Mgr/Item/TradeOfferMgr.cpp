@@ -230,6 +230,32 @@ namespace MarketQuote
 {
 namespace
 {
+    // Player-to-player trade deals in silver and gold: quotes round down to
+    // whole silver, and an item that cannot fetch at least one silver has no
+    // market price at all - it gets vendored, not advertised
+    // (felworld/mod-llm#20).
+    uint32 QuoteSilver(uint32 copper)
+    {
+        return copper / 100 * 100;
+    }
+
+    // Ads skip leveling leftovers: an uncommon-or-worse item far below the
+    // bot's own level is vendor fodder nobody around it still wants, while
+    // rare and better pieces are the kind players do hawk at any level
+    // (felworld/mod-llm#21).
+    constexpr uint32 AD_LEVEL_GRACE = 20;
+
+    bool WorthAdvertising(ItemTemplate const* proto, uint8 botLevel)
+    {
+        if (proto->Quality >= ITEM_QUALITY_RARE)
+            return true;
+
+        // Equipment and consumables carry a required level; trade goods do
+        // not, so their item level stands in for the content tier.
+        uint32 band = proto->RequiredLevel ? proto->RequiredLevel : proto->ItemLevel;
+        return band + AD_LEVEL_GRACE >= botLevel;
+    }
+
     // Vendor-price heuristic used when the AH bot's valuation tables are not
     // available (module disabled): quotes above what a vendor pays, jittered
     // so two bots never ask exactly the same.
@@ -267,13 +293,13 @@ uint32 Ask(ItemTemplate const* proto)
     uint32 bid = 0;
     uint32 buyout = 0;
     if (AhPrices(proto, bid, buyout))
-        return std::max<uint32>(buyout, std::max<uint32>(1, proto->SellPrice));
+        return QuoteSilver(std::max<uint32>(buyout, proto->SellPrice));
 
     uint32 base = FallbackBase(proto);
     if (!base)
         return 0;
 
-    return std::max<uint32>(1, base * urand(180, 260) / 100);
+    return QuoteSilver(base * urand(180, 260) / 100);
 }
 
 uint32 Bid(ItemTemplate const* proto)
@@ -284,13 +310,13 @@ uint32 Bid(ItemTemplate const* proto)
     uint32 bid = 0;
     uint32 buyout = 0;
     if (AhPrices(proto, bid, buyout))
-        return std::max<uint32>(1, std::min(bid, buyout));
+        return QuoteSilver(std::min(bid, buyout));
 
     uint32 base = FallbackBase(proto);
     if (!base)
         return 0;
 
-    return std::max<uint32>(1, base * urand(120, 180) / 100);
+    return QuoteSilver(base * urand(120, 180) / 100);
 }
 
 bool SaneSellPrice(ItemTemplate const* proto, uint32 count, uint32 price)
@@ -394,6 +420,9 @@ std::vector<Sellable> CollectSellables(PlayerbotAI* botAI)
             continue;
 
         ItemTemplate const* proto = item->GetTemplate();
+        if (!WorthAdvertising(proto, botAI->GetBot()->GetLevel()))
+            continue;
+
         auto it = std::find_if(sellables.begin(), sellables.end(),
             [proto](Sellable const& s) { return s.proto == proto; });
         if (it != sellables.end())
@@ -671,7 +700,9 @@ uint32 ServiceTip(TradeService service)
     if (!base)
         return 0;
 
-    return std::max<uint32>(1, base * urand(80, 120) / 100);
+    // Whole silver like every other quote, but a configured tip never
+    // rounds away to "free".
+    return std::max<uint32>(100, QuoteSilver(base * urand(80, 120) / 100));
 }
 
 bool CommitService(PlayerbotAI* botAI, Player* counterparty, TradeService service,
