@@ -34,6 +34,7 @@
 #include "PvpTriggers.h"
 #include "PvpValues.h"
 #include "ServerFacade.h"
+#include "TargetedMovementGenerator.h"
 #include "Vehicle.h"
 
 // common bg positions
@@ -1671,6 +1672,23 @@ bool BGTactics::Execute(Event /*event*/)
             case CHASE_MOTION_TYPE:
             case POINT_MOTION_TYPE:
                 break;
+            case FOLLOW_MOTION_TYPE:
+            {
+                // Escort logic glues bots to the flag carrier with a follow
+                // generator, which parks this action for as long as it stays
+                // installed. Once the followed unit is no longer the living
+                // team carrier, drop the stale follow and pick a real objective
+                // instead of standing around until the periodic force-reset
+                Unit* followTarget =
+                    static_cast<FollowMovementGenerator<Player>*>(bot->GetMotionMaster()->top())->GetTarget();
+                Unit* teamFC = AI_VALUE(Unit*, "team flag carrier");
+                if (followTarget && teamFC && followTarget == teamFC && teamFC->IsAlive())
+                    return true;
+
+                bot->StopMoving();
+                bot->GetMotionMaster()->Clear();
+                break;
+            }
             default:
                 return true;
         }
@@ -1983,7 +2001,7 @@ bool BGTactics::selectObjective(bool reset)
                         if (Map* map = bot->GetMap())
                         {
                             float groundZ = map->GetHeight(rx, ry, rz);
-                            if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                            if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                                 rz = groundZ;
                         }
 
@@ -2101,7 +2119,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                        if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                             rz = groundZ;
                     }
 
@@ -2144,7 +2162,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                    if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                         rz = groundZ;
                 }
 
@@ -2168,9 +2186,9 @@ bool BGTactics::selectObjective(bool reset)
                 {
                     bot->GetRandomPoint(origin, radius, rx, ry, rz);
                     if (rz == VMAP_INVALID_HEIGHT_VALUE)
-                        target.Relocate(rx, ry, rz);
-                    else
                         target.Relocate(origin);
+                    else
+                        target.Relocate(rx, ry, rz);
                 }
                 else
                 {
@@ -2329,6 +2347,12 @@ bool BGTactics::selectObjective(bool reset)
                             if (ServerFacade::instance().GetDistance2d(bot, teamFC) < 33.0f)
                                 Follow(teamFC);
                         }
+                        else
+                        {
+                            // The rest hang back around their own flag room
+                            SetSafePos(team == TEAM_ALLIANCE ? WS_FLAG_HIDE_ALLIANCE[urand(0, 2)]
+                                                             : WS_FLAG_HIDE_HORDE[urand(0, 2)], 5.0f);
+                        }
                     }
                     else
                     {
@@ -2450,7 +2474,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                    if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                         rz = groundZ;
                 }
                 pos.Set(rx, ry, rz, bot->GetMapId());
@@ -2541,7 +2565,7 @@ bool BGTactics::selectObjective(bool reset)
                 if (Map* map = bot->GetMap())
                 {
                     float groundZ = map->GetHeight(rx, ry, rz);
-                    if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                    if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                         rz = groundZ;
                 }
 
@@ -2635,7 +2659,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                        if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                             rz = groundZ;
                     }
 
@@ -2663,7 +2687,7 @@ bool BGTactics::selectObjective(bool reset)
                     if (Map* map = bot->GetMap())
                     {
                         float groundZ = map->GetHeight(rx, ry, rz);
-                        if (groundZ == VMAP_INVALID_HEIGHT_VALUE)
+                        if (groundZ != VMAP_INVALID_HEIGHT_VALUE)
                             rz = groundZ;
                     }
 
