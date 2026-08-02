@@ -30,7 +30,7 @@ struct BgStrategyOrderData
 {
     uint8 order = BG_STRATEGY_ORDER_NONE;            // active order until expires
     time_t expires = 0;
-    uint8 lastCalledOrder = BG_STRATEGY_ORDER_NONE;  // throttles compliance re-rolls
+    uint8 lastCalledOrder = BG_STRATEGY_ORDER_NONE;  // absorbs back-to-back duplicate calls
     time_t lastRollTime = 0;
 };
 

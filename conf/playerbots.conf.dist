@@ -1568,8 +1568,9 @@ AiPlayerbot.RandomBotJoinBG = 1
 # "bg strategy attack fc | attack base | defend fc | defend base" in
 # battleground chat; each bot independently follows the order with
 # BgStrategyComplianceChance percent probability for BgStrategyOrderDuration
-# seconds, announcing compliance in battleground chat. Set the chance to 0 to
-# disable the command.
+# seconds, announcing compliance in battleground chat. Repeating the call
+# re-rolls bots not yet on the play. Set the chance to 0 to disable the
+# command.
 AiPlayerbot.BgStrategyComplianceChance = 65
 AiPlayerbot.BgStrategyOrderDuration = 45
 

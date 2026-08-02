@@ -58,9 +58,10 @@ call with `AiPlayerbot.BgStrategyComplianceChance` percent probability
 after their flag carrier!") so you can see exactly who is responding. The
 order overrides a bot's normal role for
 `AiPlayerbot.BgStrategyOrderDuration` seconds (default 45), then it
-drifts back to whatever it was doing — and repeating the same call within
-that window doesn't re-roll the dice, so spamming can't whip the whole
-team into line. Flag carriers ignore orders and keep running the flag,
+drifts back to whatever it was doing — and repeating the call re-rolls
+the bots not yet on the play, so calling again rallies more of the team
+(bots already complying just quietly keep at it, on a refreshed
+timer). Flag carriers ignore orders and keep running the flag,
 and `fc` calls are ignored when the flag carrier in question doesn't
 exist. The team's overall temperament (offense-heavy vs. defense-heavy,
 rolled at match start) stays what it is — no amount of chat whipping

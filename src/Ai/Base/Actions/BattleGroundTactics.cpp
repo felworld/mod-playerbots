@@ -4670,14 +4670,23 @@ bool BgStrategyCommandAction::Execute(Event event)
     if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG))
         return false;
 
-    // Orders about a flag carrier need one to exist right now
-    if (order == BG_STRATEGY_ORDER_ATTACK_FC && !AI_VALUE(Unit*, "enemy flag carrier"))
+    // Orders about a flag carrier need one to exist right now. Read straight
+    // off the battleground - a flag's picker slot is indexed by the team that
+    // owns the flag, so the enemy carrying our flag sits in our slot. (The
+    // "enemy flag carrier" AI value is unusable here: it checks
+    // Player::GetBattlegroundTypeId, which reports RB in random-queued matches)
+    BattlegroundWS* ws = bg->ToBattlegroundWS();
+    if (!ws)
+        return false;
+
+    if (order == BG_STRATEGY_ORDER_ATTACK_FC && ws->GetFlagPickerGUID(bot->GetTeamId()).IsEmpty())
         return false;
 
     if (order == BG_STRATEGY_ORDER_DEFEND_FC)
     {
-        Unit* teamFC = AI_VALUE(Unit*, "team flag carrier");
-        if (!teamFC || teamFC == bot)
+        TeamId enemyTeam = bot->GetTeamId() == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+        ObjectGuid teamFC = ws->GetFlagPickerGUID(enemyTeam);
+        if (teamFC.IsEmpty() || teamFC == bot->GetGUID())
             return false;
     }
 
@@ -4696,7 +4705,8 @@ bool BgStrategyCommandAction::Execute(Event event)
         if (!group || !group->isBGGroup())
             return false;
 
-        bool relayed = false;
+        uint32 relayed = 0;
+        uint32 complying = 0;
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
             Player* member = ref->GetSource();
@@ -4707,19 +4717,37 @@ bool BgStrategyCommandAction::Execute(Event event)
             if (!memberAi)
                 continue;
 
-            memberAi->DoSpecificAction("bg strategy", Event("bg strategy", param, requester), true);
-            relayed = true;
+            ++relayed;
+            if (memberAi->DoSpecificAction("bg strategy", Event("bg strategy", param, requester), true))
+                ++complying;
         }
-        return relayed;
+
+        if (relayed)
+            LOG_INFO("playerbots", "{} relayed bg strategy '{}': {}/{} bots complying",
+                bot->GetName(), param, complying, relayed);
+        return relayed != 0;
     }
 
     time_t now = time(nullptr);
     time_t duration = time_t(sPlayerbotAIConfig.bgStrategyOrderDuration);
     BgStrategyOrderData data = context->GetValue<BgStrategyOrderData>("bg strategy order")->Get();
 
-    // One compliance roll per order per duration window, so repeating the
-    // call can't ratchet the whole team toward 100% compliance
-    if (data.lastCalledOrder == order && now < data.lastRollTime + duration)
+    // Already on this play: quietly keep at it for a fresh window -
+    // re-announcing on every repeated callout would spam the chat
+    if (data.order == order && now < data.expires)
+    {
+        data.expires = now + duration;
+        data.lastCalledOrder = order;
+        data.lastRollTime = now;
+        context->GetValue<BgStrategyOrderData>("bg strategy order")->Set(data);
+        return true;
+    }
+
+    // A short guard absorbs one callout arriving twice back to back (two
+    // routed interpreters can relay the same message); past it, repeating
+    // the call re-rolls everyone not yet on the play, so calling again
+    // genuinely rallies more of the team
+    if (data.lastCalledOrder == order && now < data.lastRollTime + 5)
         return false;
 
     data.lastCalledOrder = order;
