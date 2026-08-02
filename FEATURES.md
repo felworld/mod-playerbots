@@ -76,6 +76,17 @@ dice and announces the same way as if the command had been typed. See
 Setting `AiPlayerbot.BgStrategyComplianceChance = 0` disables play calls
 entirely, the LLM path included.
 
+## Staggered battleground mounts
+
+Waiting behind the gates, bots mount up one by one rather than all on the
+same tick. Upstream gates battleground mounting on a single "less than 30
+seconds to go" check, so an entire team snaps onto its mounts in unison the
+moment the timer crosses it — the tell that they aren't people. Each bot now
+picks its own moment in the last 30 seconds of the prep phase (down to five
+seconds before the gates open), derived from who it is and which match this
+is, so the starting area fills with mounts gradually and a bot doesn't mount
+at the same instant twice in a row.
+
 ## Bystander assist
 
 Solo random bots rescue nearby non-group players — real

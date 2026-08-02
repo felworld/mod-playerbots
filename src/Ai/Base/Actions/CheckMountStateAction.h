@@ -16,6 +16,9 @@ const uint16 SPELL_TRAVEL_FORM = 783;
 const uint16 SPELL_FLIGHT_FORM = 33943;
 const uint16 SPELL_SWIFT_FLIGHT_FORM = 40120;
 
+// Latest point in a battleground prep phase (ms before the gates open) at which a bot will mount up.
+const int32 BG_MOUNT_LATEST_START_DELAY = 5000;
+
 struct MountData
 {
     bool swiftMount = false;
@@ -31,6 +34,7 @@ struct PreferredMountCache
     std::vector<uint32> flightMounts;
 };
 
+class Battleground;
 class PlayerbotAI;
 
 class CheckMountStateAction : public UseItemAction
@@ -53,6 +57,7 @@ private:
     static bool preferredMountTableChecked;
     float CalculateDismountDistance() const;
     float CalculateMountDistance() const;
+    int32 GetBattlegroundMountStartDelay(Battleground* bg) const;
     void Dismount();
     void ClearStaleFlightFlags();
     bool ShouldFollowMasterMountState(Player* master, bool noAttackers, bool shouldMount) const;

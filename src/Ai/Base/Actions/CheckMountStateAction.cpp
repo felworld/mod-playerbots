@@ -195,9 +195,10 @@ bool CheckMountStateAction::isUseful()
         if (bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) || bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) || bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL))
             return false;
 
-        // Only mount if BG starts in less than 30 sec
+        // Only mount towards the end of the prep phase, at a moment picked per bot so they don't all
+        // mount in lockstep the instant the timer drops below 30 sec
         if (Battleground* bg = bot->GetBattleground())
-            if (bg->GetStatus() == STATUS_WAIT_JOIN && bg->GetStartDelayTime() > BG_START_DELAY_30S)
+            if (bg->GetStatus() == STATUS_WAIT_JOIN && bg->GetStartDelayTime() > GetBattlegroundMountStartDelay(bg))
                 return false;
     }
 
@@ -241,6 +242,20 @@ bool CheckMountStateAction::Mount()
         return UseItemAuto(*items.begin());
 
     return false;
+}
+
+int32 CheckMountStateAction::GetBattlegroundMountStartDelay(Battleground* bg) const
+{
+    // Each bot mounts at its own point in the last 30 seconds of the prep phase. The moment is derived
+    // from the bot GUID and the battleground instance rather than rolled per tick, so it stays stable
+    // while the timer counts down (a fresh roll every tick would fire on the first tick regardless) but
+    // still differs between bots and between matches.
+    uint32 seed = static_cast<uint32>(bot->GetGUID().GetCounter()) * 2654435761u + bg->GetInstanceID() * 40503u;
+    seed ^= seed >> 15;
+
+    uint32 const window = static_cast<uint32>(BG_START_DELAY_30S - BG_MOUNT_LATEST_START_DELAY);
+
+    return BG_MOUNT_LATEST_START_DELAY + static_cast<int32>(seed % window);
 }
 
 void CheckMountStateAction::Dismount()

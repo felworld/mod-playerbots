@@ -29,6 +29,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   flag-carrier escorts and peels, flag-room defenders, roles re-decided on
   death, stealthy approaches, incoming callouts in BG chat, and a
   `bg strategy` command for calling plays your teammates actually follow.
+- **[Staggered battleground mounts](FEATURES.md#staggered-battleground-mounts)**
+  — bots mount one by one during the prep phase instead of the whole team
+  snapping onto mounts the instant the timer hits 30 seconds.
 - **[Bystander assist](FEATURES.md#bystander-assist)** — solo bots rescue
   nearby non-group players who look about to die, when the fight looks
   winnable.
