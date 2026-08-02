@@ -29,6 +29,10 @@ namespace
         target->RemoveOwnedAura(existingThorns, AURA_REMOVE_BY_CANCEL);
         return true;
     }
+
+    // Shifts out of the current form first, but only when that form actually blocks the cure -
+    // see CastCasterFormForCureAction.
+    std::vector<NextAction> CurePrerequisites() { return { NextAction("caster form for cure") }; }
 }
 
 std::vector<NextAction> CastAbolishPoisonAction::getAlternatives()
@@ -42,6 +46,18 @@ std::vector<NextAction> CastAbolishPoisonOnPartyAction::getAlternatives()
     return NextAction::merge({ NextAction("cure poison on party") },
                              CastSpellAction::getPrerequisites());
 }
+
+std::vector<NextAction> CastCurePoisonAction::getPrerequisites() { return CurePrerequisites(); }
+
+std::vector<NextAction> CastCurePoisonOnPartyAction::getPrerequisites() { return CurePrerequisites(); }
+
+std::vector<NextAction> CastAbolishPoisonAction::getPrerequisites() { return CurePrerequisites(); }
+
+std::vector<NextAction> CastAbolishPoisonOnPartyAction::getPrerequisites() { return CurePrerequisites(); }
+
+std::vector<NextAction> CastDruidRemoveCurseAction::getPrerequisites() { return CurePrerequisites(); }
+
+std::vector<NextAction> CastDruidRemoveCurseOnPartyAction::getPrerequisites() { return CurePrerequisites(); }
 
 bool CastLifebloomOnMainTankAction::isUseful()
 {

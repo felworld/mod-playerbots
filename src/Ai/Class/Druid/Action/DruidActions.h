@@ -236,12 +236,16 @@ class CastCurePoisonAction : public CastCureSpellAction
 {
 public:
     CastCurePoisonAction(PlayerbotAI* botAI) : CastCureSpellAction(botAI, "cure poison") {}
+
+    std::vector<NextAction> getPrerequisites() override;
 };
 
 class CastCurePoisonOnPartyAction : public CurePartyMemberAction
 {
 public:
     CastCurePoisonOnPartyAction(PlayerbotAI* botAI) : CurePartyMemberAction(botAI, "cure poison", DISPEL_POISON) {}
+
+    std::vector<NextAction> getPrerequisites() override;
 };
 
 class CastAbolishPoisonAction : public CastCureSpellAction
@@ -249,6 +253,7 @@ class CastAbolishPoisonAction : public CastCureSpellAction
 public:
     CastAbolishPoisonAction(PlayerbotAI* botAI) : CastCureSpellAction(botAI, "abolish poison") {}
     std::vector<NextAction> getAlternatives() override;
+    std::vector<NextAction> getPrerequisites() override;
 };
 
 class CastAbolishPoisonOnPartyAction : public CurePartyMemberAction
@@ -259,6 +264,7 @@ public:
     }
 
     std::vector<NextAction> getAlternatives() override;
+    std::vector<NextAction> getPrerequisites() override;
 };
 
 class CastBarkskinAction : public CastBuffSpellAction
@@ -324,10 +330,20 @@ public:
     CastPartyNourishAction(PlayerbotAI* ai) : HealPartyMemberAction(ai, "nourish", 25.0f, HealingManaEfficiency::LOW) {}
 };
 
+class CastDruidRemoveCurseAction : public CastCureSpellAction
+{
+public:
+    CastDruidRemoveCurseAction(PlayerbotAI* ai) : CastCureSpellAction(ai, "remove curse") {}
+
+    std::vector<NextAction> getPrerequisites() override;
+};
+
 class CastDruidRemoveCurseOnPartyAction : public CurePartyMemberAction
 {
 public:
     CastDruidRemoveCurseOnPartyAction(PlayerbotAI* ai) : CurePartyMemberAction(ai, "remove curse", DISPEL_CURSE) {}
+
+    std::vector<NextAction> getPrerequisites() override;
 };
 
 class CastInsectSwarmOnAttackerAction : public CastDebuffSpellOnAttackerAction

@@ -20,8 +20,6 @@ public:
         creators["mark of the wild on party"] = &mark_of_the_wild_on_party;
         creators["regrowth_on_party"] = &regrowth_on_party;
         creators["rejuvenation on party"] = &rejuvenation_on_party;
-        creators["remove curse on party"] = &remove_curse_on_party;
-        creators["abolish poison on party"] = &abolish_poison_on_party;
         creators["revive"] = &revive;
         creators["aquatic form"] = &aquatic_form;
         creators["prowl"] = &prowl;
@@ -73,20 +71,6 @@ private:
                               /*A*/ {},
                               /*C*/ {});
     }
-    static ActionNode* remove_curse_on_party([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("remove curse on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
-    }
-    static ActionNode* abolish_poison_on_party([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode("abolish poison on party",
-                              /*P*/ { NextAction("caster form") },
-                              /*A*/ {},
-                              /*C*/ {});
-    }
     static ActionNode* revive([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode("revive",
@@ -125,8 +109,6 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
     triggers.push_back(new TriggerNode("party member cure poison", { NextAction("abolish poison on party", 20.0f) }));
     triggers.push_back(new TriggerNode("party member dead", { NextAction("revive", ACTION_CRITICAL_HEAL + 10) }));
 
-    triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
-
     triggers.push_back(
         new TriggerNode("party member critical health",
                         {
@@ -159,29 +141,6 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
                         { NextAction("remove curse on party", ACTION_DISPEL + 7) }));
     triggers.push_back(
         new TriggerNode("new pet", { NextAction("set pet stance", 60.0f) }));
-
-    triggers.push_back(new TriggerNode("party member critical health", {
-                       NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 7),
-                       NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 6),
-                       NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 5),
-                       }));
-    triggers.push_back(new TriggerNode("party member low health", {
-                       NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 5),
-                       NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 4),
-                       NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 3),
-                       }));
-    triggers.push_back(new TriggerNode("party member medium health", {
-                       NextAction("wild growth on party", ACTION_MEDIUM_HEAL + 3),
-                       NextAction("regrowth on party", ACTION_MEDIUM_HEAL + 2),
-                       NextAction("rejuvenation on party", ACTION_MEDIUM_HEAL + 1),
-                       }));
-    triggers.push_back(new TriggerNode("party member almost full health", {
-                       NextAction("wild growth on party", ACTION_LIGHT_HEAL + 3),
-                       NextAction("rejuvenation on party", ACTION_LIGHT_HEAL + 2),
-                       }));
-    triggers.push_back(new TriggerNode("party member remove curse", {
-                       NextAction("remove curse on party", ACTION_DISPEL + 7),
-                       }));
 
     triggers.push_back(new TriggerNode("aquatic form", { NextAction("aquatic form", 10.0f) }));
 

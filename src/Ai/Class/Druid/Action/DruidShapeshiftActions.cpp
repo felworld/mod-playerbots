@@ -45,6 +45,27 @@ bool CastCasterFormAction::isUseful()
            AI_VALUE2(uint8, "mana", "self target") > sPlayerbotAIConfig.mediumHealth;
 }
 
+bool CastCasterFormForCureAction::isUseful()
+{
+    uint32 form = bot->GetShapeshiftForm();
+    if (!form)
+        return false;
+
+    static std::vector<std::string> const cureSpells = { "remove curse", "abolish poison", "cure poison" };
+    for (std::string const& cureSpell : cureSpells)
+    {
+        uint32 spellId = AI_VALUE2(uint32, "spell id", cureSpell);
+        if (!spellId)
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+        if (spellInfo && spellInfo->CheckShapeshift(form) != SPELL_CAST_OK)
+            return true;
+    }
+
+    return false;
+}
+
 bool CastCancelDruidAction::Execute(Event /*event*/)
 {
     botAI->RemoveAura(auraName);

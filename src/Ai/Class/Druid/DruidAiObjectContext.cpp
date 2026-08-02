@@ -112,6 +112,7 @@ public:
         creators["bash on enemy healer"] = &DruidTriggerFactoryInternal::bash_on_enemy_healer;
         creators["nature's swiftness"] = &DruidTriggerFactoryInternal::natures_swiftness;
         creators["nature's swiftness active"] = &DruidTriggerFactoryInternal::natures_swiftness_active;
+        creators["remove curse"] = &DruidTriggerFactoryInternal::remove_curse;
         creators["party member remove curse"] = &DruidTriggerFactoryInternal::party_member_remove_curse;
         creators["mangle (bear)"] = &DruidTriggerFactoryInternal::mangle_bear_trigger;
         creators["lacerate"] = &DruidTriggerFactoryInternal::lacerate_trigger;
@@ -168,6 +169,7 @@ private:
     static Trigger* cat_form(PlayerbotAI* botAI) { return new CatFormTrigger(botAI); }
     static Trigger* tree_form(PlayerbotAI* botAI) { return new TreeFormTrigger(botAI); }
     static Trigger* bash_on_enemy_healer(PlayerbotAI* botAI) { return new BashInterruptEnemyHealerSpellTrigger(botAI); }
+    static Trigger* remove_curse(PlayerbotAI* ai) { return new DruidRemoveCurseTrigger(ai); }
     static Trigger* party_member_remove_curse(PlayerbotAI* ai) { return new DruidPartyMemberRemoveCurseTrigger(ai); }
     static Trigger* mangle_bear_trigger(PlayerbotAI* botAI) { return new MangleBearTrigger(botAI); }
     static Trigger* lacerate_trigger(PlayerbotAI* botAI) { return new LacerateTrigger(botAI); }
@@ -210,6 +212,7 @@ public:
         creators["travel form"] = &DruidAiObjectContextInternal::travel_form;
         creators["aquatic form"] = &DruidAiObjectContextInternal::aquatic_form;
         creators["caster form"] = &DruidAiObjectContextInternal::caster_form;
+        creators["caster form for cure"] = &DruidAiObjectContextInternal::caster_form_for_cure;
         creators["cancel tree form"] = &DruidAiObjectContextInternal::cancel_tree_form;
         creators["cancel travel form"] = &DruidAiObjectContextInternal::cancel_travel_form;
         creators["cancel bear form"] = &DruidAiObjectContextInternal::cancel_bear_form;
@@ -283,6 +286,7 @@ public:
         creators["wild growth on party"] = &DruidAiObjectContextInternal::wild_growth_on_party;
         creators["swiftmend on party"] = &DruidAiObjectContextInternal::swiftmend_on_party;
         creators["nourish on party"] = &DruidAiObjectContextInternal::nourish_on_party;
+        creators["remove curse"] = &DruidAiObjectContextInternal::remove_curse;
         creators["remove curse on party"] = &DruidAiObjectContextInternal::remove_curse_on_party;
         creators["insect swarm on attacker"] = &DruidAiObjectContextInternal::insect_swarm_on_attacker;
         creators["moonfire on attacker"] = &DruidAiObjectContextInternal::moonfire_on_attacker;
@@ -308,6 +312,7 @@ private:
     static Action* travel_form(PlayerbotAI* botAI) { return new CastTravelFormAction(botAI); }
     static Action* aquatic_form(PlayerbotAI* botAI) { return new CastAquaticFormAction(botAI); }
     static Action* caster_form(PlayerbotAI* botAI) { return new CastCasterFormAction(botAI); }
+    static Action* caster_form_for_cure(PlayerbotAI* botAI) { return new CastCasterFormForCureAction(botAI); }
     static Action* cancel_tree_form(PlayerbotAI* botAI) { return new CastCancelTreeFormAction(botAI); }
     static Action* cancel_travel_form(PlayerbotAI* botAI) { return new CastCancelTravelFormAction(botAI); }
     static Action* cancel_bear_form(PlayerbotAI* botAI) { return new CastCancelBearFormAction(botAI); }
@@ -380,6 +385,7 @@ private:
     static Action* wild_growth_on_party(PlayerbotAI* ai) { return new CastWildGrowthOnPartyAction(ai); }
     static Action* swiftmend_on_party(PlayerbotAI* ai) { return new CastPartySwiftmendAction(ai); }
     static Action* nourish_on_party(PlayerbotAI* ai) { return new CastPartyNourishAction(ai); }
+    static Action* remove_curse(PlayerbotAI* ai) { return new CastDruidRemoveCurseAction(ai); }
     static Action* remove_curse_on_party(PlayerbotAI* ai) { return new CastDruidRemoveCurseOnPartyAction(ai); }
     static Action* insect_swarm_on_attacker(PlayerbotAI* ai) { return new CastInsectSwarmOnAttackerAction(ai); }
     static Action* moonfire_on_attacker(PlayerbotAI* ai) { return new CastMoonfireOnAttackerAction(ai); }

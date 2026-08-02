@@ -72,6 +72,17 @@ public:
     bool isPossible() override { return true; }
 };
 
+// Prerequisite of the cure actions: leaves the current form, but only when that form really blocks
+// the cure. Which forms block a dispel is DBC data (the spell's own stance mask), so ask the spell
+// instead of hardcoding a form list - a bot able to dispel in form must not waste a shapeshift.
+class CastCasterFormForCureAction : public CastCasterFormAction
+{
+public:
+    CastCasterFormForCureAction(PlayerbotAI* botAI) : CastCasterFormAction(botAI) {}
+
+    bool isUseful() override;
+};
+
 class CastCancelDruidAction : public CastBuffSpellAction
 {
 public:

@@ -276,11 +276,16 @@ public:
     NaturesSwiftnessTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "nature's swiftness") {}
 };
 
+class DruidRemoveCurseTrigger : public NeedCureTrigger
+{
+public:
+    DruidRemoveCurseTrigger(PlayerbotAI* ai) : NeedCureTrigger(ai, "remove curse", DISPEL_CURSE) {}
+};
+
 class DruidPartyMemberRemoveCurseTrigger : public PartyMemberNeedCureTrigger
 {
 public:
-    DruidPartyMemberRemoveCurseTrigger(PlayerbotAI* ai)
-        : PartyMemberNeedCureTrigger(ai, "druid remove curse", DISPEL_CURSE)
+    DruidPartyMemberRemoveCurseTrigger(PlayerbotAI* ai) : PartyMemberNeedCureTrigger(ai, "remove curse", DISPEL_CURSE)
     {
     }
 };

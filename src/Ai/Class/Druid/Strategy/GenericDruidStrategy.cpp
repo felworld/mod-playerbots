@@ -83,14 +83,23 @@ void GenericDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Self first, party second: a decursed druid keeps dispelling, a dead one does not. The cure
+    // actions carry their own shapeshift prerequisite, so no action nodes are needed here.
+    triggers.push_back(
+        new TriggerNode("cure poison",
+                        { NextAction("abolish poison", 52.0f) }));
+
     triggers.push_back(
         new TriggerNode("party member cure poison",
                         { NextAction("abolish poison on party", 51.0f) }));
 
     triggers.push_back(
+        new TriggerNode("remove curse",
+                        { NextAction("remove curse", 58.0f) }));
+
+    triggers.push_back(
         new TriggerNode("party member remove curse",
                         { NextAction("remove curse on party", 57.0f) }));
-
 }
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
