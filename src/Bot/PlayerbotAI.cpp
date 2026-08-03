@@ -503,6 +503,21 @@ void PlayerbotAI::UpdateAIGroupMaster()
     }
 }
 
+std::vector<Unit*> PlayerbotAI::GetCreaturesFoughtBy(Player* player)
+{
+    std::vector<Unit*> fought;
+
+    Unit* victim = player->GetVictim();
+    if (victim && victim->IsCreature() && victim->IsAlive())
+        fought.push_back(victim);
+
+    for (Unit* attacker : player->getAttackers())
+        if (attacker && attacker != victim && attacker->IsCreature() && attacker->IsAlive())
+            fought.push_back(attacker);
+
+    return fought;
+}
+
 // Quest-competition group state machine: activates an episode once the invited
 // player joins, grows the shared-objective set from what the bot actually
 // fights, and thanks + leaves once nobody in the group needs those mobs.
@@ -600,8 +615,8 @@ void PlayerbotAI::UpdateQuestCompetition()
 
     // Hold on while anyone is mid-fight with a mob the group still needs.
     for (Player* member : others)
-        if (Unit* memberVictim = member->GetVictim())
-            if (memberVictim->IsCreature() && neededByGroup(memberVictim->GetEntry()))
+        for (Unit* fought : GetCreaturesFoughtBy(member))
+            if (neededByGroup(fought->GetEntry()))
                 return;
 
     for (uint32 entry : info.entries)

@@ -476,6 +476,11 @@ public:
     static bool IsAssistTankOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     static bool IsAssistHealOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
     static bool IsAssistRangedDpsOfIndex(Player* player, uint8 index, bool ignoreDeadPlayers = false);
+    // Living creatures a player is actively fighting: their melee attack target
+    // plus every creature engaged on them. A real player only has attack state
+    // (GetVictim) while melee auto-attack is toggled on — casters never set it —
+    // so the mob-side attacker links are the only reliable signal for them.
+    static std::vector<Unit*> GetCreaturesFoughtBy(Player* player);
     bool HasAggro(Unit* unit);
     bool IsMovementImpaired(Unit* unit);
     static int32 GetAssistTankIndex(Player* player);

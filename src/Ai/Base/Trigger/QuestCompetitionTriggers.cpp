@@ -47,16 +47,15 @@ bool QuestCompetitionInviteTrigger::IsActive()
         if (GET_PLAYERBOT_AI(player))  // only invite real players: the random bot manager
             continue;                  // dismantles bot-led bot groups anyway
 
-        Unit* victim = player->GetVictim();
-        if (!victim || !victim->IsCreature() || !victim->IsAlive())
-            continue;
+        for (Unit* fought : PlayerbotAI::GetCreaturesFoughtBy(player))
+        {
+            if (!GrindTargetValue::PlayerNeedsCreatureForQuest(bot, fought->GetEntry()))
+                continue;
 
-        if (!GrindTargetValue::PlayerNeedsCreatureForQuest(bot, victim->GetEntry()))
-            continue;
-
-        info.candidate = guid;
-        info.candidateEntry = victim->GetEntry();
-        return true;
+            info.candidate = guid;
+            info.candidateEntry = fought->GetEntry();
+            return true;
+        }
     }
 
     return false;
