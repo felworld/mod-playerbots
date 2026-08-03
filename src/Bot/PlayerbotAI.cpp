@@ -2439,11 +2439,30 @@ int32 PlayerbotAI::GetMeleeIndex(Player* player)
     return 0;
 }
 
+// The roles a player picked at the Dungeon Finder role check — the badge everyone sees on
+// the party frames. Only meaningful while the player's current group was formed by the
+// Dungeon Finder: the LFG store keeps the last queued roles after leaving. Returns 0 when
+// there is no badge to read (walk-in groups). The mask can hold several roles; callers
+// resolve them tank > healer > damage, the same precedence LFD uses to slot players.
+static uint8 GetLfgRoleBadge(Player* player)
+{
+    Group* group = player->GetGroup();
+    if (!group || !group->isLFGGroup())
+        return 0;
+
+    return sLFGMgr->GetRoles(player->GetGUID()) & ~lfg::PLAYER_ROLE_LEADER;
+}
+
 bool PlayerbotAI::IsTank(Player* player, bool bySpec)
 {
     PlayerbotAI* botAi = GET_PLAYERBOT_AI(player);
     if (!bySpec && botAi)
         return botAi->ContainsStrategy(STRATEGY_TYPE_TANK);
+
+    // For human players, the Dungeon Finder badge beats any spec heuristic.
+    if (!botAi)
+        if (uint8 badge = GetLfgRoleBadge(player))
+            return badge & lfg::PLAYER_ROLE_TANK;
 
     int tab = AiFactory::GetPlayerSpecTab(player);
     switch (player->getClass())
@@ -2485,6 +2504,11 @@ bool PlayerbotAI::IsHeal(Player* player, bool bySpec)
     if (!bySpec && botAi)
         return botAi->ContainsStrategy(STRATEGY_TYPE_HEAL);
 
+    // For human players, the Dungeon Finder badge beats any spec heuristic.
+    if (!botAi)
+        if (uint8 badge = GetLfgRoleBadge(player))
+            return (badge & lfg::PLAYER_ROLE_HEALER) && !(badge & lfg::PLAYER_ROLE_TANK);
+
     int tab = AiFactory::GetPlayerSpecTab(player);
     switch (player->getClass())
     {
@@ -2521,6 +2545,12 @@ bool PlayerbotAI::IsDps(Player* player, bool bySpec)
     PlayerbotAI* botAi = GET_PLAYERBOT_AI(player);
     if (!bySpec && botAi)
         return botAi->ContainsStrategy(STRATEGY_TYPE_DPS);
+
+    // For human players, the Dungeon Finder badge beats any spec heuristic.
+    if (!botAi)
+        if (uint8 badge = GetLfgRoleBadge(player))
+            return (badge & lfg::PLAYER_ROLE_DAMAGE) &&
+                   !(badge & (lfg::PLAYER_ROLE_TANK | lfg::PLAYER_ROLE_HEALER));
 
     int tab = AiFactory::GetPlayerSpecTab(player);
     switch (player->getClass())
