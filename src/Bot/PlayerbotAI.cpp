@@ -2467,8 +2467,10 @@ bool PlayerbotAI::IsTank(Player* player, bool bySpec)
             }
             break;
         case CLASS_DRUID:
-            if (tab == DRUID_TAB_FERAL && (player->GetShapeshiftForm() == FORM_BEAR ||
-                                           player->GetShapeshiftForm() == FORM_DIREBEAR || player->HasAura(16931)))
+            // Bear vs cat is a build distinction (Thick Hide, or no Cat Form learned yet),
+            // not the current shapeshift form — the role must not flip as the druid shifts.
+            if (tab == DRUID_TAB_FERAL &&
+                (!player->HasSpell(768) /* cat form */ || player->HasAura(16931) /* thick hide */))
             {
                 return true;
             }
