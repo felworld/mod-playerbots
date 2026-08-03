@@ -13,8 +13,10 @@ bool ComputeDuelSpotPositions(Player* bot, NewRpgInfo::DuelSpot& out);
 WorldLocation const& GetDuelSpotHub(TeamId team);
 
 // Shared teardown for a duel-spot hangout: removes the "start duel" strategy
-// if the hangout added it and returns the bot to idle.
-void EndDuelSpotHangout(PlayerbotAI* botAI, char const* reason);
+// if the hangout added it. With walkIntoCity the bot heads through the gates
+// to the capital's bank district (feeding the busy-capitals crowd) instead of
+// going idle where it stands.
+void EndDuelSpotHangout(PlayerbotAI* botAI, char const* reason, bool walkIntoCity = false);
 
 class NewRpgDuelSpotAction : public NewRpgBaseAction
 {

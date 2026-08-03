@@ -1128,7 +1128,7 @@ AiPlayerbot.EnableNewRpgStrategy = 1
 # Rest          (Default: 5   Take a break for a while and do nothing)
 # OutdoorPvp    (Default: 10  Participate in outdoor PvP capture points if already in an outdoor PvP zone)
 # GoWpvp        (Default: 1   Travel to an enemy/contested town for world PvP, lurk a while, then go home)
-# DuelSpot      (Default: 2   Hang out at the faction capital's gate duel spot and solicit duels)
+# DuelSpot      (Default: 1   Hang out at the faction capital's gate duel spot and solicit duels)
 # GoMoonglade   (Default: 7   Druids only: cast Teleport: Moonglade, hang around Nighthaven, fly out)
 AiPlayerbot.RpgStatusProbWeight.WanderRandom = 15
 AiPlayerbot.RpgStatusProbWeight.WanderNpc = 20
@@ -1139,7 +1139,7 @@ AiPlayerbot.RpgStatusProbWeight.TravelFlight = 15
 AiPlayerbot.RpgStatusProbWeight.Rest = 5
 AiPlayerbot.RpgStatusProbWeight.OutdoorPvp = 10
 AiPlayerbot.RpgStatusProbWeight.GoWpvp = 1
-AiPlayerbot.RpgStatusProbWeight.DuelSpot = 2
+AiPlayerbot.RpgStatusProbWeight.DuelSpot = 1
 AiPlayerbot.RpgStatusProbWeight.GoMoonglade = 7
 
 # Chance that a bot idling in a friendly (own-faction or neutral) capital city
@@ -1147,8 +1147,8 @@ AiPlayerbot.RpgStatusProbWeight.GoMoonglade = 7
 # of rolling an activity that takes it out of the city. Bots re-roll roughly
 # every 5 minutes, so the average dwell time is 5min / (1 - chance).
 # Higher values keep capitals busier; 0 disables.
-# Default: 0.8
-AiPlayerbot.CityDwellChance = 0.8
+# Default: 0.9
+AiPlayerbot.CityDwellChance = 0.9
 
 #
 # World PvP excursions (GoWpvp): a random bot occasionally teleports to a spot
@@ -1356,11 +1356,12 @@ AiPlayerbot.DuelSpotChallengeCooldown = 60
 AiPlayerbot.DuelSpotSolicitCooldown = 120
 
 # Minimum bot level to make a duel-spot trip, and how long (minutes) the bot
-# hangs out once there.
-# Default: 5 / 20-45
+# hangs out once there. When the hangout runs its course, the bot walks in
+# through the gates to the capital's bank district and joins the city crowd.
+# Default: 5 / 10-25
 AiPlayerbot.DuelSpotMinBotLevel = 5
-AiPlayerbot.DuelSpotDwellMinutesMin = 20
-AiPlayerbot.DuelSpotDwellMinutesMax = 45
+AiPlayerbot.DuelSpotDwellMinutesMin = 10
+AiPlayerbot.DuelSpotDwellMinutesMax = 25
 
 # Consumable etiquette while a duel is in progress - what bots allow
 # themselves to use against their duel opponent:

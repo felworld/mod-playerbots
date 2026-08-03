@@ -757,9 +757,9 @@ bool PlayerbotAIConfig::Initialize()
     RpgStatusProbWeight[RPG_REST] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.Rest", 5);
     RpgStatusProbWeight[RPG_OUTDOOR_PVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.OutdoorPvp", 10);
     RpgStatusProbWeight[RPG_GO_WPVP] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoWpvp", 1);
-    RpgStatusProbWeight[RPG_DUEL_SPOT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.DuelSpot", 2);
+    RpgStatusProbWeight[RPG_DUEL_SPOT] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.DuelSpot", 1);
     RpgStatusProbWeight[RPG_GO_MOONGLADE] = sConfigMgr->GetOption<int32>("AiPlayerbot.RpgStatusProbWeight.GoMoonglade", 7);
-    cityDwellChance = sConfigMgr->GetOption<float>("AiPlayerbot.CityDwellChance", 0.8f);
+    cityDwellChance = sConfigMgr->GetOption<float>("AiPlayerbot.CityDwellChance", 0.9f);
 
     // World PvP excursions (RPG_GO_WPVP)
     wpvpMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpMinBotLevel", 10);
@@ -843,8 +843,8 @@ bool PlayerbotAIConfig::Initialize()
     duelSpotChallengeCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotChallengeCooldown", 60);
     duelSpotSolicitCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotSolicitCooldown", 120);
     duelSpotMinBotLevel = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotMinBotLevel", 5);
-    duelSpotDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMin", 20);
-    duelSpotDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMax", 45);
+    duelSpotDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMin", 10);
+    duelSpotDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotDwellMinutesMax", 25);
     duelConsumables = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelConsumables",
                                                     static_cast<uint32>(DuelConsumables::ALL));
 

@@ -320,7 +320,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                 // bot far away.
                 if (GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration)
                 {
-                    EndDuelSpotHangout(botAI, "dwell time expired");
+                    EndDuelSpotHangout(botAI, "dwell time expired", /*walkIntoCity*/ true);
                     return true;
                 }
 

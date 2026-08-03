@@ -295,9 +295,17 @@ periodic teleport-to-a-city-banker (`AiPlayerbot.ProbTeleToBankers`),
 this keeps a standing crowd around the Orgrimmar and Stormwind bank/AH/inn
 districts, the way capitals feel on a busy server — while bots still
 eventually leave, so the faces turn over. `AiPlayerbot.CityDwellChance`
-(default 0.8) is the per-reroll probability of staying; bots re-roll about
-every 5 minutes, so the mean visit is `5min / (1 - chance)` (~25 minutes
+(default 0.9) is the per-reroll probability of staying; bots re-roll about
+every 5 minutes, so the mean visit is `5min / (1 - chance)` (~50 minutes
 at the default). Set to 0 to disable.
+
+Gate duelists feed the crowd too: when a bot's duel-spot hangout outside
+the Stormwind or Orgrimmar gates runs its course
+(`AiPlayerbot.DuelSpotDwellMinutes{Min,Max}`, default 10–25 minutes), it
+walks in through the gates to the bank district and potters there like
+any other city dweller, instead of idling outside the walls — where the
+zone isn't a capital, so the next activity roll would immediately send it
+somewhere else in the world.
 
 ## World PvP excursions
 

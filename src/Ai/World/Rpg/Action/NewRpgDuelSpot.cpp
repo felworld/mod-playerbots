@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iterator>
 
+#include "AreaDefines.h"
 #include "Map.h"
 #include "MapMgr.h"
 #include "NewRpgWpvp.h"
@@ -14,6 +15,7 @@
 #include "Random.h"
 #include "SharedDefines.h"
 #include "Timer.h"
+#include "TravelMgr.h"
 
 namespace
 {
@@ -65,7 +67,7 @@ bool ComputeDuelSpotPositions(Player* bot, NewRpgInfo::DuelSpot& out)
     return true;
 }
 
-void EndDuelSpotHangout(PlayerbotAI* botAI, char const* reason)
+void EndDuelSpotHangout(PlayerbotAI* botAI, char const* reason, bool walkIntoCity)
 {
     auto* data = std::get_if<NewRpgInfo::DuelSpot>(&botAI->rpgInfo.data);
     if (!data)
@@ -77,6 +79,21 @@ void EndDuelSpotHangout(PlayerbotAI* botAI, char const* reason)
     // AiFactory time keeps challenging while roaming.
     if (data->addedStartDuel)
         botAI->ChangeStrategy("-start duel", BOT_STATE_NON_COMBAT);
+
+    if (walkIntoCity)
+    {
+        // The capital is right behind the duel field: walk in to the bank
+        // district like a player heading home, where the busy-capitals dwell
+        // takes over — instead of idling outside the walls, where the zone
+        // isn't a capital and the next roll ports the bot somewhere else.
+        Player* bot = botAI->GetBot();
+        uint32 cityZone = bot->GetTeamId() == TEAM_ALLIANCE ? AREA_STORMWIND_CITY : AREA_ORGRIMMAR;
+        if (WorldLocation const* spot = sTravelMgr.GetCapitalBankerLocation(cityZone))
+        {
+            botAI->rpgInfo.ChangeToGoCamp(WorldPosition(*spot));
+            return;
+        }
+    }
 
     botAI->rpgInfo.ChangeToIdle();
 }

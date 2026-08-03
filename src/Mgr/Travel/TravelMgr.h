@@ -912,6 +912,10 @@ public:
     // Whether the zone is a capital city the given team can idle in
     // (own-faction or neutral).
     bool IsFriendlyCapital(uint32 zoneId, TeamId team) const;
+    // A random banker spawn inside the given capital's bank district, for
+    // walking a bot into the city. Returns nullptr if the capital or its
+    // banker spawns are unknown.
+    WorldLocation const* GetCapitalBankerLocation(uint32 zoneId) const;
     std::vector<uint32> GetFlightNodesInZone(uint32 zoneId, TeamId team, uint32 excludeNode = 0) const;
     bool SelectAuctioneerByMap(Player* bot, NpcLocation& outAuctioneer);
     const std::vector<WorldLocation>& GetLocsPerLevelCache(uint8 level) { return locsPerLevelCache[level]; }

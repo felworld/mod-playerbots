@@ -4562,6 +4562,25 @@ bool TravelMgr::IsFriendlyCapital(uint32 zoneId, TeamId team) const
     return capital && (capital->team == team || capital->team == TEAM_NEUTRAL);
 }
 
+WorldLocation const* TravelMgr::GetCapitalBankerLocation(uint32 zoneId) const
+{
+    Capital const* capital = FindCapitalByZone(zoneId);
+    if (!capital)
+        return nullptr;
+
+    std::vector<WorldLocation const*> spots;
+    for (uint16 entry : capital->bankers)
+    {
+        auto it = bankerEntryToLocation.find(entry);
+        if (it != bankerEntryToLocation.end())
+            spots.push_back(&it->second);
+    }
+    if (spots.empty())
+        return nullptr;
+
+    return spots[urand(0, spots.size() - 1)];
+}
+
 void TravelMgr::PrepareZone2LevelBracket()
 {
     // Classic WoW - starter zones
