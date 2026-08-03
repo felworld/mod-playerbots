@@ -2098,7 +2098,7 @@ void RandomPlayerbotMgr::Refresh(Player* bot)
         pmo->finish();
 }
 
-bool RandomPlayerbotMgr::IsQuestCompetitionInviteAllowed(ObjectGuid playerGuid) const
+bool RandomPlayerbotMgr::IsQuestCompetitionInviteAllowedLocked(ObjectGuid playerGuid) const
 {
     auto it = questCompetitionInviteTimes.find(playerGuid);
     if (it == questCompetitionInviteTimes.end())
@@ -2107,9 +2107,20 @@ bool RandomPlayerbotMgr::IsQuestCompetitionInviteAllowed(ObjectGuid playerGuid) 
     return time(nullptr) - it->second >= time_t(sPlayerbotAIConfig.questCompetitionInviteCooldown);
 }
 
-void RandomPlayerbotMgr::RecordQuestCompetitionInvite(ObjectGuid playerGuid)
+bool RandomPlayerbotMgr::IsQuestCompetitionInviteAllowed(ObjectGuid playerGuid) const
 {
+    std::lock_guard<std::mutex> lock(questCompetitionInviteMutex);
+    return IsQuestCompetitionInviteAllowedLocked(playerGuid);
+}
+
+bool RandomPlayerbotMgr::TryRecordQuestCompetitionInvite(ObjectGuid playerGuid)
+{
+    std::lock_guard<std::mutex> lock(questCompetitionInviteMutex);
+    if (!IsQuestCompetitionInviteAllowedLocked(playerGuid))
+        return false;
+
     questCompetitionInviteTimes[playerGuid] = time(nullptr);
+    return true;
 }
 
 bool RandomPlayerbotMgr::IsRandomBot(Player* bot)

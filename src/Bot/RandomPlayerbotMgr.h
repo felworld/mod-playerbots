@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <limits>
+#include <mutex>
 
 #include "NewRpgInfo.h"
 #include "ObjectGuid.h"
@@ -196,9 +197,10 @@ public:
 
     // Quest-competition invites (Felworld): one cooldown per real player,
     // shared by all bots, so invite volume doesn't scale with how many bots
-    // happen to be nearby.
+    // happen to be nearby. Bots on different maps call these from different
+    // map-update threads, hence the mutex and the atomic check-and-record.
     bool IsQuestCompetitionInviteAllowed(ObjectGuid playerGuid) const;
-    void RecordQuestCompetitionInvite(ObjectGuid playerGuid);
+    bool TryRecordQuestCompetitionInvite(ObjectGuid playerGuid);
 
 protected:
     void OnBotLoginInternal(Player* const bot) override;
@@ -284,6 +286,9 @@ private:
 
     std::atomic<time_t> wpvpDisabledUntil{0};
 
+    bool IsQuestCompetitionInviteAllowedLocked(ObjectGuid playerGuid) const;
+
+    mutable std::mutex questCompetitionInviteMutex;
     std::unordered_map<ObjectGuid, time_t> questCompetitionInviteTimes;
 
     //void ScaleBotActivity();      // Deprecated function
