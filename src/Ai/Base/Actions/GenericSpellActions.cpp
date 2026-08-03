@@ -378,7 +378,16 @@ CastHealingSpellAction::CastHealingSpellAction(PlayerbotAI* botAI, std::string c
     range = botAI->GetRange("heal");
 }
 
-bool CastHealingSpellAction::isUseful() { return CastAuraSpellAction::isUseful(); }
+bool CastHealingSpellAction::isUseful()
+{
+    // Never heal a priest in Spirit of Redemption (self included): the form holds them at 1 hp and
+    // ends in death regardless of healing done.
+    Unit* target = GetTarget();
+    if (target && target->HasSpiritOfRedemptionAura())
+        return false;
+
+    return CastAuraSpellAction::isUseful();
+}
 
 bool CastAoeHealSpellAction::isUseful() { return CastSpellAction::isUseful(); }
 

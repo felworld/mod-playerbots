@@ -34,7 +34,7 @@ Unit* PartyMemberToHeal::Calculate()
 
     Group* group = bot->GetGroup();
     if (!group)
-        return bot;
+        return bot->HasSpiritOfRedemptionAura() ? nullptr : bot;
 
     bool isRaid = bot->GetGroup()->isRaidGroup();
     MinValueCalculator calc(100);
@@ -132,6 +132,13 @@ bool PartyMemberToHeal::Check(Unit* player)
     // return player && player != bot && player->GetMapId() == bot->GetMapId() && player->IsInWorld() &&
     //     ServerFacade::instance().GetDistance2d(bot, player) < (player->IsPlayer() && botAI->IsTank((Player*)player) ? 50.0f
     //     : 40.0f);
+
+    // A priest in Spirit of Redemption sits at 1 hp and dies when the aura expires -- they are the
+    // lowest-health member of the group but cannot be saved, so healing them (including ourselves,
+    // while in that form) only starves the members who can be.
+    if (player->HasSpiritOfRedemptionAura())
+        return false;
+
     return player->GetMapId() == bot->GetMapId() && !player->IsCharmed() &&
            bot->GetDistance2d(player) < sPlayerbotAIConfig.healDistance * 2 && bot->IsWithinLOSInMap(player);
 }

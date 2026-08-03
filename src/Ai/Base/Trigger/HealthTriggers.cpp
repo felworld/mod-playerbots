@@ -10,6 +10,13 @@
 
 bool HealthInRangeTrigger::IsActive()
 {
+    // Spirit of Redemption leaves a priest alive at 1 hp until the aura expires and kills them. Their
+    // health is not restorable, so treat them as needing nothing -- otherwise a priest in that form
+    // sees itself at ~0% and fires every self-heal/shield/healthstone trigger it has.
+    Unit* target = GetTarget();
+    if (target && target->HasSpiritOfRedemptionAura())
+        return false;
+
     return ValueInRangeTrigger::IsActive() && !AI_VALUE2(bool, "dead", GetTargetName());
 }
 

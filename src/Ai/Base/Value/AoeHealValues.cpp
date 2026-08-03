@@ -33,6 +33,11 @@ uint8 AoeHealValue::Calculate()
         if (!player || !player->IsAlive())
             continue;
 
+        // A priest in Spirit of Redemption is stuck at 1 hp and cannot be healed -- counting them
+        // would make the group look like it needs emergency aoe healing when it does not.
+        if (player->HasSpiritOfRedemptionAura())
+            continue;
+
         if (player->GetDistance(bot) >= sPlayerbotAIConfig.sightDistance)
             continue;
 
