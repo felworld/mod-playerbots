@@ -28,6 +28,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Runner focus fire](FEATURES.md#runner-focus-fire)** — DPS bots burn
   down a dungeon mob fleeing for reinforcements before the adds arrive,
   without ever overriding a skull mark or breaking fear CC.
+- **[Human reaction latency](FEATURES.md#human-reaction-latency)** —
+  interrupts, dispels, and emergency heals fire after a jittered
+  human-scale delay, and occasionally miss, instead of triggering
+  instantly every time.
 - **[Pet group etiquette](FEATURES.md#pet-group-etiquette)** — bot pets
   assist their owner's target, keep taunts off in instanced groups, and
   heel on disengage instead of body-pulling the next pack.

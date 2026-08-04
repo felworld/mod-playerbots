@@ -105,6 +105,8 @@ public:
         : PartyMemberLowHealthTrigger(botAI, "party member critical health", sPlayerbotAIConfig.criticalHealth, 0)
     {
     }
+
+    ReactionCategory GetReactionCategory() override { return REACTION_EMERGENCY_HEAL; }
 };
 
 class PartyMemberMediumHealthTrigger : public PartyMemberLowHealthTrigger

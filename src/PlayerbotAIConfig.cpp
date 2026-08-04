@@ -85,6 +85,18 @@ bool PlayerbotAIConfig::Initialize()
     sitDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.SitDelay", 20000);
     returnDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.ReturnDelay", 2000);
     lootDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.LootDelay", 1000);
+    reactionDelayMin[REACTION_NONE] = 0;
+    reactionDelayMax[REACTION_NONE] = 0;
+    reactionMissChance[REACTION_NONE] = 0;
+    reactionDelayMin[REACTION_INTERRUPT] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionDelayInterruptMin", 200);
+    reactionDelayMax[REACTION_INTERRUPT] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionDelayInterruptMax", 1500);
+    reactionMissChance[REACTION_INTERRUPT] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionMissChanceInterrupt", 5);
+    reactionDelayMin[REACTION_DISPEL] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionDelayDispelMin", 400);
+    reactionDelayMax[REACTION_DISPEL] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionDelayDispelMax", 2500);
+    reactionMissChance[REACTION_DISPEL] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionMissChanceDispel", 5);
+    reactionDelayMin[REACTION_EMERGENCY_HEAL] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionDelayEmergencyHealMin", 300);
+    reactionDelayMax[REACTION_EMERGENCY_HEAL] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionDelayEmergencyHealMax", 2000);
+    reactionMissChance[REACTION_EMERGENCY_HEAL] = sConfigMgr->GetOption<uint32>("AiPlayerbot.ReactionMissChanceEmergencyHeal", 5);
     disabledWithoutRealPlayerLoginDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLoginDelay", 30);
     disabledWithoutRealPlayerLogoutDelay = sConfigMgr->GetOption<int32>("AiPlayerbot.DisabledWithoutRealPlayerLogoutDelay", 300);
 

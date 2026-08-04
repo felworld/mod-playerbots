@@ -22,6 +22,7 @@ public:
 
     std::string const GetTargetName() override { return "self target"; }
     bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_DISPEL; }
 
 protected:
     uint32 dispelType;

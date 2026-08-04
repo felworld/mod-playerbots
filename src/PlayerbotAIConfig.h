@@ -63,6 +63,17 @@ enum class DuelConsumables : uint8
     ALL = 2        // potions and everything else
 };
 
+// Trigger categories that model human twitch reactions: each fires only after
+// a jittered reaction delay and can miss entirely (see Trigger::Check).
+enum ReactionCategory : uint8
+{
+    REACTION_NONE = 0,
+    REACTION_INTERRUPT = 1,
+    REACTION_DISPEL = 2,
+    REACTION_EMERGENCY_HEAL = 3,
+    REACTION_CATEGORY_MAX
+};
+
 enum NewRpgStatus : int
 {
     //Initial Status
@@ -116,6 +127,9 @@ public:
     uint32 globalCoolDown, reactDelay, maxWaitForMove, disableMoveSplinePath, maxMovementSearchTime, expireActionTime,
         dispelAuraDuration, passiveDelay, repeatDelay, errorDelay, rpgDelay, sitDelay, returnDelay, lootDelay;
     bool dynamicReactDelay;
+    uint32 reactionDelayMin[REACTION_CATEGORY_MAX];
+    uint32 reactionDelayMax[REACTION_CATEGORY_MAX];
+    uint32 reactionMissChance[REACTION_CATEGORY_MAX];
     float sightDistance, spellDistance, reactDistance, grindDistance, lootDistance, shootDistance, fleeDistance,
         tooCloseDistance, meleeDistance, followDistance, whisperDistance, contactDistance, aoeRadius, rpgDistance,
         targetPosRecalcDistance, farDistance, healDistance, aggroDistance;

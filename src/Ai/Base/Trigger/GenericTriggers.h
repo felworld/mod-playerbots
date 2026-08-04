@@ -201,6 +201,7 @@ public:
     InterruptSpellTrigger(PlayerbotAI* botAI, std::string const spell) : SpellTrigger(botAI, spell) {}
 
     bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_INTERRUPT; }
 };
 
 class DeflectSpellTrigger : public SpellTrigger
@@ -209,6 +210,7 @@ public:
     DeflectSpellTrigger(PlayerbotAI* botAI, std::string const spell) : SpellTrigger(botAI, spell) {}
 
     bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_INTERRUPT; }
 };
 
 class AttackerCountTrigger : public Trigger
@@ -820,6 +822,7 @@ public:
 
     Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return spell + " on enemy healer"; }
+    ReactionCategory GetReactionCategory() override { return REACTION_INTERRUPT; }
 };
 
 class RandomBotUpdateTrigger : public RandomTrigger
@@ -1006,6 +1009,7 @@ public:
     GrenadeInterruptTrigger(PlayerbotAI* botAI) : Trigger(botAI, "grenade interrupt") {}
 
     bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_INTERRUPT; }
 };
 
 class SapperChargeTrigger : public Trigger

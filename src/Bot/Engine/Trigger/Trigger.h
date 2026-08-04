@@ -8,6 +8,8 @@
 #define PLAYERBOTS_TRIGGER_H
 
 #include "Action.h"
+#include "ObjectGuid.h"
+#include "PlayerbotAIConfig.h"
 
 class PlayerbotAI;
 class Unit;
@@ -33,12 +35,21 @@ public:
     virtual Unit* GetTarget();
     virtual Value<Unit*>* GetTargetValue();
     virtual std::string const GetTargetName() { return "self target"; }
+    virtual ReactionCategory GetReactionCategory() { return REACTION_NONE; }
 
     bool needCheck(uint32 now);
 
 protected:
+    bool ReactionDelayElapsed(uint32 now);
+    void ArmReactionLatch(uint32 now, ObjectGuid targetGuid);
+
     int32_t checkInterval;
     uint32_t lastCheckTime;
+
+    ObjectGuid reactionTarget;
+    uint32_t reactionArmedAt = 0;
+    uint32_t reactionDelay = 0;
+    bool reactionMissed = false;
 };
 
 class TriggerNode

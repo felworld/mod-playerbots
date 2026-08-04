@@ -43,6 +43,32 @@ mobs move differently from runners at the engine level), and the
 behavior only applies inside instances, so open-world fleeing mobs are
 simply allowed to leave.
 
+## Human reaction latency
+
+Reactive triggers used to fire on the first AI tick after their cause
+appeared: an enemy cast got kicked the instant the cast bar lit up, a
+root got Hand of Freedom before the victim had visibly stopped, every
+time, with metronomic consistency — the single most reliable tell that
+nobody was at the keyboard. Now the triggers that model human twitch
+reactions — interrupts, dispels/decurses (including Hand of Freedom on
+a rooted ally), and emergency heals — wait out a jittered per-event
+reaction delay before acting. Each event rolls its own delay, so kicks
+land at varying points into a cast (occasionally panicky-instant, the
+way real players pre-aim interrupts), and a second rooted ally never
+inherits the delay already served for the first.
+
+Bots also sometimes miss a reaction outright, like a human who didn't
+catch the cast: a small per-category miss chance makes the bot wait out
+the whole reaction window and only then re-assess, rolling again if the
+situation still holds. Short enemy casts simply get away; a still-rooted
+or critically-hurt ally is eventually noticed late rather than never.
+Movement, rotation, and positioning triggers are untouched and stay at
+full responsiveness. Per-category `AiPlayerbot.ReactionDelay*Min`/`Max`
+windows (defaults 200–1500 ms interrupts, 300–2000 ms emergency heals,
+400–2500 ms dispels) and `AiPlayerbot.ReactionMissChance*` percentages
+(default 5) in `playerbots.conf.dist`; set a `Max` to 0 to restore the
+robotic instant reactions for that category.
+
 ## Pet group etiquette
 
 Hunter, warlock, death knight, frost mage, and enhancement shaman pets

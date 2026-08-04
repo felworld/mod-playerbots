@@ -246,6 +246,7 @@ public:
     Unit* GetTarget() override;
     std::string const GetTargetName() override { return "party member snared target"; }
     bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_DISPEL; }
 };
 
 class AvengingWrathTrigger : public BoostTrigger

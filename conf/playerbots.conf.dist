@@ -2639,6 +2639,26 @@ AiPlayerbot.StealthReactionCooldown = 180
 # Percent chance the startle resolves into the follow-up emote.
 AiPlayerbot.StealthReactionEmoteChance = 30
 
+# Human reaction latency (Felworld): triggers that model twitch reactions -
+# interrupts, dispels/decurses (including Hand of Freedom on a rooted ally),
+# emergency heals - fire after a jittered per-event delay instead of on the
+# first AI tick, so bots stop reacting superhumanly fast and metronomically.
+# Each event samples a delay uniformly from [Min, Max] milliseconds; each
+# ally or enemy cast gets its own roll, so a second victim never inherits
+# the first one's elapsed delay. MissChance (percent) makes the bot instead
+# wait out the full Max window and then roll again if the situation still
+# holds: short enemy casts simply get away, while a still-rooted or dying
+# ally is eventually noticed late. Set a Max to 0 to disable that category.
+AiPlayerbot.ReactionDelayInterruptMin = 200
+AiPlayerbot.ReactionDelayInterruptMax = 1500
+AiPlayerbot.ReactionMissChanceInterrupt = 5
+AiPlayerbot.ReactionDelayDispelMin = 400
+AiPlayerbot.ReactionDelayDispelMax = 2500
+AiPlayerbot.ReactionMissChanceDispel = 5
+AiPlayerbot.ReactionDelayEmergencyHealMin = 300
+AiPlayerbot.ReactionDelayEmergencyHealMax = 2000
+AiPlayerbot.ReactionMissChanceEmergencyHeal = 5
+
 #
 #
 ####################################################################################################
