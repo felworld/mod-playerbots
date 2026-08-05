@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
+#include "WpvpGuardRespect.h"
 #include "WpvpTruce.h"
 
 bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
@@ -62,6 +63,13 @@ Unit* EnemyPlayerValue::Calculate()
         Unit* pTarget = combatRef->GetOther(bot);
         if (!pTarget || pTarget == pVictim || !pTarget->IsPlayer() || !pTarget->CanSeeOrDetect(bot) ||
             !bot->IsWithinDist(pTarget, VISIBILITY_DISTANCE_NORMAL))
+            continue;
+
+        // Guard respect (Felworld): an active fight doesn't override the guard
+        // bar - an enemy who made it to their outleveling guards gets let go.
+        // Without this, the PvP combat ref kept feeding the chase that the
+        // validity gate in AttackersValue had already refused.
+        if (WpvpGuardsBarPursuit(bot, pTarget))
             continue;
 
         if ((bot->GetTeamId() == TEAM_HORDE && pTarget->HasAura(23333)) ||
@@ -154,7 +162,8 @@ Unit* EnemyPlayerValue::Calculate()
 
                 if (Unit* pAttacker = pMember->getAttackerForHelper())
                     if (pAttacker->IsPlayer() && bot->IsWithinDist(pAttacker, maxAggroDistance * 2.0f) &&
-                        bot->IsWithinLOSInMap(pAttacker) && pAttacker != pVictim && pAttacker->CanSeeOrDetect(bot))
+                        bot->IsWithinLOSInMap(pAttacker) && pAttacker != pVictim && pAttacker->CanSeeOrDetect(bot) &&
+                        !WpvpGuardsBarPursuit(bot, pAttacker))
                         return pAttacker;
             }
         }

@@ -1270,6 +1270,15 @@ AiPlayerbot.WpvpDefenseLevelSlack = 3
 AiPlayerbot.WpvpDefenseEvenFightChance = 3
 AiPlayerbot.WpvpGankLevelGap = 5
 
+# Guard respect: a bot never opens or continues a world-PvP fight under the
+# cover of hostile guards that outlevel it by GuardRespectLevelGap or more -
+# it refuses targets standing near such guards and breaks off a chase just
+# before crossing the guard line, instead of running past town guards way
+# above its level and dying to them. Max-level gankers diving a town are
+# unaffected (no guard outlevels them by the gap). 0 disables.
+# Default: 5
+AiPlayerbot.WpvpGuardRespectLevelGap = 5
+
 # Reinforcements: when a tracked ganker dies ReinforcementDeaths times to
 # outside help (killers who were never among their victims - bot defenders
 # or a real player riding in), their faction sends one reinforcement wave:

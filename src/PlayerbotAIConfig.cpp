@@ -802,6 +802,7 @@ bool PlayerbotAIConfig::Initialize()
     wpvpDefenseResponseChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseResponseChance", 10.0f);
     wpvpDefenseEvenFightChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseEvenFightChance", 3.0f);
     wpvpGankLevelGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGankLevelGap", 5);
+    wpvpGuardRespectLevelGap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGuardRespectLevelGap", 5);
     wpvpDefenseDelayFactor = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpDefenseDelayFactor", 0.5f);
     wpvpDefenseDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMin", 3);
     wpvpDefenseDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMax", 8);

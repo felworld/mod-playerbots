@@ -12,6 +12,7 @@
 #include "Playerbots.h"
 #include "ReputationMgr.h"
 #include "ServerFacade.h"
+#include "WpvpGuardRespect.h"
 
 GuidVector AttackersValue::Calculate()
 {
@@ -216,6 +217,14 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
     // Unflagged player check
     if (attacker->IsPlayer() && !attacker->IsPvP() && !attacker->IsFFAPvP() &&
         (!bot->duel || bot->duel->Opponent != attacker))
+        return false;
+
+    // Guard respect (Felworld): a player under the cover of hostile guards
+    // that far outlevel the bot is off the menu, even in self-defense - the
+    // human move at the guard line is to break off, not trade hits. Failing
+    // this gate also fails "invalid target", so an ongoing chase gets dropped
+    // the moment either end of it reaches guard cover.
+    if (WpvpGuardsBarPursuit(bot, attacker))
         return false;
 
     // Creature-specific checks

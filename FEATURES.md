@@ -447,6 +447,21 @@ salute never summons the militia onto the salutee.
 `AiPlayerbot.WpvpTruceOathbreakerChance` the oathbreaker share
 (default 15).
 
+## Guard respect
+
+A bot never opens or continues a world-PvP fight under the cover of
+hostile guards that outlevel it by `AiPlayerbot.WpvpGuardRespectLevelGap`
+or more (default 5, i.e. guards it has no answer to; 0 disables). An
+enemy standing near such guards is refused as a target — even in
+self-defense, where the human move at the guard line is to disengage,
+not trade hits — and a chase after a fleeing enemy is broken off just
+before the bot crosses into the guards' aggro bubble, instead of the
+old behavior of blindly running past town guards way above its level
+and dying to them. Excursion bots also won't goad an enemy their guard
+bar would refuse to fight. Max-level gankers diving a town are
+unaffected — no guard outlevels them by the gap — and instanced PvP and
+duels are exempt.
+
 ## World PvP threat reactions
 
 Upstream bots are strangely oblivious to being attacked by an enemy player

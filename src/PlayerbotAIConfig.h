@@ -476,6 +476,7 @@ public:
     float wpvpDefenseResponseChance;
     float wpvpDefenseEvenFightChance;
     uint32 wpvpGankLevelGap;
+    uint32 wpvpGuardRespectLevelGap;
     float wpvpDefenseDelayFactor;
     uint32 wpvpDefenseDwellMinutesMin, wpvpDefenseDwellMinutesMax;
     uint32 wpvpDefenseLevelSlack;

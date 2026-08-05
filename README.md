@@ -82,6 +82,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   the same when the ganker is a real player. WorldDefense itself becomes
   a normal opt-in channel: `/join WorldDefense` works like any custom
   channel.
+- **[Guard respect](FEATURES.md#guard-respect)** — bots don't pick or
+  chase world-PvP fights under the cover of hostile guards that far
+  outlevel them; a fleeing enemy who reaches their guards gets let go.
 - **[Same-class truce](FEATURES.md#same-class-truce)** — some same-class
   pairs honor the "druids don't gank druids" code: no unprovoked attack,
   a `/salute` instead.
