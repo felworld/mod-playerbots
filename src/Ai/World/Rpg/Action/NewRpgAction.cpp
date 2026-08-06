@@ -275,11 +275,12 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                     if (present)
                     {
                         data.defendLastSeenT = getMSTime();
-                        // Help has arrived: while a live defender who
-                        // outclasses the attacker shares the zone, the board
-                        // holds WorldDefense escalation pleas (the board
-                        // itself screens out reinforcers, who dwell on the
-                        // attacker's own side, and even-fight arrivals).
+                        // Help has arrived: a live defender sharing the zone
+                        // with the attacker marks the fight handled - the
+                        // board cancels any pending WorldDefense plea and
+                        // resets the spree tally (screening out reinforcers,
+                        // who dwell on the attacker's own side, and arrivals
+                        // too far below the attacker's level to count).
                         if (bot->IsAlive())
                             WpvpDefenseBoard::instance().NoteDefenderOnScene(data.defendTarget, bot->GetTeamId(),
                                                                              bot->GetLevel());

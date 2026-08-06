@@ -26,11 +26,12 @@ namespace
 constexpr uint32 ENTRY_TTL_MS = 30 * MINUTE * IN_MILLISECONDS;
 constexpr uint32 RESPONDABLE_WINDOW_MS = 10 * MINUTE * IN_MILLISECONDS;
 
-// How long after an outclassing defender was last seen with the attacker the
-// escalation shout stays held. The dwell loop re-stamps every AI update, so
-// this only needs to outlive that cadence; when the defender dies or leaves,
-// the plea for help becomes honest again about this fast.
-constexpr uint32 DEFENDER_ON_SCENE_WINDOW_MS = 30 * IN_MILLISECONDS;
+// How recently the defending side must have drawn blood in the attacker's
+// zone for the fight to count as contested at the moment a spree would arm
+// an escalation. Everything after arming is handled by event-driven
+// cancellation; this window only papers over the gap where the defense's
+// last kill predates the threshold-crossing one.
+constexpr uint32 CONTESTED_WINDOW_MS = 2 * MINUTE * IN_MILLISECONDS;
 
 // How long after the last kill or callout in a zone the fight still counts
 // as "happening" for the leisure-suppression check. Short on purpose: real
@@ -39,6 +40,19 @@ constexpr uint32 DEFENDER_ON_SCENE_WINDOW_MS = 30 * IN_MILLISECONDS;
 constexpr uint32 RECENT_FIGHT_WINDOW_MS = 2 * MINUTE * IN_MILLISECONDS;
 
 uint64 RollKey(ObjectGuid bot, ObjectGuid attacker) { return bot.GetRawValue() ^ (attacker.GetRawValue() << 1); }
+
+uint64 EscalationCooldownKey(TeamId team, uint32 zoneId) { return (uint64(team) << 32) | zoneId; }
+
+// The fight is contested: the pending plea (if any) is off, and the shout
+// must be re-earned with a whole new uncontested spree. Deliberately biased
+// toward "this is handled" - a false silence costs three more corpses, a
+// false alarm spams a faction-wide channel.
+void CancelEscalation(WpvpDefenseEntry& entry)
+{
+    entry.escalationPending = false;
+    entry.kills = 0;
+    entry.firstKillMs = 0;
+}
 
 std::string ToLower(std::string s)
 {
@@ -193,7 +207,8 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
         else
             ++entry.kills;
 
-        if (!entry.escalated && entry.kills >= sPlayerbotAIConfig.wpvpEscalationKills)
+        if (!entry.escalated && entry.kills >= sPlayerbotAIConfig.wpvpEscalationKills &&
+            !CapableDefenseActive(entry, now))
             entry.escalationPending = true;
     }
 
@@ -210,6 +225,21 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     // Who this attacker preys on decides how urgent defense feels: lowbie
     // ganking pulls the full response chance, an even brawl much less.
     entry.maxVictimLevel = std::max(entry.maxVictimLevel, static_cast<uint8>(victim->GetLevel()));
+
+    // The same kill is proof the killer's side has a capable fighter on this
+    // battlefield: every tracked ganker of the OTHER side in the zone whom
+    // the killer is a level match for is now contested. In a pitched battle
+    // both sides score constantly, so both sides' alarms stay silent.
+    for (auto& [guid, other] : _entries)
+    {
+        if (other.defendingTeam != attacker->GetTeamId() || other.zoneId != entry.zoneId)
+            continue;
+
+        if (uint32(attacker->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= other.attackerLevel)
+            continue;
+
+        CancelEscalation(other);
+    }
 
     Prune(now);
 }
@@ -253,18 +283,44 @@ void WpvpDefenseBoard::NoteDefenderOnScene(ObjectGuid attacker, TeamId team, uin
     if (entry.defendingTeam != team)
         return;
 
-    // Only an outclassing defender holds the shout: an evenly matched
-    // arrival is joining a fight, not ending one, and more help is still a
-    // reasonable ask.
-    if (defenderLevel < entry.attackerLevel + sPlayerbotAIConfig.wpvpGankLevelGap)
+    // Anyone within the gank gap of the ganker is a handler, not a shouter
+    // (the same line the eyewitness rule draws): their arrival means the
+    // fight is handled, and a defender later dying is a normal part of
+    // defending - not by itself grounds for a fresh faction-wide plea.
+    if (uint32(defenderLevel) + sPlayerbotAIConfig.wpvpGankLevelGap <= entry.attackerLevel)
         return;
 
-    entry.defenderOnSceneMs = getMSTime();
+    CancelEscalation(entry);
 }
 
-bool WpvpDefenseBoard::HelpOnScene(WpvpDefenseEntry const& entry, uint32 now) const
+// A fighter from the defending side has drawn blood in the entry's zone
+// recently: their own attacker entry on the mirror side of the board is the
+// evidence (the board can't see the world, only kills and callouts).
+bool WpvpDefenseBoard::CapableDefenseActive(WpvpDefenseEntry const& entry, uint32 now) const
 {
-    return entry.defenderOnSceneMs && getMSTimeDiff(entry.defenderOnSceneMs, now) < DEFENDER_ON_SCENE_WINDOW_MS;
+    for (auto const& [guid, other] : _entries)
+    {
+        if (other.defendingTeam == entry.defendingTeam || other.defendingTeam == TEAM_NEUTRAL)
+            continue;
+
+        if (other.zoneId != entry.zoneId)
+            continue;
+
+        if (getMSTimeDiff(other.updatedMs, now) >= CONTESTED_WINDOW_MS)
+            continue;
+
+        if (uint32(other.attackerLevel) + sPlayerbotAIConfig.wpvpGankLevelGap > entry.attackerLevel)
+            return true;
+    }
+
+    return false;
+}
+
+bool WpvpDefenseBoard::EscalationCoolingDown(TeamId team, uint32 zoneId, uint32 now) const
+{
+    auto it = _escalationShoutMs.find(EscalationCooldownKey(team, zoneId));
+    return it != _escalationShoutMs.end() &&
+           getMSTimeDiff(it->second, now) < sPlayerbotAIConfig.wpvpEscalationWindow * IN_MILLISECONDS;
 }
 
 std::vector<WpvpDefenseEntry> WpvpDefenseBoard::PendingEscalations(TeamId team)
@@ -272,9 +328,22 @@ std::vector<WpvpDefenseEntry> WpvpDefenseBoard::PendingEscalations(TeamId team)
     std::lock_guard<std::mutex> lock(_mutex);
     uint32 now = getMSTime();
     std::vector<WpvpDefenseEntry> pending;
-    for (auto const& [guid, entry] : _entries)
-        if (entry.escalationPending && entry.defendingTeam == team && !HelpOnScene(entry, now))
-            pending.push_back(entry);
+    for (auto& [guid, entry] : _entries)
+    {
+        if (!entry.escalationPending || entry.defendingTeam != team)
+            continue;
+
+        // One shout per battlefield: while the faction's last WorldDefense
+        // call about this zone is fresh, further pleas are redundant -
+        // cancelled outright, not queued for later.
+        if (EscalationCoolingDown(team, entry.zoneId, now))
+        {
+            CancelEscalation(entry);
+            continue;
+        }
+
+        pending.push_back(entry);
+    }
 
     return pending;
 }
@@ -288,8 +357,16 @@ bool WpvpDefenseBoard::ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDef
 
     WpvpDefenseEntry& entry = it->second;
     uint32 now = getMSTime();
-    if (!entry.escalationPending || entry.defendingTeam != team || HelpOnScene(entry, now))
+    if (!entry.escalationPending || entry.defendingTeam != team)
         return false;
+
+    // Two eyewitnesses racing for different gankers in the same zone: the
+    // loser's plea dies here rather than becoming a second shout.
+    if (EscalationCoolingDown(team, entry.zoneId, now))
+    {
+        CancelEscalation(entry);
+        return false;
+    }
 
     entry.escalationPending = false;
     entry.escalated = true;
@@ -297,6 +374,7 @@ bool WpvpDefenseBoard::ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDef
     // callout that makes the entry respondable.
     entry.calledOutMs = now;
     entry.updatedMs = now;
+    _escalationShoutMs[EscalationCooldownKey(team, entry.zoneId)] = now;
     out = entry;
     return true;
 }
@@ -427,6 +505,8 @@ void WpvpDefenseBoard::Prune(uint32 now)
 
     _lastPruneMs = now;
     std::erase_if(_entries, [&](auto const& pair) { return getMSTimeDiff(pair.second.updatedMs, now) > ENTRY_TTL_MS; });
+    std::erase_if(_escalationShoutMs, [&](auto const& pair)
+                  { return getMSTimeDiff(pair.second, now) >= sPlayerbotAIConfig.wpvpEscalationWindow * IN_MILLISECONDS; });
 }
 
 bool WpvpHappeningNearby(Player* bot)

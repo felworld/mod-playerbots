@@ -377,9 +377,17 @@ the story). The zone-local callouts follow a softer
 version of the same rule: a bot that outlevels the ganker by the gank gap
 never calls out or pleads for help (it *is* the help), so arriving
 high-level defenders fight instead of shouting about an enemy they could
-squash — and once such a defender is on the scene,
-the escalation is held entirely: with help visibly arrived, even the
-victims stop pleading, until that defender dies or leaves.
+squash. And *uncontested* is taken seriously, biased toward "this is
+handled": any evidence that a capable defender — one within the gank gap
+of the ganker — is on the case cancels the pending shout and resets the
+spree, which must then be re-earned from zero. Evidence means a kill
+scored by the defending side in the ganker's zone (in a pitched battle
+both sides score constantly, so neither side's alarm fires — one channel
+call, not a shouting match) or such a defender arriving to hunt the
+ganker; a defender dying along the way is a normal part of defending, not
+grounds for a fresh plea. Each faction shouts about a given zone at most
+once per escalation window, so a battle full of mutual "ganks" produces
+one call however many gankers it contains.
 Behind the chat, idle bots across the faction may answer the call: each
 rolls a small once-per-ganker chance to drop what it's doing, travel in
 (arriving out of sight and walking the last stretch), and hunt the

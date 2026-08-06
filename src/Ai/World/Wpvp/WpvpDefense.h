@@ -88,7 +88,6 @@ struct WpvpDefenseEntry
     bool escalated{false};        // the one WorldDefense shout has been made
     uint32 avengedDeaths{0};      // deaths to someone who was NOT one of their victims
     uint32 reinforceArmedMs{0};   // 0 until the attacker's faction gets its one reinforcement wave
-    uint32 defenderOnSceneMs{0};  // last time an OUTCLASSING defender was in the zone with them
 };
 
 // Shared bulletin board of active gankers, keyed by attacker. Producers:
@@ -113,7 +112,12 @@ public:
     // From the PVP-kill hook: bump the attacker's uncontested-kill tally,
     // arming a WorldDefense escalation at the configured threshold. Only
     // genuine gank kills (victim a full gank gap below the attacker) feed
-    // the tally - even fights never escalate.
+    // the tally - even fights never escalate. The kill also counts as
+    // evidence for the KILLER's side: tracked gankers of the other side in
+    // the same zone whom the killer is a level match for are officially
+    // contested - their pending escalations are cancelled and their tallies
+    // reset, so mid-battle "ganks" silence the enemy's alarm rather than
+    // feed a shouting match.
     void RecordKill(Player* attacker, Player* victim);
 
     // A tracked ganker died: the spree is contested, the tally resets and
@@ -124,20 +128,21 @@ public:
     void RecordAttackerDeath(Player* attacker, ObjectGuid killer);
 
     // From the defend-mode dwell loop: a live defender is in the zone with
-    // the tracked attacker. Stamps the entry only when the defender is on
-    // the defending team (reinforcers dwell on the attacker's side) and
-    // outlevels the attacker by the gank gap - the mark of "this is
-    // handled" that holds WorldDefense escalations below.
+    // the tracked attacker. When the defender is on the defending team
+    // (reinforcers dwell on the attacker's side) and within the gank gap of
+    // the attacker's level, the fight counts as handled: any pending
+    // WorldDefense escalation is cancelled and the spree tally resets - the
+    // shout must be re-earned from zero.
     void NoteDefenderOnScene(ObjectGuid attacker, TeamId team, uint8 defenderLevel);
 
     // Escalation is claimed only by an outmatched eyewitness - a victim of
     // the spree still in the ganker's zone, or an on-screen bystander -
     // either way a full gank gap below the ganker (the trigger checks that);
     // the board just hands out pending entries and takes the atomic claim,
-    // so exactly one bot shouts. While an outclassing defender
-    // is freshly on the scene, the shout is held - help already arrived, so
-    // even a victim's plea would ring false - and it becomes claimable again
-    // once that defender dies or leaves.
+    // so exactly one bot shouts. One shout per battlefield: a successful
+    // claim stamps a per-team-per-zone cooldown (EscalationWindow), and
+    // while it runs further pending pleas about that zone are cancelled,
+    // not queued.
     std::vector<WpvpDefenseEntry> PendingEscalations(TeamId team);
     bool ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDefenseEntry& out);
 
@@ -171,12 +176,16 @@ private:
     WpvpDefenseBoard() = default;
 
     bool IsRespondable(WpvpDefenseEntry const& entry, uint32 now) const;
-    bool HelpOnScene(WpvpDefenseEntry const& entry, uint32 now) const;
+    bool CapableDefenseActive(WpvpDefenseEntry const& entry, uint32 now) const;
+    bool EscalationCoolingDown(TeamId team, uint32 zoneId, uint32 now) const;
     void Prune(uint32 now);
 
     std::mutex _mutex;
     std::unordered_map<ObjectGuid, WpvpDefenseEntry> _entries;
     std::unordered_set<uint64> _responseRolls;
+    // Last WorldDefense escalation shout per (defending team, zone): one
+    // call per battlefield per EscalationWindow.
+    std::unordered_map<uint64, uint32> _escalationShoutMs;
     uint32 _lastPruneMs{0};
 };
 

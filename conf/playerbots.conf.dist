@@ -1245,10 +1245,16 @@ AiPlayerbot.WpvpCallouts = 1
 # escalate at all, no matter how many times somebody loses one; a bot with
 # no line of sight on the trouble - a victim who released and left the
 # zone - never shouts about it).
-# The shout is also held entirely while an outclassing defender is in the
-# zone with the ganker - once help has arrived, even a victim's plea would
-# ring false - and frees up again if that defender dies or leaves.
-# The tally resets whenever the ganker dies.
+# "Uncontested" is taken seriously, biased toward "this is handled": any
+# evidence that a capable defender - one within the gank gap of the
+# ganker's level - is on the case cancels the pending shout and resets the
+# tally, which must then be re-earned from zero. Evidence means a kill
+# scored by the defending side in that zone (in a pitched battle both
+# sides score constantly, so neither side's alarm fires) or such a
+# defender arriving to hunt the ganker; the tally also resets whenever the
+# ganker dies. On top of that, each faction shouts about a given zone at
+# most once per EscalationWindow - one battle, one call, however many
+# gankers it contains.
 # Default: 3 / 600
 AiPlayerbot.WpvpEscalationKills = 3
 AiPlayerbot.WpvpEscalationWindow = 600
