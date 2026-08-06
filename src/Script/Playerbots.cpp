@@ -82,6 +82,7 @@ public:
         PLAYERHOOK_CAN_PLAYER_USE_GUILD_CHAT,
         PLAYERHOOK_CAN_PLAYER_USE_CHANNEL_CHAT,
         PLAYERHOOK_ON_GIVE_EXP,
+        PLAYERHOOK_ON_GHOST_SPEED_RATE,
         PLAYERHOOK_ON_BEFORE_TELEPORT,
         PLAYERHOOK_ON_UPDATE_ZONE,
         PLAYERHOOK_ON_DUEL_END,
@@ -326,6 +327,13 @@ public:
 
         // otherwise apply bot XP multiplier.
         amount = static_cast<uint32>(std::round(static_cast<float>(amount) * sPlayerbotAIConfig.randomBotXPRate));
+    }
+
+    void OnPlayerGhostSpeedRate(Player* player, float& rate) override
+    {
+        // Server ghost speed rate * AiPlayerbot.GhostMoveSpeedRate, like RandomBotXPRate.
+        if (player && player->GetSession()->IsBot())
+            rate *= sPlayerbotAIConfig.ghostMoveSpeedRate;
     }
 };
 

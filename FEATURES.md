@@ -678,6 +678,19 @@ refills the population automatically. This is a runtime override — a config
 reload or restart reverts to `AiPlayerbot.Enabled` (which Felworld drives
 per session mode via the `AC_AI_PLAYERBOT_ENABLED` env var).
 
+## Corpse-run pacing
+
+The [core fork](https://github.com/felworld/azerothcore) adds
+`Rate.MoveSpeed.Ghost`, a movement speed rate for dead player ghosts
+running back to their corpse. `AiPlayerbot.GhostMoveSpeedRate` (default
+1.0) multiplies that rate for bot sessions — the same shape as
+`AiPlayerbot.RandomBotXPRate` on top of the server XP rate — so bot corpse
+runs can be paced separately from human ones.
+[Our configs](https://github.com/felworld/configs) double ghost speed
+(`Rate.MoveSpeed.Ghost = 2`) and halve it back for bots
+(`AiPlayerbot.GhostMoveSpeedRate = 0.5`): humans get a quick corpse run,
+bots stay dead as long as a normal one takes.
+
 ## Class service commands
 
 The class utilities other players provide on a busy server — a mage handing

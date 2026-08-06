@@ -849,6 +849,10 @@ AiPlayerbot.DowngradeMaxLevelBot = 0
 # Server XP Rate * AiPlayerbot.RandomBotXPRate
 AiPlayerbot.RandomBotXPRate = 1.0
 
+# Set dead-ghost (corpse run) movement speed rate for bots (Default: 1.0)
+# Rate.MoveSpeed.Ghost * AiPlayerbot.GhostMoveSpeedRate
+AiPlayerbot.GhostMoveSpeedRate = 1.0
+
 #
 #
 ####################################################################################################
