@@ -9,11 +9,13 @@
 #include "BroadcastHelper.h"
 #include "ChatHelper.h"
 #include "Creature.h"
+#include "FelworldEvents.h"
 #include "G3D/Vector2.h"
 #include "GameObject.h"
 #include "GossipDef.h"
 #include "GridTerrainData.h"
 #include "IVMapMgr.h"
+#include "Metric.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "NewRpgDuelSpot.h"
@@ -1299,7 +1301,11 @@ bool NewRpgBaseAction::RandomChangeStatus(std::vector<NewRpgStatus> candidateSta
             NewRpgInfo::GoWpvp wpvp;
             if (SelectWpvpDestination(wpvp))
             {
+                uint32 zoneId = wpvp.zoneId;
                 botAI->rpgInfo.ChangeToGoWpvp(std::move(wpvp));
+                METRIC_VALUE("playerbots_wpvp_excursion_start", 1, METRIC_TAG("origin", "roll"));
+                Felworld::LogEvent(bot->GetGUID(), "wpvp_excursion_start",
+                                   Acore::StringFormat("{{\"origin\":\"roll\",\"zone\":{}}}", zoneId));
                 return true;
             }
             return false;

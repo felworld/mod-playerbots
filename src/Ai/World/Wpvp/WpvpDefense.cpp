@@ -6,6 +6,8 @@
 #include "BotDeathSafety.h"
 #include "ChatHelper.h"
 #include "DBCStores.h"
+#include "FelworldEvents.h"
+#include "Metric.h"
 #include "NewRpgInfo.h"
 #include "NewRpgWpvp.h"
 #include "ObjectAccessor.h"
@@ -182,6 +184,11 @@ void WpvpDefenseBoard::PostCallout(Player* attacker, TeamId defendingTeam)
     RefreshAttackerFacts(entry, attacker, now);
     entry.defendingTeam = defendingTeam;
     entry.calledOutMs = now;
+
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "callout"));
+    Felworld::LogEvent(attacker->GetGUID(), "wpvp_callout",
+                       Acore::StringFormat("{{\"zone\":{}}}", entry.zoneId));
+
     Prune(now);
 }
 
@@ -192,6 +199,14 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     WpvpDefenseEntry& entry = _entries[attacker->GetGUID()];
     RefreshAttackerFacts(entry, attacker, now);
     entry.defendingTeam = victim->GetTeamId();
+
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "kill"));
+    Felworld::LogEvent(attacker->GetGUID(), "wpvp_kill",
+                       Acore::StringFormat("{{\"victim\":\"{}\",\"victim_level\":{},\"zone\":{}}}",
+                                           victim->GetName(), victim->GetLevel(), entry.zoneId));
+    Felworld::LogEvent(victim->GetGUID(), "wpvp_death",
+                       Acore::StringFormat("{{\"killer\":\"{}\",\"killer_level\":{},\"zone\":{}}}",
+                                           attacker->GetName(), attacker->GetLevel(), entry.zoneId));
 
     // Only genuine gank kills - victim a full gank gap below the attacker -
     // feed the spree tally: no number of even fights lost fair and square
@@ -261,6 +276,13 @@ void WpvpDefenseBoard::RecordAttackerDeath(Player* attacker, ObjectGuid killer)
     entry.firstKillMs = 0;
     entry.escalationPending = false;
 
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "attacker_death"));
+    std::string killerName;
+    if (Player* killerPlayer = ObjectAccessor::FindPlayer(killer))
+        killerName = killerPlayer->GetName();
+    Felworld::LogEvent(attacker->GetGUID(), "wpvp_defeated",
+                       Acore::StringFormat("{{\"killer\":\"{}\",\"zone\":{}}}", killerName, entry.zoneId));
+
     // A victim getting their own revenge settles the score quietly; dying
     // repeatedly to OUTSIDE help - defenders who were never on the menu -
     // is when the ganker backchannels their friends. One wave, ever.
@@ -282,6 +304,8 @@ void WpvpDefenseBoard::NoteDefenderOnScene(ObjectGuid attacker, TeamId team, uin
     WpvpDefenseEntry& entry = it->second;
     if (entry.defendingTeam != team)
         return;
+
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "defender_on_scene"));
 
     // Anyone within the gank gap of the ganker is a handler, not a shouter
     // (the same line the eyewitness rule draws): their arrival means the
@@ -376,6 +400,8 @@ bool WpvpDefenseBoard::ClaimEscalation(TeamId team, ObjectGuid attacker, WpvpDef
     entry.updatedMs = now;
     _escalationShoutMs[EscalationCooldownKey(team, entry.zoneId)] = now;
     out = entry;
+
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "escalation"));
     return true;
 }
 
@@ -552,6 +578,10 @@ bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition c
               bot->GetName(), zoneId, attacker.ToString(),
               payload.departT ? (payload.departT - getMSTime()) / IN_MILLISECONDS : 0);
     botAI->rpgInfo.ChangeToGoWpvp(std::move(payload));
+
+    METRIC_VALUE("playerbots_wpvp_excursion_start", 1, METRIC_TAG("origin", "defense"));
+    Felworld::LogEvent(bot->GetGUID(), "wpvp_excursion_start",
+                       Acore::StringFormat("{{\"origin\":\"defense\",\"zone\":{}}}", zoneId));
     return true;
 }
 

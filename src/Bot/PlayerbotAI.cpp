@@ -35,6 +35,7 @@
 #include "LogLevelAction.h"
 #include "LootObjectStack.h"
 #include "MapMgr.h"
+#include "Metric.h"
 #include "MotionMaster.h"
 #include "MoveSplineInit.h"
 #include "NewRpgStrategy.h"
@@ -3017,6 +3018,37 @@ std::vector<Player*> PlayerbotAI::GetAllPlayersInGroup()
     return members;
 }
 
+namespace
+{
+    // One counter point per outbound bot message, tagged by where it went —
+    // sum_over_time() in the dashboards turns these into send rates.
+    void RecordBotChatMetric(char const* channel)
+    {
+        METRIC_VALUE("playerbots_chat", 1, METRIC_TAG("channel", channel));
+    }
+
+    char const* ChannelMetricName(ChatChannelId chanId)
+    {
+        switch (chanId)
+        {
+            case ChatChannelId::GENERAL:
+                return "general";
+            case ChatChannelId::TRADE:
+                return "trade";
+            case ChatChannelId::LOCAL_DEFENSE:
+                return "local_defense";
+            case ChatChannelId::WORLD_DEFENSE:
+                return "world_defense";
+            case ChatChannelId::LOOKING_FOR_GROUP:
+                return "lfg";
+            case ChatChannelId::GUILD_RECRUITMENT:
+                return "guild_recruitment";
+            default:
+                return "other";
+        }
+    }
+}
+
 bool PlayerbotAI::SayToGuild(const std::string& msg)
 {
     if (msg.empty())
@@ -3033,6 +3065,7 @@ bool PlayerbotAI::SayToGuild(const std::string& msg)
                 return false;
             }
             guild->BroadcastToGuild(bot->GetSession(), false, msg.c_str(), LANG_UNIVERSAL);
+            RecordBotChatMetric("guild");
             return true;
         }
     }
@@ -3055,6 +3088,7 @@ bool PlayerbotAI::SayToWorld(const std::string& msg)
     if (Channel* worldChannel = cMgr->GetChannel("World", bot))
     {
         worldChannel->Say(bot->GetGUID(), msg.c_str(), LANG_UNIVERSAL);
+        RecordBotChatMetric("world");
         return true;
     }
 
@@ -3078,6 +3112,7 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
         if (Channel* channel = cMgr->GetChannel(WORLD_DEFENSE_CHANNEL_NAME, nullptr, false))
         {
             channel->Say(bot->GetGUID(), msg.c_str(), LANG_UNIVERSAL);
+            RecordBotChatMetric("world_defense");
             return true;
         }
 
@@ -3121,6 +3156,7 @@ bool PlayerbotAI::SayToChannel(const std::string& msg, const ChatChannelId& chan
             if (channel)
             {
                 channel->Say(bot->GetGUID(), msg.c_str(), LANG_UNIVERSAL);
+                RecordBotChatMetric(ChannelMetricName(chanId));
                 return true;
             }
         }
@@ -3187,6 +3223,7 @@ bool PlayerbotAI::SayToParty(const std::string& msg)
         ServerFacade::instance().SendPacket(receiver, &data);
     }
 
+    RecordBotChatMetric("party");
     return true;
 }
 
@@ -3204,6 +3241,7 @@ bool PlayerbotAI::SayToRaid(const std::string& msg)
         ServerFacade::instance().SendPacket(receiver, &data);
     }
 
+    RecordBotChatMetric("raid");
     return true;
 }
 
@@ -3218,12 +3256,14 @@ Language PlayerbotAI::GetChatLanguage(Player const* who)
 bool PlayerbotAI::Yell(const std::string& msg)
 {
     bot->Yell(msg, GetChatLanguage(bot));
+    RecordBotChatMetric("yell");
     return true;
 }
 
 bool PlayerbotAI::Say(const std::string& msg)
 {
     bot->Say(msg, GetChatLanguage(bot));
+    RecordBotChatMetric("say");
     return true;
 }
 
@@ -3244,6 +3284,7 @@ bool PlayerbotAI::Whisper(const std::string& msg, const std::string& receiverNam
     }
 
     bot->Whisper(msg, GetChatLanguage(bot), receiver);
+    RecordBotChatMetric("whisper");
     return true;
 }
 

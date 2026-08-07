@@ -27,6 +27,7 @@
 #include "GridNotifiers.h"
 #include "LFGMgr.h"
 #include "MapMgr.h"
+#include "Metric.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
 #include "ObjectGuid.h"
@@ -2912,6 +2913,70 @@ void RandomPlayerbotMgr::PrintStats()
 
     LOG_INFO("playerbots", "Bots engine:", dead);
     LOG_INFO("playerbots", "    Non-combat: {}, Combat: {}, Dead: {}", engine_noncombat, engine_combat, engine_dead);
+
+    // Mirror the census into the metrics bus for the observability dashboards
+    // (every METRIC_VALUE is a no-op unless Metric.Enable is on).
+    METRIC_VALUE("playerbots_online", playerBots.size());
+
+    static char const* levelBrackets[] = {"01-09", "10-19", "20-29", "30-39", "40-49", "50-59", "60-69", "70-79", "80"};
+    uint32 bracketAlliance[9] = {};
+    uint32 bracketHorde[9] = {};
+    for (uint8 lvl = 1; lvl <= 80; ++lvl)
+    {
+        uint8 bracket = lvl >= 80 ? 8 : lvl / 10;
+        bracketAlliance[bracket] += alliance[lvl];
+        bracketHorde[bracket] += horde[lvl];
+    }
+
+    for (uint8 i = 0; i < 9; ++i)
+    {
+        METRIC_VALUE("playerbots_level", bracketAlliance[i], METRIC_TAG("bracket", levelBrackets[i]), METRIC_TAG("faction", "alliance"));
+        METRIC_VALUE("playerbots_level", bracketHorde[i], METRIC_TAG("bracket", levelBrackets[i]), METRIC_TAG("faction", "horde"));
+    }
+
+    for (uint8 race = RACE_HUMAN; race < sRaceMgr->GetMaxRaces(); ++race)
+        if (perRace[race])
+            METRIC_VALUE("playerbots_race", perRace[race], METRIC_TAG("race", ChatHelper::FormatRace(race)));
+
+    for (uint8 cls = CLASS_WARRIOR; cls < MAX_CLASSES; ++cls)
+        if (perClass[cls])
+            METRIC_VALUE("playerbots_class", perClass[cls], METRIC_TAG("class", ChatHelper::FormatClass(cls)));
+
+    METRIC_VALUE("playerbots_role", tank, METRIC_TAG("role", "tank"));
+    METRIC_VALUE("playerbots_role", heal, METRIC_TAG("role", "heal"));
+    METRIC_VALUE("playerbots_role", dps, METRIC_TAG("role", "dps"));
+
+    METRIC_VALUE("playerbots_activity", active, METRIC_TAG("state", "active"));
+    METRIC_VALUE("playerbots_activity", moving, METRIC_TAG("state", "moving"));
+    METRIC_VALUE("playerbots_activity", inFlight, METRIC_TAG("state", "in_flight"));
+    METRIC_VALUE("playerbots_activity", mounted, METRIC_TAG("state", "mounted"));
+    METRIC_VALUE("playerbots_activity", combat, METRIC_TAG("state", "in_combat"));
+    METRIC_VALUE("playerbots_activity", inBg, METRIC_TAG("state", "in_bg"));
+    METRIC_VALUE("playerbots_activity", rest, METRIC_TAG("state", "resting"));
+    METRIC_VALUE("playerbots_activity", dead, METRIC_TAG("state", "dead"));
+
+    METRIC_VALUE("playerbots_engine", engine_noncombat, METRIC_TAG("state", "noncombat"));
+    METRIC_VALUE("playerbots_engine", engine_combat, METRIC_TAG("state", "combat"));
+    METRIC_VALUE("playerbots_engine", engine_dead, METRIC_TAG("state", "dead"));
+
+    if (sPlayerbotAIConfig.enableNewRpgStrategy)
+    {
+        static std::pair<NewRpgStatus, char const*> const rpgStatusNames[] = {
+            {RPG_IDLE, "idle"}, {RPG_REST, "rest"}, {RPG_GO_GRIND, "go_grind"}, {RPG_GO_CAMP, "go_camp"},
+            {RPG_WANDER_RANDOM, "wander_random"}, {RPG_WANDER_NPC, "wander_npc"}, {RPG_DO_QUEST, "do_quest"},
+            {RPG_TRAVEL_FLIGHT, "travel_flight"}, {RPG_OUTDOOR_PVP, "outdoor_pvp"}, {RPG_GO_WPVP, "go_wpvp"},
+            {RPG_DUEL_SPOT, "duel_spot"}, {RPG_GO_MOONGLADE, "go_moonglade"}};
+        for (auto const& [status, name] : rpgStatusNames)
+            METRIC_VALUE("playerbots_rpg_status", rpgStatusCount[status], METRIC_TAG("status", name));
+
+        // Cumulative since server start: use rate()/increase() downstream.
+        METRIC_VALUE("playerbots_quests", rpgStasticTotal.questAccepted, METRIC_TAG("event", "accepted"));
+        METRIC_VALUE("playerbots_quests", rpgStasticTotal.questRewarded, METRIC_TAG("event", "rewarded"));
+        METRIC_VALUE("playerbots_quests", rpgStasticTotal.questDropped, METRIC_TAG("event", "dropped"));
+    }
+
+    for (auto const& [zoneId, count] : zoneCount)
+        METRIC_VALUE("playerbots_zone", count, METRIC_TAG("zone_id", std::to_string(zoneId)));
 }
 
 double RandomPlayerbotMgr::GetBuyMultiplier(Player* bot)

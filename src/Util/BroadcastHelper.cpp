@@ -6,6 +6,7 @@
 
 #include "Playerbots.h"
 #include "BroadcastHelper.h"
+#include "Metric.h"
 #include "ServerFacade.h"
 #include "Channel.h"
 #include "AiFactory.h"
@@ -168,6 +169,9 @@ bool BroadcastHelper::BroadcastToChannelWithGlobalChance(PlayerbotAI* ai, std::s
         }
     }
 
+    // Broadcasts were enabled and a message wanted out, but every channel
+    // roll failed — count it so the sent/suppressed ratio is observable.
+    METRIC_VALUE("playerbots_broadcast_suppressed", 1);
     return false;
 }
 

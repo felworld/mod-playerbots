@@ -3,7 +3,9 @@
 #include <cmath>
 
 #include "DBCStores.h"
+#include "FelworldEvents.h"
 #include "Map.h"
+#include "Metric.h"
 #include "MapMgr.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -127,6 +129,10 @@ void EndWpvpExcursion(PlayerbotAI* botAI, char const* reason)
                  reason);
     else
         LOG_DEBUG("playerbots", "[New RPG] Bot {} wpvp excursion ended: {}", botAI->GetBot()->GetName(), reason);
+
+    METRIC_VALUE("playerbots_wpvp_excursion", 1, METRIC_TAG("outcome", reason));
+    Felworld::LogEvent(botAI->GetBot()->GetGUID(), "wpvp_excursion_end",
+                       Acore::StringFormat("{{\"reason\":\"{}\",\"zone\":{}}}", reason, data->zoneId));
 
     // Only remove what this excursion added: a bot that brought stealth from
     // elsewhere (e.g. a BG strategy set) keeps it.
