@@ -130,6 +130,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Corpse-run pacing](FEATURES.md#corpse-run-pacing)** —
   `AiPlayerbot.GhostMoveSpeedRate` scales the core's `Rate.MoveSpeed.Ghost`
   for bots, so their corpse runs can be paced separately from humans'.
+- **[Observability metrics](FEATURES.md#observability-metrics)** — the bot
+  census, chat destinations, and WPvP lifecycle feed the Felworld Grafana
+  dashboards when the core's metrics are enabled.
 
 ### Commands added in this fork
 

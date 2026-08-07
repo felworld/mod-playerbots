@@ -754,6 +754,29 @@ natural-language requests with — a plain "can someone summon me?" to an LLM
 bot triggers the same machinery; see
 [mod-llm's class services](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#class-services).
 
+## Observability metrics
+
+When the core's `Metric.Enable` is on (the Felworld obs stack — see the
+[hub FEATURES.md](https://github.com/felworld/azerothcore/blob/main/FEATURES.md#observability)),
+this fork feeds the Grafana dashboards; with metrics off, every emission is
+a no-op:
+
+- **Census** — the 300-second bot census that already logs to
+  `Playerbots.log` is mirrored to the metrics bus: bots online, level
+  histogram by faction, per-race/class counts, role split, activity and
+  engine states, RPG statuses, cumulative quest throughput, and per-zone
+  population.
+- **Chat** — every outbound bot message counts one `playerbots_chat` point
+  tagged with where it went (say, yell, whisper, party, raid, guild, or a
+  public channel); broadcast attempts whose channel rolls all failed count
+  `playerbots_broadcast_suppressed`, so the roll economy is visible.
+- **World PvP** — defense-board events (`kill`, `attacker_death`,
+  `callout`, `defender_on_scene`, `escalation`) and excursion starts (by
+  origin: own roll vs. defense response) and ends (by reason). Kills,
+  deaths, defeats, callouts, and excursion boundaries are also written to
+  the characters DB `felworld_events` table per participant, which is what
+  the Character Inspector dashboard replays.
+
 ## Commands added in this fork
 
 Bot chat commands — spoken to a bot like any command from the
