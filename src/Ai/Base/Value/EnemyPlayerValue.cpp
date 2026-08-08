@@ -11,6 +11,7 @@
 #include "ServerFacade.h"
 #include "Vehicle.h"
 #include "WpvpGuardRespect.h"
+#include "WpvpSatiation.h"
 #include "WpvpTerrainLos.h"
 #include "WpvpTruce.h"
 
@@ -32,6 +33,14 @@ bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
         // If with master, only attack if master is PvP flagged
         Player* master = botAI->GetMaster();
         if (master && !master->IsPvP() && !master->IsFFAPvP())
+            return false;
+
+        // Satiation (Felworld): a bot that just killed this player and
+        // rolled "done with them" stops initiating for the grace period -
+        // no rez-camping loop. Self-defense is unaffected: the PvP
+        // combat-ref path in EnemyPlayerValue::Calculate never comes
+        // through here.
+        if (WpvpSatiated(bot, enemy))
             return false;
 
         return true;

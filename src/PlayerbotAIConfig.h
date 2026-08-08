@@ -468,6 +468,8 @@ public:
     uint32 wpvpAnchorOffsetMin, wpvpAnchorOffsetMax;
     uint32 wpvpDwellMinutesMin, wpvpDwellMinutesMax;
     uint32 wpvpDeathCap;
+    uint32 wpvpSatiationChance;
+    uint32 wpvpSatiationMinutes;
     uint32 wpvpGoadCooldown;
     bool wpvpCalloutEnabled;
     uint32 wpvpCalloutZoneCooldown;

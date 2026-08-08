@@ -97,6 +97,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   turn from mobs to their assailant, hold a soulstone res while the
   killer lurks, wait out corpse campers instead of rezzing into them, and
   put recreational duels on hold while a fight rages nearby.
+- **[Corpse-camping satiation](FEATURES.md#corpse-camping-satiation)** —
+  after each kill a bot may decide its victim is dealt with and stop
+  re-engaging them for a while; most move on after a kill or two, a rare
+  few camp on.
 - **[Duel openers](FEATURES.md#duel-openers)** — bots use the pre-duel
   countdown like a player would: rogues and ferals stealth and slip out
   of detection range, warriors back off to Charge range, hunters trap

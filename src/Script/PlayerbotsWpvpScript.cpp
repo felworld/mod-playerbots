@@ -9,8 +9,10 @@
 #include "ScriptMgr.h"
 #include "WpvpDefense.h"
 #include "WpvpEmoteAlert.h"
+#include "WpvpSatiation.h"
 
-// Feeds the wpvp defense board: world PvP kills bump the killer's
+// Feeds the wpvp boards from player hooks: world PvP kills roll the killer
+// bot's satiation dice (anti-corpse-camping) and bump the killer's
 // uncontested-kill tally (arming the WorldDefense escalation shout), and a
 // tracked ganker's own death marks the spree contested - and, if the killer
 // was outside help rather than a victim, counts toward the ganker's own
@@ -25,10 +27,6 @@ public:
 
     void OnPlayerPVPKill(Player* killer, Player* killed) override
     {
-        if (!sPlayerbotAIConfig.wpvpCalloutEnabled && !sPlayerbotAIConfig.wpvpDefenseEnabled &&
-            !sPlayerbotAIConfig.wpvpReinforcementEnabled)
-            return;
-
         if (!killer || !killed || killer == killed)
             return;
 
@@ -38,8 +36,16 @@ public:
         if (killer->GetTeamId() == killed->GetTeamId())
             return;
 
-        WpvpDefenseBoard::instance().RecordKill(killer, killed);
-        WpvpDefenseBoard::instance().RecordAttackerDeath(killed, killer->GetGUID());
+        // The killing bot may roll "satiated" and stop initiating against
+        // this victim for a while - the anti-corpse-camping grace.
+        WpvpSatiationBoard::instance().RecordKill(killer, killed);
+
+        if (sPlayerbotAIConfig.wpvpCalloutEnabled || sPlayerbotAIConfig.wpvpDefenseEnabled ||
+            sPlayerbotAIConfig.wpvpReinforcementEnabled)
+        {
+            WpvpDefenseBoard::instance().RecordKill(killer, killed);
+            WpvpDefenseBoard::instance().RecordAttackerDeath(killed, killer->GetGUID());
+        }
     }
 
     // A targeted emote at an enemy player is visible intel: the packet the

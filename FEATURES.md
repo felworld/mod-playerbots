@@ -533,6 +533,23 @@ in the open world; this cluster of fixes makes them react like people:
 No config knobs; the thresholds (40 yards, one minute, two minutes, three
 minutes) are fixed.
 
+## Corpse-camping satiation
+
+The killer-side counterpart to "no rezzing into campers" above. Bots have
+no natural attention span: one loitering near your corpse — excursion bots
+deliberately dwell near their anchor for 15-30 minutes — would re-kill you
+on every rez until its dwell expired, with inhuman patience. Now each
+world-PvP kill rolls a satiation chance for the killing bot: on success it
+considers that particular victim dealt with and stops initiating attacks
+on them for a grace period, going back to whatever it was doing. Fighting
+back is untouched — attack a satiated bot and it defends itself as usual.
+Because every kill re-rolls the same dice, the drop-off is geometric: at
+the default 60% chance about 40% of bots re-kill once, 16% twice, 6%
+three times. Most move on after a kill or two; the rare persistent camper
+survives as a realistic griefer, not the norm.
+`AiPlayerbot.WpvpSatiationChance` (percent, 0 disables) and
+`AiPlayerbot.WpvpSatiationMinutes` set the dice and the grace.
+
 ## Duel openers
 
 A bot that agreed to a duel just stood in the open and traded first hits

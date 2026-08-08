@@ -1215,6 +1215,16 @@ AiPlayerbot.WpvpDwellMinutesMin = 15
 AiPlayerbot.WpvpDwellMinutesMax = 30
 AiPlayerbot.WpvpDeathCap = 2
 
+# After each world-PvP kill the killing bot rolls this % chance to be
+# "satiated" with that victim: it stops initiating attacks on them for
+# WpvpSatiationMinutes (fighting back when attacked is unaffected). Each
+# kill re-rolls, so at 60 about 40% of bots re-kill once, 16% twice, 6%
+# three times - most move on quickly, a rare few camp like griefers.
+# 0 disables (bots re-engage on sight indefinitely).
+# Default: 60 / 10
+AiPlayerbot.WpvpSatiationChance = 60
+AiPlayerbot.WpvpSatiationMinutes = 10
+
 # Cooldown (seconds) between goad attempts by a stealthed rogue/druid trying
 # to provoke unflagged enemies into attacking.
 # Default: 90

@@ -791,6 +791,8 @@ bool PlayerbotAIConfig::Initialize()
     wpvpDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDwellMinutesMin", 15);
     wpvpDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDwellMinutesMax", 30);
     wpvpDeathCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDeathCap", 2);
+    wpvpSatiationChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpSatiationChance", 60), 100);
+    wpvpSatiationMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpSatiationMinutes", 10);
     wpvpGoadCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGoadCooldown", 90);
     wpvpCalloutEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpCalloutEnabled", true);
     wpvpCalloutZoneCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutZoneCooldown", 180);
