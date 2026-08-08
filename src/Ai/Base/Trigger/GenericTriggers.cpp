@@ -800,8 +800,16 @@ bool CraftBandageTrigger::IsActive()
     return CraftBandageAction::BandageCount(bot) < CRAFT_BANDAGE_TARGET_COUNT;
 }
 
+// Every engineering gadget is an item cast that would knock the bot out of
+// stealth - a stealthed bot is lining up an opener (or just vanished), and
+// no gadget is worth spending that on.
+static bool HoldGadgetsWhileStealthed(Player* bot) { return bot->HasStealthAura(); }
+
 bool ThrowExplosivesTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target || !target->IsAlive())
         return false;
@@ -826,6 +834,9 @@ bool ThrowExplosivesTrigger::IsActive()
 
 bool GrenadeInterruptTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target || !target->IsAlive() || !target->IsNonMeleeSpellCast(true))
         return false;
@@ -836,6 +847,9 @@ bool GrenadeInterruptTrigger::IsActive()
 
 bool SapperChargeTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     if (bot->GetHealthPct() <= 60.0f || !ThrowExplosivesAction::FindBestSapper(bot))
         return false;
 
@@ -854,6 +868,9 @@ bool SapperChargeTrigger::IsActive()
 
 bool TargetDummyTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     if (!bot->IsInCombat() || bot->GetHealthPct() > 60.0f || AI_VALUE(uint8, "my attacker count") < 2)
         return false;
 
@@ -862,6 +879,9 @@ bool TargetDummyTrigger::IsActive()
 
 bool ExplosiveSheepTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     Unit* target = AI_VALUE(Unit*, "current target");
     if (!target || !target->IsAlive() || target->GetHealthPct() < 50.0f)
         return false;
@@ -897,6 +917,9 @@ bool JumperCablesTrigger::IsActive()
 
 bool RocketBootsTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     if (bot->IsMounted() || bot->HasUnitState(UNIT_STATE_ROOT))
         return false;
 
@@ -920,6 +943,9 @@ bool RocketBootsTrigger::IsActive()
 
 bool GloveTinkerTrigger::IsActive()
 {
+    if (HoldGadgetsWhileStealthed(bot))
+        return false;
+
     if (!bot->IsInCombat())
         return false;
 

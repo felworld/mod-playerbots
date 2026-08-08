@@ -645,7 +645,10 @@ healthy HP buffer, an engineer sets off a sapper charge; overwhelmed and
 hurting, it drops a target dummy to shed aggro; now and then it releases
 an explosive sheep. Glove tinkers fire on cooldown. Rocket boots pop
 when it matters most: carrying a Warsong Gulch flag, chasing an enemy
-flag carrier who is pulling away, or fleeing below 25% health. And after
+flag carrier who is pulling away, or fleeing below 25% health. A
+stealthed bot holds every gadget — an item cast would knock it out of
+stealth, and no gadget is worth spending a stealth opener or a vanish
+on. And after
 the fight, a bot with no real resurrection spell but a set of jumper
 cables will walk to a dead group member and try a jump-start — the
 item's native fail chance supplies the comedy. Duels honor
