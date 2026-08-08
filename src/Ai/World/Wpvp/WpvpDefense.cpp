@@ -141,30 +141,48 @@ bool IsEscalationEyewitness(Player* bot, WpvpDefenseEntry const& entry)
            bot->IsWithinDist(attacker, sPlayerbotAIConfig.wpvpVisionDistance);
 }
 
-// Top-level zone whose enUS name matches (exactly first, then substring, so
-// "redridge" finds Redridge Mountains).
+// Zone whose enUS name matches. Top-level zones win (exactly first, then
+// substring, so "redridge" finds Redridge Mountains); subzone names resolve
+// to their parent zone, so "tarren mill" finds Hillsbrad Foothills - people
+// calling for help name the place they see, not the zone on the map.
 uint32 ResolveZoneIdByName(std::string const& name)
 {
     std::string want = ToLower(Trimmed(name));
     if (want.empty())
         return 0;
 
-    uint32 partialMatch = 0;
+    uint32 partialZone = 0;
+    uint32 exactSubzone = 0;
+    uint32 partialSubzone = 0;
     for (uint32 i = 0; i < sAreaTableStore.GetNumRows(); ++i)
     {
         AreaTableEntry const* area = sAreaTableStore.LookupEntry(i);
-        if (!area || area->zone || !area->area_name[0])
+        if (!area || !area->area_name[0])
             continue;
 
         std::string have = ToLower(area->area_name[0]);
-        if (have == want)
-            return area->ID;
+        if (!area->zone)
+        {
+            if (have == want)
+                return area->ID;
 
-        if (!partialMatch && have.find(want) != std::string::npos)
-            partialMatch = area->ID;
+            if (!partialZone && have.find(want) != std::string::npos)
+                partialZone = area->ID;
+        }
+        else
+        {
+            if (!exactSubzone && have == want)
+                exactSubzone = area->zone;
+
+            if (!partialSubzone && have.find(want) != std::string::npos)
+                partialSubzone = area->zone;
+        }
     }
 
-    return partialMatch;
+    if (exactSubzone)
+        return exactSubzone;
+
+    return partialZone ? partialZone : partialSubzone;
 }
 }
 
@@ -819,6 +837,14 @@ bool WpvpDefendCommandAction::Execute(Event event)
     {
         target = entry.pos;
         attacker = entry.attacker;
+    }
+    else if (requester && requester->IsInWorld() && !requester->GetMap()->Instanceable() &&
+             requester->GetZoneId() == zoneId)
+    {
+        // No board entry - a player's chat report never files one - but the
+        // caller is standing where the trouble is: make the stand at their
+        // side.
+        target = WorldPosition(requester);
     }
     else
     {

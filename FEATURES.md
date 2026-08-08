@@ -857,9 +857,11 @@ with the `!` prefix described above:
   so in LLM mode plain callouts like "inc!!" work too. Detailed in
   [Warsong Gulch teamwork](#warsong-gulch-teamwork).
 - `!wpvp defend [zone]` — order a random bot to travel in and defend a
-  zone; with no argument, the zone *you* are standing in. The bot heads for
+  zone; with no argument, the zone *you* are standing in. Subzone names
+  work too ("Tarren Mill" finds Hillsbrad Foothills). The bot heads for
   the last reported attacker position there if defenders have called one
-  in, otherwise for the zone's own gathering spot, and whispers back an "On
+  in, else to your side when you're calling from inside that zone,
+  otherwise for the zone's own gathering spot, and whispers back an "On
   my way" (or a refusal if it doesn't recognize the zone). Any player can
   issue it, but only world (random) bots accept — your own alt bots ignore
   it. This is also the hook behind mod-llm's `go_defend` tool, so in LLM
