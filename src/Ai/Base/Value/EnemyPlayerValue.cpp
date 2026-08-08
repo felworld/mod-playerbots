@@ -11,6 +11,7 @@
 #include "ServerFacade.h"
 #include "Vehicle.h"
 #include "WpvpGuardRespect.h"
+#include "WpvpTerrainLos.h"
 #include "WpvpTruce.h"
 
 bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
@@ -128,7 +129,9 @@ Unit* EnemyPlayerValue::Calculate()
         if (!bot->IsWithinDist(pTarget, aggroDistance))
             continue;
 
-        if (bot->IsWithinLOSInMap(pTarget) &&
+        // Terrain occlusion (Felworld): the vmap LOS test above sees straight
+        // through hills, so also refuse to notice a target the terrain hides.
+        if (bot->IsWithinLOSInMap(pTarget) && !WpvpTerrainOccludes(bot, pTarget) &&
             (controllingCannon || (fabs(bot->GetPositionZ() - pTarget->GetPositionZ()) < 30.0f)))
         {
             // Same-class truce (Felworld): this pair honors the old "druids
@@ -162,7 +165,8 @@ Unit* EnemyPlayerValue::Calculate()
 
                 if (Unit* pAttacker = pMember->getAttackerForHelper())
                     if (pAttacker->IsPlayer() && bot->IsWithinDist(pAttacker, maxAggroDistance * 2.0f) &&
-                        bot->IsWithinLOSInMap(pAttacker) && pAttacker != pVictim && pAttacker->CanSeeOrDetect(bot) &&
+                        bot->IsWithinLOSInMap(pAttacker) && !WpvpTerrainOccludes(bot, pAttacker) &&
+                        pAttacker != pVictim && pAttacker->CanSeeOrDetect(bot) &&
                         !WpvpGuardsBarPursuit(bot, pAttacker))
                         return pAttacker;
             }

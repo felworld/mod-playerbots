@@ -88,6 +88,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Same-class truce](FEATURES.md#same-class-truce)** — some same-class
   pairs honor the "druids don't gank druids" code: no unprovoked attack,
   a `/salute` instead.
+- **[Terrain line of sight](FEATURES.md#terrain-line-of-sight)** — server
+  LOS sees through hills (only model geometry is ray-tested), so bots
+  additionally check the terrain heightmap before noticing an enemy
+  player; no more being spotted from behind a ridge.
 - **[World PvP threat reactions](FEATURES.md#world-pvp-threat-reactions)**
   — attacked in the open world, bots get up from meals, abort long casts,
   turn from mobs to their assailant, hold a soulstone res while the

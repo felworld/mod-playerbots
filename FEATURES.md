@@ -470,6 +470,21 @@ bar would refuse to fight. Max-level gankers diving a town are
 unaffected — no guard outlevels them by the gap — and instanced PvP and
 duels are exempt.
 
+## Terrain line of sight
+
+The server's line-of-sight test only ray-casts model geometry — buildings,
+caves, trees, gameobjects — and there is no config knob that adds more:
+the terrain heightmap simply isn't part of it, so bots "saw" enemy players
+straight through hills and ridges from up to `AiPlayerbot.WpvpVisionDistance`
+(100 yards) away. In practice that meant a ganker instantly re-acquiring a
+victim who resurrected just over a rise, out of any human's sight. Now
+unprovoked target acquisition (the open-world enemy scan and party-assist
+pickup) also samples the terrain heightmap along the sight line and refuses
+targets the ground hides; a bump has to actually rise above eye line to
+count, so gentle slopes don't grant cover. Self-defense is untouched —
+a bot that's being attacked already knows where its attacker is — and
+indoors the model geometry test already tells the truth. No config knobs.
+
 ## World PvP threat reactions
 
 Upstream bots are strangely oblivious to being attacked by an enemy player
