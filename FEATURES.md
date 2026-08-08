@@ -316,7 +316,11 @@ by the same free-gold budget it reserves for repairs and training.
 Quotes (service tips included) round down to whole silver — player trades
 deal in silver and gold, never loose copper — and an item that cannot
 fetch at least one silver has no market price at all: it gets vendored,
-not advertised or bought. Ad stock also skips leveling leftovers: an
+not advertised or bought. Anything an NPC vendor sells for plain gold in
+unlimited stock (reagents like Symbol of Kings) has no player market
+either — never advertised, never wanted — while limited-stock vendor
+recipes and honor/token items keep theirs. Ad stock also skips leveling
+leftovers: an
 uncommon-or-worse item more than 20 levels below the bot stays out of its
 WTS lists (rare and better gear is hawked at any level), though a player
 who explicitly asks to buy such an item still gets a deal. A

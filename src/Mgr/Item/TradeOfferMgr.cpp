@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <set>
+#include <unordered_set>
 
 namespace
 {
@@ -245,8 +246,32 @@ namespace
     // (felworld/mod-llm#21).
     constexpr uint32 AD_LEVEL_GRACE = 20;
 
+    // Anything an NPC vendor sells for plain gold in unlimited stock has no
+    // player-to-player market: anyone can walk up and buy it, so a WTS or
+    // WTB line for it (Symbol of Kings, vendor reagents, ...) reads as
+    // clueless (felworld/mod-llm#38). Limited-stock vendor rarities and
+    // extended-cost (honor/token) items keep their market.
+    bool VendorSells(uint32 itemId)
+    {
+        static std::unordered_set<uint32> const vendorStock = []
+        {
+            std::unordered_set<uint32> stock;
+            for (auto const& [entry, _] : *sObjectMgr->GetCreatureTemplates())
+                if (VendorItemData const* vendorItems = sObjectMgr->GetNpcVendorItemList(entry))
+                    for (VendorItem const* vendorItem : vendorItems->m_items)
+                        if (vendorItem && !vendorItem->maxcount && !vendorItem->ExtendedCost)
+                            stock.insert(vendorItem->item);
+            return stock;
+        }();
+
+        return vendorStock.contains(itemId);
+    }
+
     bool WorthAdvertising(ItemTemplate const* proto, uint8 botLevel)
     {
+        if (VendorSells(proto->ItemId))
+            return false;
+
         if (proto->Quality >= ITEM_QUALITY_RARE)
             return true;
 
@@ -454,6 +479,9 @@ std::vector<Want> CollectWants(PlayerbotAI* botAI)
 
     auto addWant = [&wants](ItemTemplate const* proto)
     {
+        if (VendorSells(proto->ItemId))
+            return;
+
         if (std::find_if(wants.begin(), wants.end(),
                 [proto](Want const& w) { return w.proto == proto; }) != wants.end())
             return;
