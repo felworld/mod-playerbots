@@ -1,5 +1,6 @@
 #include "WpvpValues.h"
 
+#include "LevelPerception.h"
 #include "Player.h"
 #include "Playerbots.h"
 #include "WpvpGuardRespect.h"
@@ -30,5 +31,5 @@ bool NearestUnflaggedEnemyPlayersValue::AcceptUnit(Unit* unit)
 
     // Don't goad someone the bot wouldn't actually fight (PossibleTargetsValue
     // refuses targets 5+ levels above the bot).
-    return int32(enemy->GetLevel()) - int32(bot->GetLevel()) < 5;
+    return int32(PerceivedLevel(bot, enemy)) - int32(bot->GetLevel()) < 5;
 }

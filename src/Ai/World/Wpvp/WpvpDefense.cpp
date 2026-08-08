@@ -7,6 +7,7 @@
 #include "ChatHelper.h"
 #include "DBCStores.h"
 #include "FelworldEvents.h"
+#include "LevelPerception.h"
 #include "Metric.h"
 #include "NewRpgInfo.h"
 #include "NewRpgWpvp.h"
@@ -95,7 +96,10 @@ std::mutex& ListenersMutex()
     return mutex;
 }
 
-void RefreshAttackerFacts(WpvpDefenseEntry& entry, Player* attacker, uint32 now)
+// `observer` is whoever the facts come from - the bot that spotted the ganker,
+// the victim they just killed - so the level is filed as that player saw it.
+// Without one (nobody left to ask) the level already on the board stands.
+void RefreshAttackerFacts(WpvpDefenseEntry& entry, Player* attacker, Player const* observer, uint32 now)
 {
     if (!entry.postedMs)
     {
@@ -108,7 +112,8 @@ void RefreshAttackerFacts(WpvpDefenseEntry& entry, Player* attacker, uint32 now)
     entry.attackerName = attacker->GetName();
     entry.attackerRace = attacker->getRace();
     entry.attackerClass = attacker->getClass();
-    entry.attackerLevel = attacker->GetLevel();
+    if (observer)
+        entry.attackerLevel = PerceivedLevel(observer, attacker);
     entry.updatedMs = now;
 }
 
@@ -176,12 +181,12 @@ void FireWpvpCalloutNotification(WpvpCalloutNotification const& notification)
         listener(notification);
 }
 
-void WpvpDefenseBoard::PostCallout(Player* attacker, TeamId defendingTeam)
+void WpvpDefenseBoard::PostCallout(Player* attacker, TeamId defendingTeam, Player const* spotter)
 {
     std::lock_guard<std::mutex> lock(_mutex);
     uint32 now = getMSTime();
     WpvpDefenseEntry& entry = _entries[attacker->GetGUID()];
-    RefreshAttackerFacts(entry, attacker, now);
+    RefreshAttackerFacts(entry, attacker, spotter, now);
     entry.defendingTeam = defendingTeam;
     entry.calledOutMs = now;
 
@@ -197,9 +202,10 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     std::lock_guard<std::mutex> lock(_mutex);
     uint32 now = getMSTime();
     WpvpDefenseEntry& entry = _entries[attacker->GetGUID()];
-    RefreshAttackerFacts(entry, attacker, now);
+    RefreshAttackerFacts(entry, attacker, victim, now);
     entry.defendingTeam = victim->GetTeamId();
 
+    // Telemetry is bookkeeping, not bot knowledge: it logs the true levels.
     METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "kill"));
     Felworld::LogEvent(attacker->GetGUID(), "wpvp_kill",
                        Acore::StringFormat("{{\"victim\":\"{}\",\"victim_level\":{},\"zone\":{}}}",
@@ -210,8 +216,9 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
 
     // Only genuine gank kills - victim a full gank gap below the attacker -
     // feed the spree tally: no number of even fights lost fair and square
-    // warrants a WorldDefense plea.
-    if (uint32(victim->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= attacker->GetLevel())
+    // warrants a WorldDefense plea. The attacker's level is the one the
+    // victim could see; a skull already means further above than the gap.
+    if (uint32(victim->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= entry.attackerLevel)
     {
         if (!entry.firstKillMs ||
             getMSTimeDiff(entry.firstKillMs, now) > sPlayerbotAIConfig.wpvpEscalationWindow * IN_MILLISECONDS)
@@ -250,7 +257,7 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
         if (other.defendingTeam != attacker->GetTeamId() || other.zoneId != entry.zoneId)
             continue;
 
-        if (uint32(attacker->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= other.attackerLevel)
+        if (uint32(entry.attackerLevel) + sPlayerbotAIConfig.wpvpGankLevelGap <= other.attackerLevel)
             continue;
 
         CancelEscalation(other);
@@ -268,17 +275,20 @@ void WpvpDefenseBoard::RecordAttackerDeath(Player* attacker, ObjectGuid killer)
 
     WpvpDefenseEntry& entry = it->second;
 
+    Player* killerPlayer = ObjectAccessor::FindPlayer(killer);
+
     // The spree is contested: the tally starts over, and a shout that hasn't
     // been claimed yet would already be stale news. The death spot is the
-    // freshest intel on where the fight is.
-    RefreshAttackerFacts(entry, attacker, getMSTime());
+    // freshest intel on where the fight is, and whoever put them down is who
+    // saw them up close.
+    RefreshAttackerFacts(entry, attacker, killerPlayer, getMSTime());
     entry.kills = 0;
     entry.firstKillMs = 0;
     entry.escalationPending = false;
 
     METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "attacker_death"));
     std::string killerName;
-    if (Player* killerPlayer = ObjectAccessor::FindPlayer(killer))
+    if (killerPlayer)
         killerName = killerPlayer->GetName();
     Felworld::LogEvent(attacker->GetGUID(), "wpvp_defeated",
                        Acore::StringFormat("{{\"killer\":\"{}\",\"zone\":{}}}", killerName, entry.zoneId));
@@ -656,7 +666,10 @@ bool WpvpEscalationCalloutAction::Execute(Event /*event*/)
     notification.attackerName = entry.attackerName;
     notification.attackerRace = entry.attackerRace;
     notification.attackerClass = entry.attackerClass;
-    notification.attackerLevel = entry.attackerLevel;
+    // Even relaying the board, the shouter can't quote a number past their
+    // own skull threshold - "??" is all they'd have seen themselves.
+    notification.attackerLevelText =
+        IsLevelKnown(bot->GetLevel(), entry.attackerLevel, true) ? std::to_string(entry.attackerLevel) : "??";
     notification.killCount = entry.kills;
     notification.prebakedLine = msg;
     FireWpvpCalloutNotification(notification);

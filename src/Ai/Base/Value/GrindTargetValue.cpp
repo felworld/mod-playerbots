@@ -7,6 +7,7 @@
 #include "GrindTargetValue.h"
 
 #include "NewRpgInfo.h"
+#include "LevelPerception.h"
 #include "Playerbots.h"
 #include "ReputationMgr.h"
 #include "ServerFacade.h"
@@ -104,7 +105,8 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
             continue;
         }
 
-        if (!bot->InBattleground() && (int)unit->GetLevel() - (int)bot->GetLevel() > 4 && !unit->GetGUID().IsPlayer())
+        if (!bot->InBattleground() && (int)PerceivedLevel(bot, unit) - (int)bot->GetLevel() > 4 &&
+            !unit->GetGUID().IsPlayer())
             continue;
 
         if (Creature* creature = unit->ToCreature())

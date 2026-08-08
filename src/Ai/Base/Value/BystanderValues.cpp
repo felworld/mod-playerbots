@@ -6,6 +6,7 @@
 #include "BystanderValues.h"
 
 #include "BystanderDistress.h"
+#include "LevelPerception.h"
 #include "Playerbots.h"
 
 #include <unordered_set>
@@ -245,7 +246,7 @@ bool BystanderToAssistValue::IsWinnable(Player* victim, std::vector<Unit*> const
     for (Unit* attacker : attackers)
     {
         // Mobs far above the bot are out of the question regardless of count.
-        if (int32(attacker->GetLevel()) - botLevel > 4)
+        if (int32(PerceivedLevel(bot, attacker)) - botLevel > 4)
             return false;
 
         // Elites aren't excluded - two players often take one elite - they
@@ -271,7 +272,7 @@ bool BystanderToAssistValue::IsWinnable(Player* victim, std::vector<Unit*> const
             }
         }
 
-        foePower += BystanderFoePower(int32(attacker->GetLevel()) - botLevel, rankFactorPct);
+        foePower += BystanderFoePower(int32(PerceivedLevel(bot, attacker)) - botLevel, rankFactorPct);
     }
 
     uint32 friendPower = BYSTANDER_SELF_BASE_POWER +

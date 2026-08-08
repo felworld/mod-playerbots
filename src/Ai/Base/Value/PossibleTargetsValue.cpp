@@ -11,6 +11,7 @@
 #include "DBCStructure.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "LevelPerception.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
@@ -87,8 +88,9 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         if (inCapitalCity)
             return true;
 
-        // Level difference check
-        int32 levelDifference = unit->GetLevel() - bot->GetLevel();
+        // Level difference check (against the level the bot can see:
+        // a "??" target counts as exactly the gap above it)
+        int32 levelDifference = PerceivedLevel(bot, unit) - bot->GetLevel();
         int32 absLevelDifference = std::abs(levelDifference);
 
         // Extreme difference - do not attack

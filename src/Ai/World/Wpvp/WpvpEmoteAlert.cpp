@@ -6,6 +6,7 @@
 
 #include "WpvpEmoteAlert.h"
 
+#include "LevelPerception.h"
 #include "NewRpgInfo.h"
 #include "ObjectAccessor.h"
 #include "Player.h"
@@ -87,7 +88,8 @@ void WpvpEmoteAlertBoard::Post(Player* emoter, Player* target)
     entry.zoneId = target->GetZoneId();
     entry.targetPos = WorldPosition(target);
     entry.emoterPos = WorldPosition(emoter);
-    entry.targetLevel = target->GetLevel();
+    // As the emoter saw it: a skull files as their own level plus the gap.
+    entry.targetLevel = PerceivedLevel(emoter, target);
     entry.updatedMs = now;
 }
 

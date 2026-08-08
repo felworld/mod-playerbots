@@ -30,7 +30,7 @@ struct WpvpEmoteAlertEntry
     uint32 zoneId{0};
     WorldPosition targetPos;
     WorldPosition emoterPos;
-    uint8 targetLevel{0};
+    uint8 targetLevel{0};  // as the emoter saw it (a skull files as their level + the gap)
     uint32 postedMs{0};
     uint32 updatedMs{0};
     std::unordered_set<ObjectGuid> responded;

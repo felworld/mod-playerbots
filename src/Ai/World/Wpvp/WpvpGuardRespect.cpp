@@ -4,6 +4,7 @@
 #include "DBCEnums.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "LevelPerception.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
 
@@ -22,7 +23,7 @@ public:
 
     bool operator()(Creature* creature) const
     {
-        return creature->IsAlive() && creature->IsGuard() && creature->GetLevel() >= _minLevel &&
+        return creature->IsAlive() && creature->IsGuard() && PerceivedLevel(_bot, creature) >= _minLevel &&
                !creature->IsInEvadeMode() && creature->IsHostileTo(_bot);
     }
 

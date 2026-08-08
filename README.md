@@ -92,6 +92,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   LOS sees through hills (only model geometry is ray-tested), so bots
   additionally check the terrain heightmap before noticing an enemy
   player; no more being spotted from behind a ridge.
+- **[Level perception](FEATURES.md#level-perception)** — bots no longer
+  know the exact level of a hostile unit their owner would see as "??"
+  (10+ levels above them); callouts say "??" like a player would.
 - **[World PvP threat reactions](FEATURES.md#world-pvp-threat-reactions)**
   — attacked in the open world, bots get up from meals, abort long casts,
   turn from mobs to their assailant, hold a soulstone res while the

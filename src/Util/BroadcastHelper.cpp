@@ -6,6 +6,7 @@
 
 #include "Playerbots.h"
 #include "BroadcastHelper.h"
+#include "LevelPerception.h"
 #include "Metric.h"
 #include "ServerFacade.h"
 #include "Channel.h"
@@ -465,7 +466,9 @@ bool BroadcastHelper::BroadcastKill(PlayerbotAI* ai, Player* bot, Creature *crea
     AreaTableEntry const* current_zone = ai->GetCurrentZone();
     placeholders["%area_name"] = current_area ? ai->GetLocalizedAreaName(current_area) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
     placeholders["%zone_name"] = current_zone ? ai->GetLocalizedAreaName(current_zone) : PlayerbotTextMgr::instance().GetBotText("string_unknown_area");
-    placeholders["%victim_level"] = creature->GetLevel();
+    // What the bot could read off the frame: "??" for anything far enough
+    // above it to wear a skull.
+    placeholders["%victim_level"] = PerceivedLevelText(bot, creature);
     placeholders["%my_class"] = ai->GetChatHelper()->FormatClass(bot->getClass());
     placeholders["%my_race"] = ai->GetChatHelper()->FormatRace(bot->getRace());
     placeholders["%my_level"] = std::to_string(bot->GetLevel());

@@ -490,6 +490,30 @@ count, so gentle slopes don't grant cover. Self-defense is untouched —
 a bot that's being attacked already knows where its attacker is — and
 indoors the model geometry test already tells the truth. No config knobs.
 
+## Level perception
+
+The client refuses to tell you a hostile unit's level once it is 10 or more
+levels above you: `UnitLevel()` returns -1 and the frame shows a skull, so
+all a player learns from "??" is "at least ten above me". Bots read the
+server's `GetLevel()` instead and knew the exact number regardless — a level
+20 bot would call out "a level 80 undead rogue" over LocalDefense about a
+ganker whose level it couldn't possibly have read.
+
+Every comparison and every callout now goes through the same perception
+rule: friendly units show their real level, hostile ones do too until they
+reach the skull gap, and past it a bot gets nothing but the floor the skull
+implies (its own level + 10). World bosses are "??" to everyone. Anything a
+bot says about a level it can't read says "??" instead of a number, and the
+shared defense board files levels as the reporting player saw them — a
+relayed sighting never becomes more precise than the bot repeating it could
+have seen for itself.
+
+Bot decisions are unchanged: every level gate in the fork (the gank gap, the
+defense slack, target selection's 5-level refusal) is smaller than the skull
+gap, so a clamped level answers them exactly as the true one did. Only the
+knowledge, and what gets said out loud, changed. Server-side telemetry still
+logs true levels. No config knobs.
+
 ## World PvP threat reactions
 
 Upstream bots are strangely oblivious to being attacked by an enemy player

@@ -1,6 +1,7 @@
 #include "WpvpCallouts.h"
 
 #include "DBCStores.h"
+#include "LevelPerception.h"
 #include "WpvpDefense.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -106,7 +107,7 @@ bool FindWpvpIntruder(PlayerbotAI* botAI, WpvpIntruderSighting& out)
     // An enemy the bot outlevels by the gank gap is prey, not peril: real
     // players squash those, they don't announce them to the zone.
     auto alarmWorthy = [&](Player* enemy)
-    { return bot->GetLevel() < enemy->GetLevel() + sPlayerbotAIConfig.wpvpGankLevelGap; };
+    { return bot->GetLevel() < PerceivedLevel(bot, enemy) + sPlayerbotAIConfig.wpvpGankLevelGap; };
 
     auto reportWorthy = [&](Player* enemy)
     {
@@ -242,7 +243,7 @@ bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
     // somewhere to go) and always fires the speech notification; whether WE
     // say the prebaked line is a separate gate, so mod-llm can supply the
     // words instead.
-    WpvpDefenseBoard::instance().PostCallout(intruder, bot->GetTeamId());
+    WpvpDefenseBoard::instance().PostCallout(intruder, bot->GetTeamId(), bot);
 
     WpvpCalloutNotification notification;
     notification.kind = WpvpCalloutKind::FirstCallout;
@@ -252,7 +253,7 @@ bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
     notification.attackerName = name;
     notification.attackerRace = intruder->getRace();
     notification.attackerClass = intruder->getClass();
-    notification.attackerLevel = intruder->GetLevel();
+    notification.attackerLevelText = PerceivedLevelText(bot, intruder);
     notification.activity = sighting.activity;
     notification.victimName = sighting.victimName;
     notification.prebakedLine = msg;

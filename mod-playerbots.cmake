@@ -7,6 +7,7 @@ if(TARGET modules)
     set_property(GLOBAL APPEND PROPERTY ACORE_MODULE_TEST_SOURCES
         "${CMAKE_CURRENT_LIST_DIR}/test/BotCommandPrefixTest.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/test/BystanderDistressTest.cpp"
+        "${CMAKE_CURRENT_LIST_DIR}/test/LevelPerceptionTest.cpp"
         "${CMAKE_CURRENT_LIST_DIR}/test/PlayerbotsToggleCommandTest.cpp"
     )
 endif()

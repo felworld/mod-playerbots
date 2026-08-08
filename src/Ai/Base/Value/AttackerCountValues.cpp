@@ -7,6 +7,7 @@
 #include "AttackerCountValues.h"
 
 #include "Playerbots.h"
+#include "LevelPerception.h"
 #include "SharedDefines.h"
 
 uint8 MyAttackerCountValue::Calculate() { return bot->getAttackers().size(); }
@@ -81,7 +82,7 @@ uint8 BalancePercentValue::Calculate()
         if (!creature || !creature->IsAlive())
             continue;
 
-        uint32 level = creature->GetLevel();
+        uint32 level = PerceivedLevel(bot, creature);
 
         switch (creature->GetCreatureTemplate()->rank)
         {

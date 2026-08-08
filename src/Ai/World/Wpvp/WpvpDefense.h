@@ -45,7 +45,10 @@ struct WpvpCalloutNotification
     std::string attackerName;
     uint8 attackerRace{0};
     uint8 attackerClass{0};
-    uint8 attackerLevel{0};
+    // The attacker's level as the SPEAKER can state it: the number, or "??"
+    // when the attacker is far enough above them to wear a skull. Callouts
+    // are speech - nobody shouts a level they can't read off the frame.
+    std::string attackerLevelText{"??"};
     uint32 killCount{0};       // Escalation only: uncontested kills so far
     // FirstCallout only: what the attacker was seen doing, and - for
     // AttackingPlayer - who they were fighting (the speaker's own name when
@@ -76,7 +79,7 @@ struct WpvpDefenseEntry
     std::string attackerName;
     uint8 attackerRace{0};
     uint8 attackerClass{0};
-    uint8 attackerLevel{0};
+    uint8 attackerLevel{0};       // as the reporting player saw it: a skull files as their own level + the gap
     uint32 postedMs{0};
     uint32 updatedMs{0};
     uint32 calledOutMs{0};        // 0 until some channel callout mentioned this attacker
@@ -106,8 +109,10 @@ public:
 
     // Upsert from a defense callout: refresh position/level facts and stamp
     // the entry as called out (responders only react to attackers somebody
-    // actually mentioned in a channel - nobody is psychic).
-    void PostCallout(Player* attacker, TeamId defendingTeam);
+    // actually mentioned in a channel - nobody is psychic). `spotter` is the
+    // bot doing the shouting; the level filed is the one it could see, so a
+    // ganker who outlevels the spotter by a skull goes on the board as such.
+    void PostCallout(Player* attacker, TeamId defendingTeam, Player const* spotter);
 
     // From the PVP-kill hook: bump the attacker's uncontested-kill tally,
     // arming a WorldDefense escalation at the configured threshold. Only

@@ -19,6 +19,7 @@
 #include "NonCombatActions.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
+#include "LevelPerception.h"
 #include "ObjectGuid.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -151,7 +152,7 @@ bool OutNumberedTrigger::IsActive()
         if (!creature)
             continue;
 
-        int32 dLevel = creature->GetLevel() - botLevel;
+        int32 dLevel = PerceivedLevel(bot, creature) - botLevel;
         if (dLevel > -10)
             foePower = std::max(100 + 10 * dLevel, dLevel * 200);
     }
