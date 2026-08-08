@@ -5,20 +5,12 @@
 
 #include "SocialBuffValues.h"
 
+#include "PaladinGreaterBlessingAction.h"
 #include "Playerbots.h"
 
 namespace
 {
     constexpr uint32 PRUNE_INTERVAL_MS = 60 * 1000;
-
-    // A blessing slot is exclusive: carrying any of these means a paladin
-    // has already been generous, whichever flavour it was.
-    std::vector<std::string> const anyBlessing = {
-        "blessing of might", "greater blessing of might",
-        "blessing of wisdom", "greater blessing of wisdom",
-        "blessing of kings", "greater blessing of kings",
-        "blessing of sanctuary", "greater blessing of sanctuary",
-    };
 
     // Check the class rather than the current power type so a druid in bear or
     // cat form still counts as a mana user.
@@ -29,6 +21,60 @@ namespace
                    player->getClass() != CLASS_DEATH_KNIGHT;
 
         return target->getPowerType() == POWER_MANA;
+    }
+
+    // Attack power is dead weight for classes that never swing a weapon in
+    // anger - the same three the greater-blessing assignment treats as pure
+    // casters.
+    bool BenefitsFromAttackPower(Unit* target)
+    {
+        Player* player = target->ToPlayer();
+        if (!player)
+            return true;
+
+        switch (player->getClass())
+        {
+            case CLASS_MAGE:
+            case CLASS_PRIEST:
+            case CLASS_WARLOCK:
+                return false;
+            default:
+                return true;
+        }
+    }
+
+    // Only one blessing per paladin sticks, but blessings from different
+    // paladins stack - so a passerby already carrying Might can still take
+    // Kings from us. Walk the greater-blessing priority list for the target's
+    // role and offer the best flavour they aren't already wearing, skipping
+    // the two that are simply useless to their class.
+    std::string SelectBlessingFor(PlayerbotAI* botAI, Unit* target)
+    {
+        using namespace ai::gbless;
+
+        RoleProfile const role = ResolveRoleProfile(target->ToPlayer());
+        for (BaseBlessingCategory const category : BASE_BLESSING_PRIORITIES[role].priorities)
+        {
+            if (category == BASE_NONE)
+                continue;
+
+            if (category == BASE_MIGHT && !BenefitsFromAttackPower(target))
+                continue;
+
+            if (category == BASE_WISDOM && !HasManaPool(target))
+                continue;
+
+            std::string const single = BlessingSpellName(ToSingleVariant(category));
+            if (botAI->HasAura(single, target) || botAI->HasAura(BlessingSpellName(ToGreaterVariant(category)), target))
+                continue;
+
+            if (!botAI->CanCastSpell(single, target))
+                continue;
+
+            return single;
+        }
+
+        return "";
     }
 }
 
@@ -69,12 +115,10 @@ std::string SelectSocialBuffFor(PlayerbotAI* botAI, Player* bot, Unit* target)
             excludes = &has;
             break;
         }
+        // Unlike the one-buff classes above, a paladin has four flavours to
+        // pick from, each with its own exclusion check.
         case CLASS_PALADIN:
-        {
-            candidate = target->getPowerType() == POWER_MANA ? "blessing of wisdom" : "blessing of might";
-            excludes = &anyBlessing;
-            break;
-        }
+            return SelectBlessingFor(botAI, target);
         default:
             return "";
     }

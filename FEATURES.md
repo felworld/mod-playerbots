@@ -176,7 +176,12 @@ Idle ungrouped mages, priests, druids, and paladins cast
 their signature class buff (Arcane Intellect, Fortitude, Mark of the Wild,
 a fitting Blessing) on nearby friendly players — real players and bots —
 who lack it, and buff-capable bots return the favor when someone buffs
-them. Bots also answer a stranger's heal with a targeted /thank emote
+them. Because blessings from different paladins stack, a paladin doesn't
+give up on someone who already has one: it works down the same
+role-based priority list the greater-blessing assignment uses (so a
+target wearing Might gets Kings) and offers the best flavour they aren't
+already carrying, never Might to a mage, priest, or warlock and never
+Wisdom to a warrior, rogue, or death knight. Bots also answer a stranger's heal with a targeted /thank emote
 (mod-llm supplies the spoken "thx"). Like bystander assist, no action is
 ever taken that would newly PvP-flag the bot: flagged targets are only
 buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and
