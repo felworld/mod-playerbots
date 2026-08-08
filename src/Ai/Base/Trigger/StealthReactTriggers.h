@@ -29,4 +29,15 @@ public:
     bool IsActive() override;
 };
 
+class StealthSuspicionTrigger : public Trigger
+{
+public:
+    // Interval 1 keeps the suspicion value's perception ledger warm on
+    // every tick - the ledger is what turns a mid-fight Vanish into a
+    // suspicion at the right spot, so it can't afford stale scans.
+    StealthSuspicionTrigger(PlayerbotAI* botAI) : Trigger(botAI, "stealth suspicion", 1) {}
+
+    bool IsActive() override;
+};
+
 #endif

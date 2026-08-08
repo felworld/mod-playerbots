@@ -31,3 +31,20 @@ bool StealthSpotEmoteTrigger::IsActive()
     StealthSpotEvent event = AI_VALUE(StealthSpotEvent, "pending stealth emote");
     return event.timeMs && getMSTimeDiff(event.timeMs, getMSTime()) < STEALTH_SPOT_EMOTE_WINDOW_MS;
 }
+
+bool StealthSuspicionTrigger::IsActive()
+{
+    if (!sPlayerbotAIConfig.enableStealthReactions || !sPlayerbotAIConfig.stealthFlushChance)
+        return false;
+
+    // A bot that is itself hiding sweeps nothing - it stays put.
+    if (bot->HasStealthAura())
+        return false;
+
+    // Unlike the startle, this trigger deliberately runs in combat too:
+    // querying the value keeps its perception ledger warm through fights,
+    // and a mid-fight Vanish is exactly when Consecration on the spot
+    // matters most.
+    StealthSuspicion suspicion = AI_VALUE(StealthSuspicion, "stealth suspicion");
+    return suspicion.timeMs && suspicion.flushApproved;
+}

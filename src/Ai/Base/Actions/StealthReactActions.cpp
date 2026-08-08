@@ -8,10 +8,13 @@
 
 #include "CellImpl.h"
 #include "EmoteAction.h"
+#include "FelworldEvents.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "Metric.h"
 #include "Playerbots.h"
 #include "StealthReactValues.h"
+#include "StringFormat.h"
 
 namespace
 {
@@ -150,4 +153,101 @@ bool StealthSpotEmoteAction::Execute(Event /*event*/)
     bot->GetSession()->HandleTextEmoteOpcode(data);
 
     return true;
+}
+
+bool FlushStealtherAction::isUseful()
+{
+    if (!bot->IsAlive() || bot->HasStealthAura())
+        return false;
+
+    // A perceivable enemy to fight outranks poking at shadows.
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (target && target->IsAlive() && bot->CanSeeOrDetect(target))
+        return false;
+
+    StealthSuspicion suspicion = AI_VALUE(StealthSuspicion, "stealth suspicion");
+    return suspicion.timeMs && suspicion.flushApproved;
+}
+
+bool FlushStealtherAction::Execute(Event /*event*/)
+{
+    StealthSuspicionValue* value =
+        dynamic_cast<StealthSuspicionValue*>(context->GetValue<StealthSuspicion>("stealth suspicion"));
+    if (!value)
+        return false;
+
+    StealthSuspicion suspicion = value->Get();
+    if (!suspicion.timeMs)
+        return false;
+
+    Position const& spot = suspicion.lastKnown;
+    float const dist = bot->GetExactDist(spot);
+    char const* tool = nullptr;
+
+    if (value->FlushCastReady())
+    {
+        switch (bot->getClass())
+        {
+            case CLASS_HUNTER:
+            {
+                uint32 flareId = AI_VALUE2(uint32, "spell id", "flare");
+                if (flareId && dist <= 30.0f &&
+                    botAI->CanCastSpell(flareId, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ()) &&
+                    botAI->CastSpell(flareId, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ()))
+                    tool = "flare";
+                // 3.3.5a forbids placing traps in combat; out of it, mine
+                // the spot on the way through.
+                else if (!bot->IsInCombat() && dist < 8.0f && botAI->CanCastSpell("immolation trap", bot) &&
+                         botAI->CastSpell("immolation trap", bot))
+                    tool = "immolation trap";
+                break;
+            }
+            case CLASS_PALADIN:
+                if (dist < 8.0f && botAI->CanCastSpell("consecration", bot) && botAI->CastSpell("consecration", bot))
+                    tool = "consecration";
+                break;
+            case CLASS_MAGE:
+                if (dist < 10.0f && botAI->CanCastSpell("arcane explosion", bot) &&
+                    botAI->CastSpell("arcane explosion", bot))
+                    tool = "arcane explosion";
+                break;
+            case CLASS_PRIEST:
+                if (dist < 10.0f && botAI->CanCastSpell("holy nova", bot) && botAI->CastSpell("holy nova", bot))
+                    tool = "holy nova";
+                break;
+            case CLASS_DEATH_KNIGHT:
+            {
+                uint32 dndId = AI_VALUE2(uint32, "spell id", "death and decay");
+                if (dndId && dist <= 30.0f &&
+                    botAI->CanCastSpell(dndId, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ()) &&
+                    botAI->CastSpell(dndId, spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ()))
+                    tool = "death and decay";
+                break;
+            }
+            case CLASS_SHAMAN:
+                if (dist < 8.0f && botAI->CanCastSpell("magma totem", bot) && botAI->CastSpell("magma totem", bot))
+                    tool = "magma totem";
+                break;
+            default:
+                break;
+        }
+    }
+
+    if (tool)
+    {
+        value->MarkFlushCast();
+        LOG_DEBUG("playerbots", "Bot {} sweeps for {} with {}", bot->GetName(), suspicion.stealtherName, tool);
+        Felworld::LogEvent(
+            bot->GetGUID(), "stealth_flush",
+            Acore::StringFormat("{{\"suspect\":\"{}\",\"tool\":\"{}\"}}", suspicion.stealtherName, tool));
+        METRIC_VALUE("playerbots_stealth_flush", 1, METRIC_TAG("tool", tool));
+        return true;
+    }
+
+    // Nothing castable from here: search the spot like a player would.
+    if (dist > 3.0f)
+        return MoveTo(bot->GetMapId(), spot.GetPositionX(), spot.GetPositionY(), spot.GetPositionZ(), false, false,
+                      false, false, MovementPriority::MOVEMENT_NORMAL);
+
+    return false;
 }

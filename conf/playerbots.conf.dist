@@ -2667,6 +2667,22 @@ AiPlayerbot.EnableStealthReactions = 1
 AiPlayerbot.StealthReactionCooldown = 180
 # Percent chance the startle resolves into the follow-up emote.
 AiPlayerbot.StealthReactionEmoteChance = 30
+# Stealth flushing: a bot that loses sight of an enemy it knows went into
+# hiding - a rogue Vanishing mid-fight, a duel opponent stealthing during
+# the countdown, a spotted sneak slipping back out of detection range -
+# remembers the last place it perceived them and tries to flush them out:
+# it sweeps the spot, and classes with a tool use it (paladin
+# Consecration, hunter Flare and a trap, mage Arcane Explosion, priest
+# Holy Nova, death knight Death and Decay, shaman Magma Totem; druids
+# instead tag a revealed rogue/druid with Faerie Fire so they can't
+# restealth). Never used against someone directly targetable, and only
+# against enemies the bot would fight anyway (truces and satiation are
+# honored; duel opponents always count). Chance is rolled once per
+# disappearance - the rest of the time the bot shrugs and moves on.
+# 0 disables flushing (the startle reactions above are unaffected).
+AiPlayerbot.StealthFlushChance = 70
+# How long (seconds) the suspicion - and the search - lasts.
+AiPlayerbot.StealthFlushSeconds = 15
 
 # Human reaction latency (Felworld): triggers that model twitch reactions -
 # interrupts, dispels/decurses (including Hand of Freedom on a rooted ally),

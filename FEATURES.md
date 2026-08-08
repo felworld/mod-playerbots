@@ -209,6 +209,37 @@ their own group — and a bot that is itself stealthed stays quiet rather
 than give its position away. `AiPlayerbot.EnableStealthReactions`
 (default on) plus cooldown/emote-chance knobs in `playerbots.conf.dist`.
 
+## Stealth flushing
+
+Startling is one thing; doing something about it is another. Each bot
+keeps a short perception ledger of the enemies around it, and when one
+it could perceive disappears *while hidden* — a rogue Vanishing
+mid-fight, a duel opponent stealthing during the countdown, a spotted
+sneak slipping back out of detection range — the bot forms a suspicion
+anchored to the last place it perceived them. Someone who simply ran
+away in the open is forgotten, not hunted.
+
+For the length of the suspicion window the bot sweeps that spot the way
+a player would, and classes with a flush tool use it: paladins drop
+Consecration on arrival, hunters Flare the spot from range and mine it
+with a trap when out of combat, mages and priests pulse Arcane
+Explosion/Holy Nova, death knights put Death and Decay on it, shamans
+plant a Magma Totem. Classes without a tool still walk over and search.
+Flushing never replaces fighting: the moment the stealther is directly
+perceivable again the suspicion clears and ordinary targeting takes
+over — which for druids means tagging a revealed rogue or fellow druid
+with Faerie Fire ahead of the normal rotation, locking out
+Vanish/restealth for its duration.
+
+Suspicions only form against enemies the bot would fight anyway — the
+same-class truce and corpse-camping satiation boards are honored, and
+unflagged players are never hunted — except a duel opponent, who always
+counts. The flush roll happens once per disappearance
+(`AiPlayerbot.StealthFlushChance`, default 70), so some bots shrug and
+move on while most give chase for `AiPlayerbot.StealthFlushSeconds`
+(default 15). Under the `AiPlayerbot.EnableStealthReactions` umbrella;
+`0` chance disables flushing without touching the startle reactions.
+
 ## Quest-competition groups
 
 A solo random bot that sees a nearby ungrouped

@@ -126,6 +126,7 @@ public:
         creators["pending thank"] = &ValueContext::pending_thank;
         creators["stealther spotted"] = &ValueContext::stealther_spotted;
         creators["pending stealth emote"] = &ValueContext::pending_stealth_emote;
+        creators["stealth suspicion"] = &ValueContext::stealth_suspicion;
         creators["closest friendly players"] = &ValueContext::closest_friendly_players;
         creators["nearest enemy players"] = &ValueContext::nearest_enemy_players;
         creators["nearest unflagged enemy players"] = &ValueContext::nearest_unflagged_enemy_players;
@@ -459,6 +460,7 @@ private:
     {
         return new ManualSetValue<StealthSpotEvent>(botAI, StealthSpotEvent(), "pending stealth emote");
     }
+    static UntypedValue* stealth_suspicion(PlayerbotAI* botAI) { return new StealthSuspicionValue(botAI); }
     static UntypedValue* closest_friendly_players(PlayerbotAI* botAI)
     {
         return new NearestFriendlyPlayersValue(botAI, INTERACTION_DISTANCE);

@@ -150,6 +150,35 @@ public:
     }
 };
 
+// Vs a rogue or fellow druid, Faerie Fire is the anti-stealth play first
+// and a stat debuff second: it locks out stealth and Vanish while it
+// runs, so landing it the moment they're targetable is what keeps them
+// from disappearing again (Felworld). The spec strategies wire this at
+// high relevance so the tag beats the normal rotation to the punch; the
+// plain rotation triggers still handle every other target.
+class FaerieFireStealthLockTrigger : public DebuffTrigger
+{
+public:
+    FaerieFireStealthLockTrigger(PlayerbotAI* botAI, std::string const& spell) : DebuffTrigger(botAI, spell) {}
+
+    bool IsActive() override
+    {
+        Unit* target = GetTarget();
+        if (!target || !target->IsPlayer())
+            return false;
+
+        uint8 const targetClass = target->ToPlayer()->getClass();
+        if (targetClass != CLASS_ROGUE && targetClass != CLASS_DRUID)
+            return false;
+
+        // A prowling cat doesn't blow its own opener to tag first.
+        if (botAI->HasAura("prowl", bot))
+            return false;
+
+        return DebuffTrigger::IsActive();
+    }
+};
+
 class BashInterruptSpellTrigger : public InterruptSpellTrigger
 {
 public:

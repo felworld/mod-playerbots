@@ -88,6 +88,8 @@ public:
         creators["bash"] = &DruidTriggerFactoryInternal::bash;
         creators["faerie fire (feral)"] = &DruidTriggerFactoryInternal::faerie_fire_feral;
         creators["faerie fire"] = &DruidTriggerFactoryInternal::faerie_fire;
+        creators["faerie fire stealth lock"] = &DruidTriggerFactoryInternal::faerie_fire_stealth_lock;
+        creators["faerie fire (feral) stealth lock"] = &DruidTriggerFactoryInternal::faerie_fire_feral_stealth_lock;
         creators["insect swarm"] = &DruidTriggerFactoryInternal::insect_swarm;
         creators["insect swarm on attacker"] = &DruidTriggerFactoryInternal::insect_swarm_on_attacker;
         creators["moonfire"] = &DruidTriggerFactoryInternal::moonfire;
@@ -153,6 +155,14 @@ private:
     static Trigger* moonfire(PlayerbotAI* botAI) { return new MoonfireTrigger(botAI); }
     static Trigger* moonfire_on_attacker(PlayerbotAI* botAI) { return new MoonfireOnAttackerTrigger(botAI); }
     static Trigger* faerie_fire(PlayerbotAI* botAI) { return new FaerieFireTrigger(botAI); }
+    static Trigger* faerie_fire_stealth_lock(PlayerbotAI* botAI)
+    {
+        return new FaerieFireStealthLockTrigger(botAI, "faerie fire");
+    }
+    static Trigger* faerie_fire_feral_stealth_lock(PlayerbotAI* botAI)
+    {
+        return new FaerieFireStealthLockTrigger(botAI, "faerie fire (feral)");
+    }
     static Trigger* natures_grasp(PlayerbotAI* botAI) { return new NaturesGraspTrigger(botAI); }
     static Trigger* berserk(PlayerbotAI* botAI) { return new BerserkTrigger(botAI); }
     static Trigger* berserk_active(PlayerbotAI* botAI) { return new BerserkActiveTrigger(botAI); }

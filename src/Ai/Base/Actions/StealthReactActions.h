@@ -8,6 +8,7 @@
 #define _PLAYERBOT_STEALTHREACTACTIONS_H
 
 #include "Action.h"
+#include "MovementActions.h"
 
 class PlayerbotAI;
 class Unit;
@@ -33,6 +34,22 @@ class StealthSpotEmoteAction : public Action
 {
 public:
     StealthSpotEmoteAction(PlayerbotAI* botAI) : Action(botAI, "stealth spot emote") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
+// Sweep the last-known spot of an enemy the bot believes went into hiding:
+// walk over like a player searching, and flush with whatever the class
+// has - Consecration, Flare on the spot, a trap, Arcane Explosion, Holy
+// Nova, Death and Decay, Magma Totem. Classes without a tool still search
+// the spot. Never used against a directly targetable stealther - once the
+// bot perceives them again the suspicion clears and ordinary targeting
+// (and a druid's Faerie Fire) takes over.
+class FlushStealtherAction : public MovementAction
+{
+public:
+    FlushStealtherAction(PlayerbotAI* botAI) : MovementAction(botAI, "flush stealther") {}
 
     bool Execute(Event event) override;
     bool isUseful() override;

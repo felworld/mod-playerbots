@@ -286,8 +286,18 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
     uint8 tab = GetPlayerSpecTab(player);
 
     if (!player->InBattleground())
+    {
         engine->addStrategiesNoInit("racials", "chat", "default", "cast time", "potions", "engineering", "duel",
                                     "boost", nullptr);
+
+        // The flush half of the stealth reactions runs in combat too: a
+        // mid-fight Vanish is exactly when Consecration on the spot
+        // matters, and the trigger's per-tick value query keeps the
+        // suspicion tracker's perception ledger warm through the fight.
+        // The startle/emote halves guard on !IsInCombat themselves (Felworld).
+        if (sPlayerbotAIConfig.enableStealthReactions)
+            engine->addStrategy("stealth react", false);
+    }
 
     if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasRealPlayerMaster())
         engine->addStrategy("avoid aoe", false);

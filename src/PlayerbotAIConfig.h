@@ -228,6 +228,8 @@ public:
     bool enableStealthReactions;
     uint32 stealthReactionCooldown;
     uint32 stealthReactionEmoteChance;
+    uint32 stealthFlushChance;
+    uint32 stealthFlushSeconds;
 
     // chat
     bool randomBotTalk;

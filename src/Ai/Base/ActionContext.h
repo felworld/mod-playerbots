@@ -194,6 +194,7 @@ public:
         creators["thank healer"] = &ActionContext::thank_healer;
         creators["startle at stealther"] = &ActionContext::startle_at_stealther;
         creators["stealth spot emote"] = &ActionContext::stealth_spot_emote;
+        creators["flush stealther"] = &ActionContext::flush_stealther;
         creators["reach bystander to assist"] = &ActionContext::reach_bystander_to_assist;
         creators["attack bystander attacker"] = &ActionContext::attack_bystander_attacker;
         creators["check values"] = &ActionContext::check_values;
@@ -365,6 +366,7 @@ private:
     static Action* thank_healer(PlayerbotAI* botAI) { return new ThankHealerAction(botAI); }
     static Action* startle_at_stealther(PlayerbotAI* botAI) { return new StartleAtStealtherAction(botAI); }
     static Action* stealth_spot_emote(PlayerbotAI* botAI) { return new StealthSpotEmoteAction(botAI); }
+    static Action* flush_stealther(PlayerbotAI* botAI) { return new FlushStealtherAction(botAI); }
     static Action* reach_bystander_to_assist(PlayerbotAI* botAI) { return new ReachBystanderToAssistAction(botAI); }
     static Action* attack_bystander_attacker(PlayerbotAI* botAI) { return new AttackBystanderAttackerAction(botAI); }
     static Action* check_mail(PlayerbotAI* botAI) { return new CheckMailAction(botAI); }

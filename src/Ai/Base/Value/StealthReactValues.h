@@ -8,9 +8,11 @@
 #define _PLAYERBOT_STEALTHREACTVALUES_H
 
 #include "ObjectGuid.h"
+#include "Position.h"
 #include "Timer.h"
 #include "Value.h"
 
+#include <string>
 #include <unordered_map>
 
 class Player;
@@ -57,6 +59,53 @@ public:
 private:
     std::unordered_map<ObjectGuid, uint32> _cooldownEndMs;
     uint32 _lastPruneMs = 0;
+};
+
+// The enemy this bot has reason to believe is hiding nearby: it perceived
+// them - saw them plainly, or had a detection ping on their stealth - and
+// then lost them while they carried a stealth or invisibility aura. A
+// rogue Vanishing mid-fight, a duel opponent stealthing in the countdown,
+// a spotted sneak slipping back out of detection range. timeMs of 0 means
+// no suspicion.
+struct StealthSuspicion
+{
+    ObjectGuid stealther;
+    std::string stealtherName;
+    Position lastKnown;
+    uint32 timeMs = 0;
+    // The one-per-suspicion patience roll (StealthFlushChance): a failed
+    // roll is a bot that shrugs and moves on instead of sweeping the spot.
+    bool flushApproved = false;
+};
+
+// Watches enemy players the bot can currently perceive and turns a
+// perception loss into a StealthSuspicion when the vanished party is in
+// fact hidden (stealth/invisibility aura) rather than simply gone. The
+// suspicion lives for StealthFlushSeconds, and clears early if the
+// stealther becomes perceivable again - from then on direct targeting is
+// the right tool, not area flushing.
+class StealthSuspicionValue : public CalculatedValue<StealthSuspicion>
+{
+public:
+    StealthSuspicionValue(PlayerbotAI* botAI) : CalculatedValue<StealthSuspicion>(botAI, "stealth suspicion") {}
+
+    StealthSuspicion Calculate() override;
+
+    // Spacing between flush casts, so a mage sweeps the spot with a few
+    // Arcane Explosions over the window instead of one per AI tick.
+    bool FlushCastReady() const;
+    void MarkFlushCast();
+
+private:
+    struct Perceived
+    {
+        Position pos;
+        uint32 lastSeenMs = 0;
+    };
+
+    std::unordered_map<ObjectGuid, Perceived> _perceived;
+    StealthSuspicion _suspicion;
+    uint32 _lastFlushMs = 0;
 };
 
 #endif

@@ -191,6 +191,9 @@ void BalanceDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     GenericDruidStrategy::InitTriggers(triggers);
 
     // Debuffs and DoTs
+    // Vs rogues and druids the tag doubles as an anti-stealth lock - land
+    // it before anything else so they can't Vanish/restealth (Felworld).
+    triggers.push_back(new TriggerNode("faerie fire stealth lock", { NextAction("faerie fire", 55.0f) }));
     triggers.push_back(new TriggerNode("faerie fire", { NextAction("faerie fire", 29.5f) }));
     triggers.push_back(new TriggerNode("insect swarm", { NextAction("insect swarm", 18.0f) }));
     triggers.push_back(new TriggerNode("moonfire", { NextAction("moonfire", 17.5f) }));

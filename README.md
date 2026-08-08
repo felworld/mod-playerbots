@@ -55,6 +55,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   a bot that detects someone stealthed nearby freezes and snaps around to
   face them, sometimes waving at a friendly sneak or calling out a hostile
   one.
+- **[Stealth flushing](FEATURES.md#stealth-flushing)** — an enemy who
+  vanishes on a bot gets their last-known spot swept: Consecration, Flare
+  and traps, AoE pulses, and Faerie Fire on a revealed rogue so they can't
+  restealth.
 - **[Quest-competition groups](FEATURES.md#quest-competition-groups)** — a
   bot competing with you for spawns invites you to group and grinds
   alongside you as a peer.

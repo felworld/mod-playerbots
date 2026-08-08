@@ -9,13 +9,69 @@
 #include "CellImpl.h"
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
+#include "ObjectAccessor.h"
 #include "Player.h"
 #include "Playerbots.h"
 #include "SpellAuraDefines.h"
+#include "WpvpSatiation.h"
+#include "WpvpTruce.h"
 
 namespace
 {
     constexpr uint32 PRUNE_INTERVAL_MS = 60 * 1000;
+
+    // How far around the bot the suspicion tracker keeps its perception
+    // ledger - the "on screen" bubble a player would remember faces from.
+    constexpr float STEALTH_TRACK_RANGE = 60.0f;
+
+    // A ledger entry whose player drifted this far away is forgotten
+    // without suspicion - they left, they didn't hide.
+    constexpr float STEALTH_TRACK_DROP_RANGE = 90.0f;
+
+    // Spacing between flush casts against one suspicion.
+    constexpr uint32 STEALTH_FLUSH_RECAST_MS = 4 * 1000;
+
+    // Whose disappearance would this bot even care about: enemies, plus a
+    // duel opponent (who is usually same-faction and never PvP-flagged
+    // against the bot).
+    bool IsSuspect(Player* bot, PlayerbotAI* botAI, Player* player)
+    {
+        if (bot->duel && bot->duel->Opponent == player)
+            return true;
+
+        return botAI->IsOpposing(player);
+    }
+
+    // Whether the bot currently perceives this player at all: plain sight
+    // through the server's visibility, or the 360° stealth-detection ping.
+    bool Perceivable(Player* bot, Player* target)
+    {
+        if (!bot->IsWithinLOSInMap(target))
+            return false;
+
+        if (target->HasStealthAura())
+            return CanDetectStealth360(bot, target);
+
+        return bot->CanSeeOrDetect(target);
+    }
+
+    // The same courtesies that gate initiating an open attack gate hunting
+    // a hidden one - flushing someone the bot wouldn't fight is griefing.
+    bool WouldFlush(Player* bot, PlayerbotAI* botAI, Player* enemy)
+    {
+        // Except in a duel: the opponent hiding is the one case the bot is
+        // expected to counter.
+        if (bot->duel && bot->duel->Opponent == enemy)
+            return true;
+
+        if (!botAI->IsOpposing(enemy) || !enemy->IsPvP())
+            return false;
+
+        if (sPlayerbotAIConfig.IsPvpProhibited(enemy->GetZoneId(), enemy->GetAreaId()))
+            return false;
+
+        return !WpvpTruceHolds(bot, enemy) && !WpvpSatiated(bot, enemy);
+    }
 }
 
 bool CanDetectStealth360(Player* bot, Unit* target)
@@ -176,4 +232,105 @@ Unit* StealtherSpottedValue::Calculate()
 void StealtherSpottedValue::MarkReacted(ObjectGuid stealtherGuid)
 {
     _cooldownEndMs[stealtherGuid] = getMSTime() + sPlayerbotAIConfig.stealthReactionCooldown * IN_MILLISECONDS;
+}
+
+StealthSuspicion StealthSuspicionValue::Calculate()
+{
+    if (!sPlayerbotAIConfig.enableStealthReactions || !sPlayerbotAIConfig.stealthFlushChance)
+        return StealthSuspicion();
+
+    if (!bot->IsInWorld() || !bot->IsAlive())
+    {
+        _perceived.clear();
+        _suspicion = StealthSuspicion();
+        return _suspicion;
+    }
+
+    uint32 now = getMSTime();
+
+    // Refresh the perception ledger from the players around the bot.
+    std::list<Player*> players;
+    Acore::AnyPlayerInObjectRangeCheck check(bot, STEALTH_TRACK_RANGE, /*reqAlive*/ true, /*disallowGM*/ true);
+    Acore::PlayerListSearcher<Acore::AnyPlayerInObjectRangeCheck> searcher(bot, players, check);
+    Cell::VisitObjects(bot, searcher, STEALTH_TRACK_RANGE);
+
+    for (Player* player : players)
+    {
+        if (player == bot || !IsSuspect(bot, botAI, player))
+            continue;
+
+        if (Perceivable(bot, player))
+        {
+            Perceived& entry = _perceived[player->GetGUID()];
+            entry.pos = player->GetPosition();
+            entry.lastSeenMs = now;
+        }
+    }
+
+    // Entries the scan didn't refresh: decide "got away in the open"
+    // (forget) from "went into hiding" (suspicion).
+    for (auto it = _perceived.begin(); it != _perceived.end();)
+    {
+        if (it->second.lastSeenMs == now)
+        {
+            ++it;
+            continue;
+        }
+
+        Player* player = ObjectAccessor::FindPlayer(it->first);
+        if (!player || !player->IsAlive() || player->GetMap() != bot->GetMap() ||
+            bot->GetExactDist(player) > STEALTH_TRACK_DROP_RANGE)
+        {
+            it = _perceived.erase(it);
+            continue;
+        }
+
+        // Still perceivable, just outside the scan bubble - keep tracking.
+        if (Perceivable(bot, player))
+        {
+            it->second.pos = player->GetPosition();
+            it->second.lastSeenMs = now;
+            ++it;
+            continue;
+        }
+
+        if ((player->HasStealthAura() || player->HasInvisibilityAura()) && WouldFlush(bot, botAI, player))
+        {
+            _suspicion.stealther = it->first;
+            _suspicion.stealtherName = player->GetName();
+            _suspicion.lastKnown = it->second.pos;
+            _suspicion.timeMs = now;
+            _suspicion.flushApproved = urand(1, 100) <= sPlayerbotAIConfig.stealthFlushChance;
+
+            LOG_DEBUG("playerbots", "Bot {} suspects {} went into hiding nearby (flush: {})", bot->GetName(),
+                      _suspicion.stealtherName, _suspicion.flushApproved);
+        }
+
+        it = _perceived.erase(it);
+    }
+
+    if (_suspicion.timeMs)
+    {
+        Player* stealther = ObjectAccessor::FindPlayer(_suspicion.stealther);
+        bool const expired =
+            getMSTimeDiff(_suspicion.timeMs, now) > sPlayerbotAIConfig.stealthFlushSeconds * IN_MILLISECONDS;
+
+        // Perceivable again means direct targeting is back on the table -
+        // area flushing has done its job (or the stealther blew it).
+        if (expired || !stealther || !stealther->IsAlive() || stealther->GetMap() != bot->GetMap() ||
+            Perceivable(bot, stealther))
+            _suspicion = StealthSuspicion();
+    }
+
+    return _suspicion;
+}
+
+bool StealthSuspicionValue::FlushCastReady() const
+{
+    return !_lastFlushMs || getMSTimeDiff(_lastFlushMs, getMSTime()) >= STEALTH_FLUSH_RECAST_MS;
+}
+
+void StealthSuspicionValue::MarkFlushCast()
+{
+    _lastFlushMs = getMSTime();
 }

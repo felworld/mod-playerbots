@@ -20,4 +20,13 @@ void StealthReactStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         NextAction("startle at stealther", 89.0f) }));
     triggers.push_back(new TriggerNode("stealth spot emote", {
         NextAction("stealth spot emote", 88.0f) }));
+
+    // Relevance 60: sweeping a vanished enemy's last spot is a deliberate
+    // hunt, not a reflex - it outranks idle wandering and RPG business but
+    // yields to the reflexes above, to rescues, and (in the combat engine,
+    // where this strategy also runs) to emergency self-care. The action's
+    // isUseful additionally stands down whenever a perceivable target
+    // exists - fighting the seen beats poking at shadows.
+    triggers.push_back(new TriggerNode("stealth suspicion", {
+        NextAction("flush stealther", 60.0f) }));
 }

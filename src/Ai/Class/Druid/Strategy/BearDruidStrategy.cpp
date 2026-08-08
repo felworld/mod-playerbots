@@ -119,6 +119,11 @@ void BearDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "faerie fire (feral)", { NextAction("faerie fire (feral)", 17.0f) }
     ));
+    // Vs rogues and druids the tag doubles as an anti-stealth lock - land
+    // it before anything else so they can't Vanish/restealth (Felworld).
+    triggers.push_back(new TriggerNode(
+        "faerie fire (feral) stealth lock", { NextAction("faerie fire (feral)", 55.0f) }
+    ));
     triggers.push_back(new TriggerNode(
         "lacerate", { NextAction("lacerate", 16.0f) }
     ));
