@@ -108,6 +108,13 @@ is in [FEATURES.md](FEATURES.md). In brief:
   after each kill a bot may decide its victim is dealt with and stop
   re-engaging them for a while; most move on after a kill or two, a rare
   few camp on.
+- **[Chase break-off](FEATURES.md#chase-break-off)** — a bot whose
+  world-PvP target cleanly escapes rolls to give up the chase every so
+  often instead of pursuing forever; most turn back quickly, the odd one
+  stays dogged, and a runner who comes back is fair game again.
+- **[Target peeling](FEATURES.md#target-peeling)** — a bot fighting one
+  enemy player switches to another who shows up substantially closer,
+  instead of tunneling on its first pick past fresh threats.
 - **[Duel openers](FEATURES.md#duel-openers)** — bots use the pre-duel
   countdown like a player would: rogues and ferals stealth and slip out
   of detection range, warriors back off to Charge range, hunters trap

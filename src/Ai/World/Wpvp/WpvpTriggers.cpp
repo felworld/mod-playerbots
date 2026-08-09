@@ -95,3 +95,19 @@ bool WpvpShadowmeldTrigger::IsActive()
 
     return true;
 }
+
+bool WpvpPeelTrigger::IsActive()
+{
+    if (sPlayerbotAIConfig.wpvpPeelAdvantageYards <= 0.0f || bot->InBattleground() || bot->InArena())
+        return false;
+
+    Unit* current = AI_VALUE(Unit*, "current target");
+    if (!current || !current->IsPlayer() || !current->IsAlive())
+        return false;
+
+    Unit* alternative = AI_VALUE(Unit*, "enemy player target");
+    if (!alternative || alternative == current || !alternative->IsPlayer())
+        return false;
+
+    return bot->GetDistance(alternative) + sPlayerbotAIConfig.wpvpPeelAdvantageYards <= bot->GetDistance(current);
+}

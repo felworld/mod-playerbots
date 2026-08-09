@@ -35,11 +35,25 @@ void CombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // Peel (Felworld): while fighting one enemy player in the open world, a
+    // substantially closer one takes over - relevance just above the reach
+    // actions so the switch beats another step of the chase.
+    triggers.push_back(
+        new TriggerNode(
+            "wpvp peel",
+            {
+                NextAction("attack enemy player", ACTION_HIGH + 2)
+            }
+        )
+    );
+    // Last-resort give-up after five minutes of unmastered combat. ("reset"
+    // was never a registered action, so this node used to be a silent no-op -
+    // and at relevance 1 it would have lost to the reach actions anyway.)
     triggers.push_back(
         new TriggerNode(
             "combat stuck",
             {
-                NextAction("reset", 1.0f)
+                NextAction("drop target", 89)
             }
         )
     );

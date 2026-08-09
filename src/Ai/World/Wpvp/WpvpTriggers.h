@@ -38,4 +38,17 @@ public:
     bool IsActive() override;
 };
 
+// While fighting one enemy player in the open world, another acceptable enemy
+// has shown up at least AiPlayerbot.WpvpPeelAdvantageYards closer than the
+// current fight - the point where a human would switch. "enemy player target"
+// already resolves to the best alternative (it excludes the current victim),
+// so firing "attack enemy player" performs the switch.
+class WpvpPeelTrigger : public Trigger
+{
+public:
+    WpvpPeelTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wpvp peel", 3) {}
+
+    bool IsActive() override;
+};
+
 #endif

@@ -472,6 +472,9 @@ public:
     uint32 wpvpDeathCap;
     uint32 wpvpSatiationChance;
     uint32 wpvpSatiationMinutes;
+    uint32 wpvpChaseBreakChance;
+    uint32 wpvpChaseBreakSecondsMin, wpvpChaseBreakSecondsMax;
+    float wpvpPeelAdvantageYards;
     uint32 wpvpGoadCooldown;
     bool wpvpCalloutEnabled;
     uint32 wpvpCalloutZoneCooldown;

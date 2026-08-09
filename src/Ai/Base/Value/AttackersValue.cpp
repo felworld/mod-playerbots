@@ -12,6 +12,7 @@
 #include "Playerbots.h"
 #include "ReputationMgr.h"
 #include "ServerFacade.h"
+#include "WpvpChase.h"
 #include "WpvpGuardRespect.h"
 
 GuidVector AttackersValue::Calculate()
@@ -225,6 +226,12 @@ bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range
     // this gate also fails "invalid target", so an ongoing chase gets dropped
     // the moment either end of it reaches guard cover.
     if (WpvpGuardsBarPursuit(bot, attacker))
+        return false;
+
+    // Chase leash (Felworld): a runner this bot rolled to stop chasing stays
+    // off the menu until they close back in or land a hit - the ban clears in
+    // the board, not here.
+    if (WpvpChaseBanned(bot, attacker))
         return false;
 
     // Creature-specific checks

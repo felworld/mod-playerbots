@@ -276,6 +276,7 @@ public:
         creators["start duel possible"] = &TriggerContext::start_duel_possible;
         creators["wpvp goad"] = &TriggerContext::wpvp_goad;
         creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
+        creators["wpvp peel"] = &TriggerContext::wpvp_peel;
         creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
         creators["wpvp escalation callout"] = &TriggerContext::wpvp_escalation_callout;
         creators["wpvp defense response"] = &TriggerContext::wpvp_defense_response;
@@ -531,6 +532,7 @@ private:
     static Trigger* start_duel_possible(PlayerbotAI* botAI) { return new StartDuelPossibleTrigger(botAI); }
     static Trigger* wpvp_goad(PlayerbotAI* botAI) { return new WpvpGoadTrigger(botAI); }
     static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
+    static Trigger* wpvp_peel(PlayerbotAI* botAI) { return new WpvpPeelTrigger(botAI); }
     static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }
     static Trigger* wpvp_escalation_callout(PlayerbotAI* botAI) { return new WpvpEscalationCalloutTrigger(botAI); }
     static Trigger* wpvp_defense_response(PlayerbotAI* botAI) { return new WpvpDefenseResponseTrigger(botAI); }

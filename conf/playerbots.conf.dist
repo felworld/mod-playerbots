@@ -1225,6 +1225,25 @@ AiPlayerbot.WpvpDeathCap = 2
 AiPlayerbot.WpvpSatiationChance = 60
 AiPlayerbot.WpvpSatiationMinutes = 10
 
+# A bot chasing a world-PvP target that has broken contact (no damage either
+# way and beyond ~30yd) rolls this % chance to abandon the chase after each
+# interval of ChaseBreakSeconds (random in the min-max band), giving chases a
+# geometric falloff: at 50, half the bots break off at the first roll, 75%
+# within two - a rare few stay dogged. An abandoned runner stays dropped
+# until they close back in on the bot or land a hit, either of which re-arms
+# the fight. 0 disables (bots chase to the ends of the earth).
+# Default: 50 / 12 / 30
+AiPlayerbot.WpvpChaseBreakChance = 50
+AiPlayerbot.WpvpChaseBreakSecondsMin = 12
+AiPlayerbot.WpvpChaseBreakSecondsMax = 30
+
+# While fighting one enemy player in the open world, another enemy showing up
+# at least this many yards closer than the current fight takes over as the
+# bot's target - close threats beat a receding chase. 0 disables peeling (the
+# first target keeps the bot's attention for good).
+# Default: 25
+AiPlayerbot.WpvpPeelAdvantageYards = 25
+
 # Cooldown (seconds) between goad attempts by a stealthed rogue/druid trying
 # to provoke unflagged enemies into attacking.
 # Default: 90

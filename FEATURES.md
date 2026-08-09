@@ -609,6 +609,46 @@ survives as a realistic griefer, not the norm.
 `AiPlayerbot.WpvpSatiationChance` (percent, 0 disables) and
 `AiPlayerbot.WpvpSatiationMinutes` set the dice and the grace.
 
+## Chase break-off
+
+Nothing in the pursuit path had a distance or time bound, so a bot whose
+world-PvP target ran would chase them across the continent with Terminator
+single-mindedness — the only things that ended a chase were a kill, the
+bot's death, or guard cover. Now a chase whose target has broken contact
+(no damage in either direction for a few seconds and beyond ~30 yards)
+rolls `AiPlayerbot.WpvpChaseBreakChance` to give up after each interval of
+`AiPlayerbot.WpvpChaseBreakSeconds{Min,Max}` (randomized per roll). Like
+satiation, the repeated roll makes the falloff geometric: at the default
+50% half the bots shrug and turn back within one interval, three quarters
+within two, and the rare dogged one hunts you far longer — give-up timing
+varies instead of every bot leashing at the same beat. Landing a hit or
+closing back into range resets the clock, so an actual running battle is
+never interrupted; only a cleanly escaping target gets released.
+
+Giving up sticks: the bot won't re-acquire that runner on sight, so
+stopping to eat at 70 yards doesn't restart the hunt. The grudge is
+behavioral, not timed — it clears the moment the runner turns the fight
+back on, by closing meaningfully back in on the bot or by landing a hit on
+anyone (a returning entrance invites a re-chase, and swinging at the bot's
+group mate makes them fair game again). As a backstop, a bot stuck in any
+unmastered combat for five minutes now genuinely drops its target — the
+upstream trigger for that pointed at an action that was never registered.
+`AiPlayerbot.WpvpChaseBreakChance = 0` disables the whole leash.
+
+## Target peeling
+
+Once a bot committed to one enemy player it was locked on: the target
+value that feeds combat never re-evaluated, so a bot would chase its
+chosen victim straight past a fresh enemy standing on top of it. Now a bot
+fighting one enemy player in the open world switches to another who shows
+up at least `AiPlayerbot.WpvpPeelAdvantageYards` (default 25) closer than
+the current fight — close threats beat a receding chase, and the margin is
+wide enough that the switch reads as opportunism rather than indecision
+(no ping-ponging between two similar targets). Battlegrounds keep their
+own targeting machinery. Alongside this, enemy sightings are now evaluated
+nearest-first (the scan used to take whichever acceptable enemy the grid
+happened to list first, not the closest). `0` disables peeling.
+
 ## Duel openers
 
 A bot that agreed to a duel just stood in the open and traded first hits

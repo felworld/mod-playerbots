@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
+#include "WpvpChase.h"
 #include "WpvpGuardRespect.h"
 #include "WpvpSatiation.h"
 #include "WpvpTerrainLos.h"
@@ -41,6 +42,11 @@ bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
         // combat-ref path in EnemyPlayerValue::Calculate never comes
         // through here.
         if (WpvpSatiated(bot, enemy))
+            return false;
+
+        // Chase leash (Felworld): don't re-acquire a runner we gave up on -
+        // the ban clears when they close back in or land a hit.
+        if (WpvpChaseBanned(bot, enemy))
             return false;
 
         return true;
@@ -82,6 +88,11 @@ Unit* EnemyPlayerValue::Calculate()
         if (WpvpGuardsBarPursuit(bot, pTarget))
             continue;
 
+        // Chase leash (Felworld): same for a chase this bot rolled to
+        // abandon - the lingering combat ref must not rekindle it.
+        if (WpvpChaseBanned(bot, pTarget))
+            continue;
+
         if ((bot->GetTeamId() == TEAM_HORDE && pTarget->HasAura(23333)) ||
             (bot->GetTeamId() == TEAM_ALLIANCE && pTarget->HasAura(23335)))
             return pTarget;
@@ -89,29 +100,50 @@ Unit* EnemyPlayerValue::Calculate()
         targets.push_back(pTarget);
     }
 
+    Unit* engaged = nullptr;
     if (!targets.empty())
     {
         std::sort(targets.begin(), targets.end(),
                   [&](Unit const* pUnit1, Unit const* pUnit2)
                   { return bot->GetDistance(pUnit1) < bot->GetDistance(pUnit2); });
 
-        return *targets.begin();
+        engaged = *targets.begin();
+
+        // Peel (Felworld): in the open world an active fight no longer
+        // short-circuits the sighting scan below - a fresh enemy
+        // substantially closer than the one we're fighting takes over.
+        // Battlegrounds keep the old "nearest active fight wins" behavior.
+        if (bot->GetBattleground() || sPlayerbotAIConfig.wpvpPeelAdvantageYards <= 0.0f)
+            return engaged;
     }
 
     // 2. Find enemy player in range.
 
     GuidVector players = AI_VALUE(GuidVector, "nearest enemy players");
+
+    // Nearest first: grid iteration order isn't distance order, and both the
+    // "first acceptable wins" loop and the peel margin below assume it.
+    std::vector<Player*> candidates;
+    candidates.reserve(players.size());
+    for (auto const& gTarget : players)
+        if (Player* pTarget = dynamic_cast<Player*>(botAI->GetUnit(gTarget)))
+            candidates.push_back(pTarget);
+
+    std::sort(candidates.begin(), candidates.end(),
+              [&](Player const* p1, Player const* p2)
+              { return bot->GetDistance(p1) < bot->GetDistance(p2); });
+
     float const maxAggroDistance = GetMaxAttackDistance();
     bool const onWpvpExcursion = botAI->rpgInfo.GetStatus() == RPG_GO_WPVP;
-    for (auto const& gTarget : players)
+    for (Player* pTarget : candidates)
     {
-        Unit* pUnit = botAI->GetUnit(gTarget);
-        if (!pUnit)
-            continue;
-
-        Player* pTarget = dynamic_cast<Player*>(pUnit);
-        if (!pTarget)
-            continue;
+        // Peel margin: while engaged, a bystander only wins when they're
+        // WpvpPeelAdvantageYards closer than the current fight - enough of a
+        // gap that switching reads as opportunism, not indecision. Sorted
+        // nearest-first, so once the margin fails here nobody later beats it.
+        if (engaged &&
+            bot->GetDistance(pTarget) + sPlayerbotAIConfig.wpvpPeelAdvantageYards > bot->GetDistance(engaged))
+            return engaged;
 
         if (pTarget == pVictim)
             continue;
@@ -158,6 +190,9 @@ Unit* EnemyPlayerValue::Calculate()
         }
     }
 
+    if (engaged)
+        return engaged;
+
     // 3. Check party attackers.
 
     if (Group* pGroup = bot->GetGroup())
@@ -176,7 +211,7 @@ Unit* EnemyPlayerValue::Calculate()
                     if (pAttacker->IsPlayer() && bot->IsWithinDist(pAttacker, maxAggroDistance * 2.0f) &&
                         bot->IsWithinLOSInMap(pAttacker) && !WpvpTerrainOccludes(bot, pAttacker) &&
                         pAttacker != pVictim && pAttacker->CanSeeOrDetect(bot) &&
-                        !WpvpGuardsBarPursuit(bot, pAttacker))
+                        !WpvpGuardsBarPursuit(bot, pAttacker) && !WpvpChaseBanned(bot, pAttacker))
                         return pAttacker;
             }
         }

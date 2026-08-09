@@ -9,10 +9,18 @@
 #include "AttackersValue.h"
 #include "Playerbots.h"
 #include "Unit.h"
+#include "WpvpChase.h"
 
 bool InvalidTargetValue::Calculate()
 {
     Unit* target = AI_VALUE(Unit*, qualifier);
+
+    // Chase leash (Felworld): pursuing an enemy player in the open world
+    // rolls periodic "keep chasing?" dice once contact is lost - a broken
+    // chase invalidates the target outright, which drops it below.
+    if (target && qualifier == "current target" && WpvpChaseBroken(bot, target))
+        return true;
+
     Unit* enemy = AI_VALUE(Unit*, "enemy player target");
     if (target && enemy && target == enemy && target->IsAlive())
         return false;

@@ -7,6 +7,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ScriptMgr.h"
+#include "WpvpChase.h"
 #include "WpvpDefense.h"
 #include "WpvpEmoteAlert.h"
 #include "WpvpSatiation.h"
@@ -58,7 +59,22 @@ public:
     }
 };
 
+// Damage between opposing players is what "contact" means to the chase leash:
+// it keeps a pursuit's contact clock fresh (no break rolls while blows still
+// land) and re-arms an abandoned chase when the runner swings again.
+class PlayerbotsWpvpUnitScript : public UnitScript
+{
+public:
+    PlayerbotsWpvpUnitScript() : UnitScript("PlayerbotsWpvpUnitScript", true, { UNITHOOK_ON_DAMAGE }) {}
+
+    void OnDamage(Unit* attacker, Unit* victim, uint32& /*damage*/) override
+    {
+        WpvpChaseBoard::instance().NoteDamage(attacker, victim);
+    }
+};
+
 void AddPlayerbotsWpvpScripts()
 {
     new PlayerbotsWpvpScript();
+    new PlayerbotsWpvpUnitScript();
 }
