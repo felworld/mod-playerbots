@@ -2740,13 +2740,21 @@ void RandomPlayerbotMgr::PrintStats()
     // static NewRpgStatistic rpgStasticTotal;
     std::unordered_map<uint32, int> zoneCount;
     uint8 maxBotLevel = 0;
+    uint64 goldAlliance = 0;
+    uint64 goldHorde = 0;
     for (PlayerBotMap::iterator i = playerBots.begin(); i != playerBots.end(); ++i)
     {
         Player* bot = i->second;
         if (IsAlliance(bot->getRace()))
+        {
             ++alliance[bot->GetLevel()];
+            goldAlliance += bot->GetMoney();
+        }
         else
+        {
             ++horde[bot->GetLevel()];
+            goldHorde += bot->GetMoney();
+        }
         maxBotLevel = std::max(maxBotLevel, bot->GetLevel());
 
         ++perRace[bot->getRace()];
@@ -2977,6 +2985,11 @@ void RandomPlayerbotMgr::PrintStats()
 
     for (auto const& [zoneId, count] : zoneCount)
         METRIC_VALUE("playerbots_zone", count, METRIC_TAG("zone_id", std::to_string(zoneId)));
+
+    // Copper held across the whole bot population; the Economy dashboard
+    // divides down to gold.
+    METRIC_VALUE("playerbots_gold", goldAlliance, METRIC_TAG("faction", "alliance"));
+    METRIC_VALUE("playerbots_gold", goldHorde, METRIC_TAG("faction", "horde"));
 }
 
 double RandomPlayerbotMgr::GetBuyMultiplier(Player* bot)

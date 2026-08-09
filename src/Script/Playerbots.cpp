@@ -563,6 +563,7 @@ public:
 
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSocialScripts();
+void AddPlayerbotsTelemetryScripts();
 void AddPlayerbotsWpvpScripts();
 
 void AddSC_MagtheridonBotScripts();
@@ -583,6 +584,7 @@ void AddPlayerbotsScripts()
     new PlayerBotsBGScript();
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsSocialScripts();
+    AddPlayerbotsTelemetryScripts();
     AddPlayerbotsWpvpScripts();
     AddPlayerbotsCommandscripts();
     PlayerBotsGuildValidationScript();
