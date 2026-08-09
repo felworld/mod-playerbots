@@ -292,6 +292,20 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+
+    // The Distract trick: a rogue that knows it turns a watching target
+    // away and takes the straight line instead of circling. Must outrank
+    // "stealth flank" so the turn happens before the footwork; once the
+    // target faces away the trigger goes quiet and flank's walk-in branch
+    // finishes the approach.
+    triggers.push_back(
+        new TriggerNode(
+            "distract",
+            {
+                NextAction("distract", ACTION_MOVE + 9)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "combo points 5 available",

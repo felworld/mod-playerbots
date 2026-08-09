@@ -647,6 +647,7 @@ bool PlayerbotAIConfig::Initialize()
     stealthReactionEmoteChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.StealthReactionEmoteChance", 30);
     stealthFlushChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.StealthFlushChance", 70), 100);
     stealthFlushSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.StealthFlushSeconds", 15);
+    rogueDistractChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.RogueDistractChance", 60), 100);
 
     // SPP switches
     enableGreet = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableGreet", true);

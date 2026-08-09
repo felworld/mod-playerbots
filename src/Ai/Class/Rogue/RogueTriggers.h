@@ -127,4 +127,19 @@ public:
     TricksOfTheTradeOnMainTankTrigger(PlayerbotAI* ai) : BuffOnMainTankTrigger(ai, "tricks of the trade", true) {}
 };
 
+// The Distract opener trick: stealthed in front of a watching player,
+// turn them away and take the straight line to their back instead of
+// circling (StealthFlankAction's walk-in branch handles the rest). Only
+// rogues that know the trick use it - a stable per-character roll against
+// RogueDistractChance - and only when it's worth a cast: full energy,
+// a target that cons yellow or above, and no area effect already down
+// that would sweep the approach regardless of facing.
+class DistractTrigger : public Trigger
+{
+public:
+    DistractTrigger(PlayerbotAI* botAI) : Trigger(botAI, "distract", 1) {}
+
+    bool IsActive() override;
+};
+
 #endif

@@ -2702,6 +2702,17 @@ AiPlayerbot.StealthReactionEmoteChance = 30
 AiPlayerbot.StealthFlushChance = 70
 # How long (seconds) the suspicion - and the search - lasts.
 AiPlayerbot.StealthFlushSeconds = 15
+# The rogue Distract opener trick: a stealthed rogue bot closing on a
+# player who is facing it casts Distract past them, turning their back so
+# it can walk straight in for the opener instead of circling wide. Percent
+# of rogues that know the trick - rolled once per character, so a given
+# rogue is consistently tricky or consistently not. Tricky rogues still
+# pick their moments: only at full energy, only against targets that con
+# yellow or above, and never against a defender with area damage or
+# detection already down (Consecration, Death and Decay, a flare, an
+# armed trap, a fire totem) - they'd sweep the approach no matter which
+# way they face. 0 disables the trick entirely.
+AiPlayerbot.RogueDistractChance = 60
 
 # Human reaction latency (Felworld): triggers that model twitch reactions -
 # interrupts, dispels/decurses (including Hand of Freedom on a rooted ally),

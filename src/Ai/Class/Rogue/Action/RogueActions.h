@@ -92,10 +92,18 @@ public:
     CastDismantleAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "dismantle") {}
 };
 
+// Distract is destination-targeted: the point goes past the target on
+// the bot-to-target line, so facing it turns the target's back squarely
+// to the bot for the straight walk-in (StealthFlankAction's behind-the-arc
+// branch takes over from there). All gating on who uses the trick and
+// when lives in DistractTrigger.
 class CastDistractAction : public CastSpellAction
 {
 public:
     CastDistractAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "distract") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
 };
 
 class CastVanishAction : public CastBuffSpellAction

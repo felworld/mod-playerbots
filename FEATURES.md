@@ -699,6 +699,27 @@ fixes an upstream bug where the rogue's stealthed-opener combat strategy
 never activated at all — nothing ever swapped it in when a rogue entered
 a fight stealthed. No config knob.
 
+## The Distract trick
+
+Rogue bots that would otherwise flank (above) can spend Distract the way
+a practiced player does: the point lands past a target that's facing the
+bot, the forced turn puts the target's back squarely to it (Distract's
+server effect works on out-of-combat players, and stealth detection is
+frontal-only), and the flanking logic's walk-straight-in branch takes
+over from there — no circling. Not every rogue plays this way, and the
+ones that do pick their moments. Whether a rogue knows the trick at all
+is a stable per-character roll (`AiPlayerbot.RogueDistractChance`,
+default 60% — 0 disables), so a given rogue is consistently tricky or
+consistently not. A tricky rogue only casts it at full energy (the 30
+energy comes out of overcap during the walk-in, never out of the
+opener), only against targets that con yellow, orange, or red (a green
+or gray mark isn't worth outplaying), and never against a defender with
+area damage or detection already deployed — Consecration or Death and
+Decay glowing on the ground, a flare, an armed hunter trap (visible to
+rogues through Detect Traps), or a fire totem — since those sweep the
+approach no matter which way their owner faces. PvP only: against
+creatures, sneaking is free and energy isn't.
+
 ## Duel consumable etiquette
 
 Classic dueling culture has an unwritten "no pots" rule, and upstream bots

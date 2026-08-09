@@ -7,10 +7,15 @@
 #include "RogueActions.h"
 
 #include "Event.h"
+#include "FelworldEvents.h"
+#include "Metric.h"
 #include "ObjectGuid.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "StringFormat.h"
+
+#include <cmath>
 
 namespace
 {
@@ -18,6 +23,10 @@ constexpr uint32 BG_WS_SPELL_WARSONG_FLAG = 23333;
 constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
 constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
 constexpr uint32 SPELL_MASTER_POISONER_RANK_3 = 58410;
+
+// How far past the target the Distract point lands - deep enough that the
+// forced turn puts the target's back squarely to the bot.
+constexpr float DISTRACT_OVERSHOOT = 5.0f;
 }
 
 bool CastStealthAction::isUseful()
@@ -106,6 +115,39 @@ bool CastEnvenomAction::isPossible()
 bool CastTricksOfTheTradeOnMainTankAction::isUseful()
 {
     return CastSpellAction::isUseful() && AI_VALUE2(float, "distance", GetTargetName()) < 20.0f;
+}
+
+bool CastDistractAction::isUseful()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return bot->HasStealthAura() && target && target->IsPlayer() && target->IsAlive() &&
+           target->GetMap() == bot->GetMap();
+}
+
+bool CastDistractAction::Execute(Event /*event*/)
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target)
+        return false;
+
+    uint32 const spellId = AI_VALUE2(uint32, "spell id", "distract");
+    if (!spellId)
+        return false;
+
+    float const angle = bot->GetAngle(target);
+    float x = target->GetPositionX() + std::cos(angle) * DISTRACT_OVERSHOOT;
+    float y = target->GetPositionY() + std::sin(angle) * DISTRACT_OVERSHOOT;
+    float z = target->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+
+    if (!botAI->CanCastSpell(spellId, x, y, z) || !botAI->CastSpell(spellId, x, y, z))
+        return false;
+
+    LOG_DEBUG("playerbots", "Bot {} distracts {} to walk in behind", bot->GetName(), target->GetName());
+    Felworld::LogEvent(bot->GetGUID(), "rogue_distract",
+                       Acore::StringFormat("{{\"target\":\"{}\"}}", target->GetName()));
+    METRIC_VALUE("playerbots_rogue_distract", 1);
+    return true;
 }
 
 bool UseDeadlyPoisonAction::Execute(Event /*event*/)

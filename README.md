@@ -124,6 +124,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   closing on a player circles outside its target's detection ring and
   opens from behind instead of walking the shimmer straight into their
   face — in duels, battlegrounds, and world PvP alike.
+- **[The Distract trick](FEATURES.md#the-distract-trick)** — some rogue
+  bots (default 60%, rolled per character) skip the circling: they cast
+  Distract past a watching target to turn its back, then walk straight
+  in for the opener — picking their moments by energy, target danger,
+  and whether area damage or detection is already down.
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.

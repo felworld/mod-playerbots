@@ -79,6 +79,7 @@ public:
         creators["tricks of the trade on main tank"] = &RogueTriggerFactoryInternal::tricks_of_the_trade_on_main_tank;
         creators["adrenaline rush"] = &RogueTriggerFactoryInternal::adrenaline_rush;
         creators["blade fury"] = &RogueTriggerFactoryInternal::blade_fury;
+        creators["distract"] = &RogueTriggerFactoryInternal::distract;
     }
 
 private:
@@ -102,6 +103,7 @@ private:
     {
         return new TricksOfTheTradeOnMainTankTrigger(ai);
     }
+    static Trigger* distract(PlayerbotAI* botAI) { return new DistractTrigger(botAI); }
 };
 
 class RogueAiObjectContextInternal : public NamedObjectContext<Action>
@@ -145,6 +147,7 @@ public:
         creators["fan of knives"] = &RogueAiObjectContextInternal::fan_of_knives;
         creators["killing spree"] = &RogueAiObjectContextInternal::killing_spree;
         creators["cold blood"] = &RogueAiObjectContextInternal::cold_blood;
+        creators["distract"] = &RogueAiObjectContextInternal::distract;
     }
 
 private:
@@ -187,6 +190,7 @@ private:
     static Action* fan_of_knives(PlayerbotAI* ai) { return new FanOfKnivesAction(ai); }
     static Action* killing_spree(PlayerbotAI* ai) { return new CastKillingSpreeAction(ai); }
     static Action* cold_blood(PlayerbotAI* ai) { return new CastColdBloodAction(ai); }
+    static Action* distract(PlayerbotAI* botAI) { return new CastDistractAction(botAI); }
 };
 
 SharedNamedObjectContextList<Strategy> RogueAiObjectContext::sharedStrategyContexts;
