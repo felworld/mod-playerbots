@@ -194,6 +194,7 @@ public:
         creators["stealther spotted"] = &TriggerContext::stealther_spotted;
         creators["stealth spot emote"] = &TriggerContext::stealth_spot_emote;
         creators["stealth suspicion"] = &TriggerContext::stealth_suspicion;
+        creators["distracted"] = &TriggerContext::distracted;
         creators["no rpg target"] = &TriggerContext::no_rpg_target;
         creators["has rpg target"] = &TriggerContext::has_rpg_target;
         creators["far from rpg target"] = &TriggerContext::far_from_rpg_target;
@@ -468,6 +469,7 @@ private:
     static Trigger* stealther_spotted(PlayerbotAI* botAI) { return new StealtherSpottedTrigger(botAI); }
     static Trigger* stealth_spot_emote(PlayerbotAI* botAI) { return new StealthSpotEmoteTrigger(botAI); }
     static Trigger* stealth_suspicion(PlayerbotAI* botAI) { return new StealthSuspicionTrigger(botAI); }
+    static Trigger* distracted(PlayerbotAI* botAI) { return new DistractedTrigger(botAI); }
     static Trigger* bg_waiting(PlayerbotAI* botAI) { return new BgWaitingTrigger(botAI); }
     static Trigger* bg_active(PlayerbotAI* botAI) { return new BgActiveTrigger(botAI); }
     static Trigger* bg_invite_active(PlayerbotAI* botAI) { return new BgInviteActiveTrigger(botAI); }

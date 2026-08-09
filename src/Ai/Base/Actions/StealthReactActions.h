@@ -55,4 +55,20 @@ public:
     bool isUseful() override;
 };
 
+// The counter to the rogue Distract trick: a bot that sees through the
+// noise breaks the forced facing and spins to the opposite bearing - the
+// rogue threw it to get the bot's back, so that's where the rogue is -
+// then plants a suspicion on the inferred approach lane for the flush
+// machinery above to sweep. The bot never learns who threw it: everything
+// here derives from its own forced facing, and the suspicion carries no
+// identity.
+class ShakeOffDistractAction : public Action
+{
+public:
+    ShakeOffDistractAction(PlayerbotAI* botAI) : Action(botAI, "shake off distract") {}
+
+    bool Execute(Event event) override;
+    bool isUseful() override;
+};
+
 #endif

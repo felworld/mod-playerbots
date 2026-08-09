@@ -720,6 +720,23 @@ rogues through Detect Traps), or a fire totem — since those sweep the
 approach no matter which way their owner faces. PvP only: against
 creatures, sneaking is free and energy isn't.
 
+The trick has a counter, because a real player who gets Distracted knows
+exactly what the forced turn means. A bot on the receiving end rolls per
+incident (`AiPlayerbot.DistractSuspicionChance`, default 60% — 0 makes
+Distract always work): a failed roll stares at the noise for the full
+duration, a passed one — after a jittered human-scale beat of 1–2.5
+seconds — breaks the facing lock, spins around, and treats the opposite
+lane as a stealth suspicion for the flushing machinery above, sweeping
+it with Consecration, a flare, an AoE pulse, or a walk-over search per
+its class (`StealthFlushChance` and `StealthFlushSeconds` apply as
+usual). Everything the defender does derives from its own forced facing
+— it never learns who threw the noise, and the suspicion carries no
+identity. The two systems feed each other: a sharp defender's flush on
+the lane is precisely the deployed area damage that stops a tricky
+rogue from trying Distract again. The reaction delay is what keeps the
+gamble honest — a Distract thrown from inside ~12 yards usually still
+buys the opener before the spin; one thrown from 20+ gets punished.
+
 ## Duel consumable etiquette
 
 Classic dueling culture has an unwritten "no pots" rule, and upstream bots
@@ -924,8 +941,16 @@ a no-op:
 - **Census** — the 300-second bot census that already logs to
   `Playerbots.log` is mirrored to the metrics bus: bots online, level
   histogram by faction, per-race/class counts, role split, activity and
-  engine states, RPG statuses, cumulative quest throughput, and per-zone
-  population.
+  engine states, RPG statuses, cumulative quest throughput, per-zone
+  population, and total gold held per faction (`playerbots_gold`, in
+  copper).
+- **Lifecycle** — every death counts a `playerbots_deaths` point tagged
+  bot/player, faction, zone, and context (world vs. battleground vs.
+  arena, so BG mayhem doesn't drown the world-danger signal), and every
+  level gained counts `playerbots_levelups`; both also land on the
+  character's `felworld_events` timeline (`death` with zone and level,
+  `level_up` with from/to). Battleground rounds count `playerbots_bg`
+  starts and ends, ends tagged with the winning faction.
 - **Chat** — every outbound bot message counts one `playerbots_chat` point
   tagged with where it went (say, yell, whisper, party, raid, guild, or a
   public channel); broadcast attempts whose channel rolls all failed count

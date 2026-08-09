@@ -311,18 +311,38 @@ StealthSuspicion StealthSuspicionValue::Calculate()
 
     if (_suspicion.timeMs)
     {
-        Player* stealther = ObjectAccessor::FindPlayer(_suspicion.stealther);
         bool const expired =
             getMSTimeDiff(_suspicion.timeMs, now) > sPlayerbotAIConfig.stealthFlushSeconds * IN_MILLISECONDS;
 
-        // Perceivable again means direct targeting is back on the table -
-        // area flushing has done its job (or the stealther blew it).
-        if (expired || !stealther || !stealther->IsAlive() || stealther->GetMap() != bot->GetMap() ||
-            Perceivable(bot, stealther))
-            _suspicion = StealthSuspicion();
+        if (_suspicion.stealther.IsEmpty())
+        {
+            // Seeded by inference (Distract): nobody to re-perceive, so
+            // only the timer clears it.
+            if (expired)
+                _suspicion = StealthSuspicion();
+        }
+        else
+        {
+            Player* stealther = ObjectAccessor::FindPlayer(_suspicion.stealther);
+
+            // Perceivable again means direct targeting is back on the table -
+            // area flushing has done its job (or the stealther blew it).
+            if (expired || !stealther || !stealther->IsAlive() || stealther->GetMap() != bot->GetMap() ||
+                Perceivable(bot, stealther))
+                _suspicion = StealthSuspicion();
+        }
     }
 
     return _suspicion;
+}
+
+void StealthSuspicionValue::SeedSuspicion(Position const& spot)
+{
+    _suspicion.stealther = ObjectGuid::Empty;
+    _suspicion.stealtherName = "someone unseen";
+    _suspicion.lastKnown = spot;
+    _suspicion.timeMs = getMSTime();
+    _suspicion.flushApproved = urand(1, 100) <= sPlayerbotAIConfig.stealthFlushChance;
 }
 
 bool StealthSuspicionValue::FlushCastReady() const

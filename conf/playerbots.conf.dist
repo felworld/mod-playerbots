@@ -2713,6 +2713,16 @@ AiPlayerbot.StealthFlushSeconds = 15
 # armed trap, a fire totem) - they'd sweep the approach no matter which
 # way they face. 0 disables the trick entirely.
 AiPlayerbot.RogueDistractChance = 60
+# The counter: a bot that gets Distracted may read the forced turn for
+# exactly what it is. Percent chance - rolled per incident, so even a
+# sharp defender sometimes falls for it - that after a human-scale beat
+# (1-2.5s) the bot breaks the facing lock, spins around, and treats the
+# opposite lane as a stealth suspicion for the flush machinery above
+# (StealthFlushChance and StealthFlushSeconds apply as usual). The bot
+# never learns who threw it - everything derives from its own forced
+# facing. A failed roll stares at the noise for the full duration.
+# 0 disables the counter (Distract then always works).
+AiPlayerbot.DistractSuspicionChance = 60
 
 # Human reaction latency (Felworld): triggers that model twitch reactions -
 # interrupts, dispels/decurses (including Hand of Freedom on a rooted ally),

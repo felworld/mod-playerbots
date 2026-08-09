@@ -66,7 +66,9 @@ private:
 // then lost them while they carried a stealth or invisibility aura. A
 // rogue Vanishing mid-fight, a duel opponent stealthing in the countdown,
 // a spotted sneak slipping back out of detection range. timeMs of 0 means
-// no suspicion.
+// no suspicion. An empty stealther guid marks a suspicion planted by
+// inference instead of perception loss (a Distract the bot saw through) -
+// there is no identity to re-perceive, so it expires on its timer alone.
 struct StealthSuspicion
 {
     ObjectGuid stealther;
@@ -90,6 +92,12 @@ public:
     StealthSuspicionValue(PlayerbotAI* botAI) : CalculatedValue<StealthSuspicion>(botAI, "stealth suspicion") {}
 
     StealthSuspicion Calculate() override;
+
+    // Plant an inference-based suspicion at a spot the bot never actually
+    // perceived anyone at - the shake-off-Distract reaction aiming the
+    // flush machinery down the rogue's likely approach lane. Rolls the
+    // usual flush-approval chance; identity stays empty.
+    void SeedSuspicion(Position const& spot);
 
     // Spacing between flush casts, so a mage sweeps the spot with a few
     // Arcane Explosions over the window instead of one per AI tick.

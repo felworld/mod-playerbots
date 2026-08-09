@@ -128,7 +128,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   bots (default 60%, rolled per character) skip the circling: they cast
   Distract past a watching target to turn its back, then walk straight
   in for the opener — picking their moments by energy, target danger,
-  and whether area damage or detection is already down.
+  and whether area damage or detection is already down. And it can
+  backfire: a Distracted bot sometimes reads the forced turn for what
+  it is, spins around after a human-scale beat, and sweeps the lane
+  behind it.
 - **[Bandage crafting](FEATURES.md#bandage-crafting)** — idle bots craft
   bandages from the cloth they carry, keep the stock level-appropriate,
   and use their best bandage first.

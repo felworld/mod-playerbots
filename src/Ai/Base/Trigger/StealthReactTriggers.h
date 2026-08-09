@@ -40,4 +40,26 @@ public:
     bool IsActive() override;
 };
 
+// A rogue's Distract just yanked this bot's facing toward a noise. A
+// player who knows the trick reads the forced turn for exactly what it
+// is; whether this bot does is rolled per incident
+// (DistractSuspicionChance), and a passed roll fires after a jittered
+// human-scale delay - long enough that a well-timed Distract from close
+// range still pays off. A failed roll is a bot that stares at the noise
+// for the full duration, exactly as before.
+class DistractedTrigger : public Trigger
+{
+public:
+    DistractedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "distracted", 1) {}
+
+    bool IsActive() override;
+
+private:
+    // The incident being tracked: when the distract was first noticed
+    // (0 = none), whether this bot saw through it, and the reaction delay.
+    uint32 _incidentMs = 0;
+    uint32 _delayMs = 0;
+    bool _sawThrough = false;
+};
+
 #endif

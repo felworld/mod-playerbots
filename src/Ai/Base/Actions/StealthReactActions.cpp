@@ -27,6 +27,11 @@ namespace
     // follow-up emote decisions.
     constexpr float EMOTE_AUDIENCE_RANGE = 40.0f;
 
+    // Where along the inferred approach lane a Distracted bot plants its
+    // suspicion: inside our rogues' 8-24yd cast window, and close enough
+    // that a short-range flush tool reaches after a step or two.
+    constexpr float DISTRACT_SUSPECT_DISTANCE = 12.0f;
+
     void MarkReacted(AiObjectContext* context, ObjectGuid stealtherGuid)
     {
         if (StealtherSpottedValue* value =
@@ -250,4 +255,40 @@ bool FlushStealtherAction::Execute(Event /*event*/)
                       false, false, MovementPriority::MOVEMENT_NORMAL);
 
     return false;
+}
+
+bool ShakeOffDistractAction::isUseful()
+{
+    return bot->IsAlive() && bot->HasUnitState(UNIT_STATE_DISTRACTED);
+}
+
+bool ShakeOffDistractAction::Execute(Event /*event*/)
+{
+    if (!bot->HasUnitState(UNIT_STATE_DISTRACTED))
+        return false;
+
+    // The forced turn left the bot facing the noise, so the suspect lane
+    // is dead opposite - derived purely from the bot's own facing, the
+    // same inference a player makes.
+    float const back = Position::NormalizeOrientation(bot->GetOrientation() + float(M_PI));
+
+    float x = bot->GetPositionX() + std::cos(back) * DISTRACT_SUSPECT_DISTANCE;
+    float y = bot->GetPositionY() + std::sin(back) * DISTRACT_SUSPECT_DISTANCE;
+    float z = bot->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+
+    // Expire the distract generator (top slot; clears UNIT_STATE_DISTRACTED
+    // via its Finalize) and turn around. Moving or being attacked breaks a
+    // Distract in the core too - this is the voluntary version.
+    bot->GetMotionMaster()->MovementExpired();
+    bot->SetFacingTo(back);
+
+    if (StealthSuspicionValue* value =
+            dynamic_cast<StealthSuspicionValue*>(context->GetValue<StealthSuspicion>("stealth suspicion")))
+        value->SeedSuspicion(Position(x, y, z));
+
+    LOG_DEBUG("playerbots", "Bot {} sees through a Distract and spins around", bot->GetName());
+    Felworld::LogEvent(bot->GetGUID(), "distract_seen_through", "{}");
+    METRIC_VALUE("playerbots_distract_seen_through", 1);
+    return true;
 }
