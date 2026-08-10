@@ -259,13 +259,12 @@ A solo random bot that sees a nearby ungrouped
 same-faction real player — within 4 levels — fighting a
 creature the bot still needs for an in-progress quest silently invites
 them to a group, the way real players resolve spawn competition. While
-grouped the bot keeps grinding as a peer rather than trailing its new
-partner: it targets whatever mobs anyone in the group still needs, so
-the pair naturally splits a camp and shares kill credit. Mob types the
-bot fights that a member still needs extend the group's shared
-objectives, so migrating to the next camp together keeps the group
-alive — but unrelated shared quests two zones away never hold it
-together. Once nobody in the group needs any of those mobs, the bot
+grouped the bot behaves like a questing partner: it sticks with its new
+partner between fights and peels off to attack whatever mobs anyone in
+the group still needs, so the pair shares kill credit and moves to the
+next camp together. Mob types the bot fights that a member still needs
+extend the group's shared objectives — but unrelated shared quests two
+zones away never hold it together. Once nobody in the group needs any of those mobs, the bot
 says thanks in party chat and leaves. Declined invites go on a
 per-player cooldown so nobody gets pestered.
 `AiPlayerbot.QuestCompetitionInvite` (default on) and

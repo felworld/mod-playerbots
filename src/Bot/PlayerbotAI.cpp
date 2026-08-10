@@ -478,9 +478,13 @@ void PlayerbotAI::UpdateAIGroupMaster()
             {
                 if (questCompetitionInfo.active || questCompetitionInfo.pendingInvite == newMaster->GetGUID())
                 {
-                    // Our quest-competition invite was accepted: stay a peer
-                    // grinding the shared objectives instead of a follower.
-                    botAI->ChangeStrategy("+grind quests,-grind,-follow,-new rpg,-rpg,-move random",
+                    // Our quest-competition invite was accepted: quest-grind
+                    // alongside the partner. Follow is the movement fallback -
+                    // grind quests alone never repositions, so a cleared camp
+                    // left the bot standing still. The removals undo the solo
+                    // defaults ResetStrategies just re-added (the bot leads
+                    // the group it formed, so it gets the leader kit).
+                    botAI->ChangeStrategy("+follow,+grind quests,-grind,-new rpg,-rpg,-move random",
                                           BOT_STATE_NON_COMBAT);
                 }
                 else
@@ -548,7 +552,7 @@ void PlayerbotAI::UpdateQuestCompetition()
             // UpdateAIGroupMaster's master adoption applies the same switch,
             // but only once a master is found; this is the guaranteed
             // application point.
-            ChangeStrategy("+grind quests,-grind,-follow,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
+            ChangeStrategy("+follow,+grind quests,-grind,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
         }
         else if (now - info.pendingSince > 90)
             info.EndEpisode();
