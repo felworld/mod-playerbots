@@ -10,6 +10,7 @@
 #include "SharedDefines.h"
 #include "Timer.h"
 #include "WpvpDefense.h"
+#include "WpvpGrudge.h"
 
 namespace
 {
@@ -60,6 +61,11 @@ bool WpvpTruceHolds(Player* bot, Player* enemy)
 
     // A ganker the defense channels already named forfeits the courtesy.
     if (WpvpDefenseBoard::instance().IsKnownThreat(enemy->GetGUID(), bot->GetTeamId()))
+        return false;
+
+    // So does the bot's own killer: a revenge grudge (WpvpGrudge) outranks
+    // the code - you don't salute the one who just put you in the dirt.
+    if (WpvpGrudgeAgainst(bot, enemy) == WpvpGrudgeDisposition::Revenge)
         return false;
 
     // Unordered pair, no time component: whether the pair falls under the

@@ -39,6 +39,12 @@ void NoteTargetedEmoteAtEnemy(Player* emoter, uint32 textEmote, ObjectGuid targe
     if (textEmote == TEXT_EMOTE_SALUTE || textEmote == TEXT_EMOTE_BOW)
         return;
 
+    // Neither are pleas: a /beg, /cry, or /shoo is trying to wave a fight
+    // OFF (and may move a bot attacker to mercy - WpvpGrudge), so it must
+    // not double as a silent callout that rallies witnesses onto the target.
+    if (textEmote == TEXT_EMOTE_BEG || textEmote == TEXT_EMOTE_CRY || textEmote == TEXT_EMOTE_SHOO)
+        return;
+
     if (!emoter || !targetGuid.IsPlayer() || targetGuid == emoter->GetGUID())
         return;
 

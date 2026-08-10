@@ -109,6 +109,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   after each kill a bot may decide its victim is dealt with and stop
   re-engaging them for a while; most move on after a kill or two, a rare
   few camp on.
+- **[Grudges and mercy](FEATURES.md#grudges-and-mercy)** — a killed bot
+  remembers its killer: some come back for revenge on sight, the rest
+  keep well away, pleading (`/shoo`, `/beg`, `/cry`) and retreating when
+  the killer comes near — and begging sometimes genuinely moves a bot
+  attacker to break off, for real players too.
 - **[Chase break-off](FEATURES.md#chase-break-off)** — a bot whose
   world-PvP target cleanly escapes rolls to give up the chase every so
   often instead of pursuing forever; most turn back quickly, the odd one

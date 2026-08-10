@@ -1225,6 +1225,32 @@ AiPlayerbot.WpvpDeathCap = 2
 AiPlayerbot.WpvpSatiationChance = 60
 AiPlayerbot.WpvpSatiationMinutes = 10
 
+# The victim-side counterpart: a bot killed in world PvP holds a grudge
+# against its killer for WpvpGrudgeMinutes. On death it rolls
+# WpvpRevengeChance % to want revenge - the killer becomes an
+# attack-on-sight priority target, past the usual courage dice and
+# same-class truces (guard respect and the "don't attack a much higher
+# level" cap still apply); killing them settles the grudge. A bot that
+# fails the roll - or whose killer plainly outclasses it, or that dies
+# to the same killer a second time - turns avoidant instead: it never
+# initiates against the killer and gets out of their way when they come
+# near, pleading (/shoo, /beg, /cry) and retreating.
+# WpvpGrudgeMinutes 0 disables grudges; WpvpRevengeChance 0 makes every
+# grudge avoidant.
+# Default: 15 / 60
+AiPlayerbot.WpvpGrudgeMinutes = 15
+AiPlayerbot.WpvpRevengeChance = 60
+
+# Begging for your life sometimes works: a /beg, /cry, or /shoo emote by
+# a player who is being attacked by a bot (or aimed at a bot stalking
+# them) rolls this % chance per bot to move it to mercy - it breaks off
+# and leaves the beggar alone until the beggar swings at someone or
+# several minutes pass. The roll holds for a couple of minutes, so emote
+# spam doesn't reroll it. Avoidant bots use the same pleas, so their
+# begging can genuinely wave off a bot killer. 0 disables.
+# Default: 15
+AiPlayerbot.WpvpBegMercyChance = 15
+
 # A bot chasing a world-PvP target that has broken contact (no damage either
 # way and beyond ~30yd) rolls this % chance to abandon the chase after each
 # interval of ChaseBreakSeconds (random in the min-max band), giving chases a

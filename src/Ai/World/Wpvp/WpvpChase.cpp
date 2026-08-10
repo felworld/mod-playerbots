@@ -66,7 +66,9 @@ uint32 RollDelayMs()
 
 bool WpvpChaseBroken(Player* bot, Unit* target)
 {
-    if (!sPlayerbotAIConfig.wpvpChaseBreakChance)
+    // Mercy grants (WpvpGrudge) live in the same ban map, so the board stays
+    // consulted even with the chase leash itself disabled.
+    if (!sPlayerbotAIConfig.wpvpChaseBreakChance && !sPlayerbotAIConfig.wpvpBegMercyChance)
         return false;
 
     Player* enemy = target ? target->ToPlayer() : nullptr;
@@ -78,7 +80,7 @@ bool WpvpChaseBroken(Player* bot, Unit* target)
 
 bool WpvpChaseBanned(Player* bot, Unit* target)
 {
-    if (!sPlayerbotAIConfig.wpvpChaseBreakChance)
+    if (!sPlayerbotAIConfig.wpvpChaseBreakChance && !sPlayerbotAIConfig.wpvpBegMercyChance)
         return false;
 
     Player* enemy = target ? target->ToPlayer() : nullptr;
@@ -90,7 +92,7 @@ bool WpvpChaseBanned(Player* bot, Unit* target)
 
 void WpvpChaseBoard::NoteDamage(Unit* attacker, Unit* victim)
 {
-    if (!sPlayerbotAIConfig.wpvpChaseBreakChance)
+    if (!sPlayerbotAIConfig.wpvpChaseBreakChance && !sPlayerbotAIConfig.wpvpBegMercyChance)
         return;
 
     if (!attacker || !victim)
@@ -148,6 +150,11 @@ bool WpvpChaseBoard::UpdatePursuit(Player* bot, Player* target)
         return true;
     }
 
+    // In mercy-only mode (leash disabled) the board still honors existing
+    // bans above, but never runs break rolls.
+    if (!sPlayerbotAIConfig.wpvpChaseBreakChance)
+        return false;
+
     Pursuit& pursuit = _pursuits[key];
     pursuit.touchedMs = now;
 
@@ -184,6 +191,21 @@ bool WpvpChaseBoard::UpdatePursuit(Player* bot, Player* target)
     _pursuits.erase(key);
     _bans[key] = {distance, now, targetGuid};
     return true;
+}
+
+void WpvpChaseBoard::GrantMercy(Player* bot, Player* beggar)
+{
+    uint32 const now = getMSTime();
+    uint64 const key = HashPair(bot->GetGUID().GetRawValue(), beggar->GetGUID().GetRawValue());
+
+    std::lock_guard<std::mutex> lock(_mutex);
+    Prune(now);
+
+    _pursuits.erase(key);
+
+    // Break distance 0: no approach of the beggar's ever reads as a
+    // re-entrance - only their own swing (NoteDamage) or staleness clears.
+    _bans[key] = {0.0f, now, beggar->GetGUID().GetRawValue()};
 }
 
 bool WpvpChaseBoard::IsBanned(Player* bot, Player* target)

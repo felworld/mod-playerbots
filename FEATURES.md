@@ -622,6 +622,47 @@ survives as a realistic griefer, not the norm.
 `AiPlayerbot.WpvpSatiationChance` (percent, 0 disables) and
 `AiPlayerbot.WpvpSatiationMinutes` set the dice and the grace.
 
+## Grudges and mercy
+
+The victim-side counterpart to satiation. A bot killed in a fair
+world-PvP fight used to rez and serenely resume grinding its quests with
+its killer standing right there — even watching them fight someone else.
+No player forgets a death that fast. Now a killed bot holds a grudge
+against its killer for `AiPlayerbot.WpvpGrudgeMinutes` (default 15), in
+one of two dispositions rolled at death:
+
+- **Revenge** (`AiPlayerbot.WpvpRevengeChance`, default 60%): the killer
+  becomes an attack-on-sight priority target. Sighting them skips the
+  usual courage dice, pulls harder on target selection than any other
+  attraction on the field (so a rezzed bot joins the killer's current
+  brawl and focuses *them*, not the nearest stranger), engages at full
+  vision range, and voids any same-class truce with them. Sanity lines
+  stay: guard respect still applies, and a killer who plainly outclasses
+  the bot (the "don't attack a much higher level" cap) never inspires
+  revenge in the first place. Killing the killer settles the grudge.
+- **Avoidant** (the failed roll, a hopelessly outleveled killer, or a
+  *second* death to the same killer within the window — losing the
+  rematch teaches the lesson): the bot wants nothing more to do with
+  them. It never initiates against the killer — not even to join a
+  passerby brawl the killer is part of — and when they come within ~40
+  yards it faces them, pleads (a targeted `/shoo`, `/beg`, or `/cry`),
+  and retreats, fleeing again each time the killer keeps closing.
+  Fighting back when actually attacked is untouched.
+
+The pleas are a real mechanic, not just theater: a `/beg`, `/cry`, or
+`/shoo` by anyone being attacked by a bot — or aimed at a bot stalking
+them — rolls `AiPlayerbot.WpvpBegMercyChance` (default 15%) per bot to
+move it to mercy. A merciful bot breaks off and leaves the beggar alone
+until the beggar swings at someone (begging then fighting forfeits the
+grace) or several minutes pass. The roll is deterministic over a short
+window, so emote spam doesn't reroll it; real players' pleas work on
+bots exactly the same way, and an avoidant bot's begging can genuinely
+wave off a bot killer. Plea emotes are exempt from the
+[emote-alert rally](#world-pvp-defense-and-reinforcements) — waving a
+fight off must not double as a silent callout. `AiPlayerbot.WpvpGrudgeMinutes = 0`
+disables grudges; `AiPlayerbot.WpvpRevengeChance = 0` makes every grudge
+avoidant.
+
 ## Chase break-off
 
 Nothing in the pursuit path had a distance or time bound, so a bot whose

@@ -20,6 +20,7 @@
 #include "Unit.h"
 #include "AreaDefines.h"
 #include "WpvpAssist.h"
+#include "WpvpGrudge.h"
 
 // Level difference thresholds for attack probability
 constexpr int32 EXTREME_LEVEL_DIFF = 5;  // Don't attack if enemy is this much higher
@@ -88,6 +89,21 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
 
         if (inCapitalCity)
             return true;
+
+        // Grudge (Felworld): the bot's memory of who recently killed it.
+        // Revenge attacks on sight - no reluctance dice (the suicide cap is
+        // enforced where the grudge is rolled); avoidant never initiates.
+        // Checked before passerby assist on purpose: an avoidant bot won't
+        // get pulled into a brawl its own killer is part of.
+        switch (WpvpGrudgeAgainst(bot, unit->ToPlayer()))
+        {
+            case WpvpGrudgeDisposition::Revenge:
+                return true;
+            case WpvpGrudgeDisposition::Avoidant:
+                return false;
+            case WpvpGrudgeDisposition::None:
+                break;
+        }
 
         // Passerby assist (Felworld): an enemy caught attacking a nearby
         // faction-mate is joined past the usual courage gates - up to the

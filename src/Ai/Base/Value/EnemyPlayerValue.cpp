@@ -12,6 +12,7 @@
 #include "Vehicle.h"
 #include "WpvpAssist.h"
 #include "WpvpChase.h"
+#include "WpvpGrudge.h"
 #include "WpvpGuardRespect.h"
 #include "WpvpSatiation.h"
 #include "WpvpTerrainLos.h"
@@ -41,8 +42,9 @@ bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
         // rolled "done with them" stops initiating for the grace period -
         // no rez-camping loop. Self-defense is unaffected: the PvP
         // combat-ref path in EnemyPlayerValue::Calculate never comes
-        // through here.
-        if (WpvpSatiated(bot, enemy))
+        // through here. A revenge grudge overrides a stale satiation from
+        // an earlier round of the feud.
+        if (WpvpSatiated(bot, enemy) && WpvpGrudgeAgainst(bot, enemy) != WpvpGrudgeDisposition::Revenge)
             return false;
 
         // Chase leash (Felworld): don't re-acquire a runner we gave up on -
@@ -177,6 +179,12 @@ Unit* EnemyPlayerValue::Calculate()
         // would have kept the bot at its short range.
         if (!controllingVehicle && WpvpPasserbyAssistTarget(bot, pTarget))
             aggroDistance = std::max(aggroDistance, sPlayerbotAIConfig.wpvpPasserbyAssistRadius);
+
+        // Grudge revenge (Felworld): the bot's recent killer is engaged on
+        // sight at full range - the health comparison's 20yd politeness
+        // doesn't apply to them.
+        if (!controllingVehicle && WpvpGrudgeAgainst(bot, pTarget) == WpvpGrudgeDisposition::Revenge)
+            aggroDistance = std::max(aggroDistance, maxAggroDistance);
 
         if (!bot->IsWithinDist(pTarget, aggroDistance))
             continue;

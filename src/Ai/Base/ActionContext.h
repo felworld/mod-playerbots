@@ -83,6 +83,7 @@
 #include "WpvpCallouts.h"
 #include "WpvpDefense.h"
 #include "WpvpEmoteAlert.h"
+#include "WpvpGrudge.h"
 #include "WpvpTruce.h"
 #include "FishingAction.h"
 #include "CancelChannelAction.h"
@@ -340,6 +341,7 @@ public:
         creators["wpvp reinforce"] = &ActionContext::wpvp_reinforce;
         creators["wpvp emote alert"] = &ActionContext::wpvp_emote_alert;
         creators["wpvp truce salute"] = &ActionContext::wpvp_truce_salute;
+        creators["wpvp avoid killer"] = &ActionContext::wpvp_avoid_killer;
         creators["wait for attack keep safe distance"] = &ActionContext::wait_for_attack_keep_safe_distance;
     }
 
@@ -589,6 +591,7 @@ private:
     static Action* wpvp_reinforce(PlayerbotAI* ai) { return new WpvpReinforceAction(ai); }
     static Action* wpvp_emote_alert(PlayerbotAI* ai) { return new WpvpEmoteAlertAction(ai); }
     static Action* wpvp_truce_salute(PlayerbotAI* ai) { return new WpvpTruceSaluteAction(ai); }
+    static Action* wpvp_avoid_killer(PlayerbotAI* ai) { return new WpvpAvoidKillerAction(ai); }
     static Action* wait_for_attack_keep_safe_distance(PlayerbotAI* ai) { return new WaitForAttackKeepSafeDistanceAction(ai); }
 };
 

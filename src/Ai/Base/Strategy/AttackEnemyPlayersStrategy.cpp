@@ -12,6 +12,10 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     triggers.push_back(new TriggerNode("enemy player near",
                                        { NextAction("attack enemy player", 55.0f) }));
+    // An avoidant-grudge killer coming near outranks the salutes and
+    // callouts below - the bot pleads and gets out of their way (Felworld).
+    triggers.push_back(new TriggerNode("wpvp avoid killer",
+                                       { NextAction("wpvp avoid killer", 42.0f) }));
     // A same-class enemy the truce gate just spared gets a salute instead of
     // a charge (Felworld).
     triggers.push_back(new TriggerNode("wpvp truce salute",

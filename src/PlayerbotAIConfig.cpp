@@ -800,6 +800,9 @@ bool PlayerbotAIConfig::Initialize()
     wpvpDeathCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDeathCap", 2);
     wpvpSatiationChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpSatiationChance", 60), 100);
     wpvpSatiationMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpSatiationMinutes", 10);
+    wpvpGrudgeMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGrudgeMinutes", 15);
+    wpvpRevengeChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpRevengeChance", 60), 100);
+    wpvpBegMercyChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpBegMercyChance", 15), 100);
     wpvpChaseBreakChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpChaseBreakChance", 50), 100);
     wpvpChaseBreakSecondsMin =
         std::max<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpChaseBreakSecondsMin", 12), 1);

@@ -25,6 +25,7 @@
 #include "WpvpCallouts.h"
 #include "WpvpDefense.h"
 #include "WpvpEmoteAlert.h"
+#include "WpvpGrudge.h"
 #include "WpvpTriggers.h"
 #include "WpvpTruce.h"
 #include "PullTriggers.h"
@@ -284,6 +285,7 @@ public:
         creators["wpvp reinforce"] = &TriggerContext::wpvp_reinforce;
         creators["wpvp emote alert"] = &TriggerContext::wpvp_emote_alert;
         creators["wpvp truce salute"] = &TriggerContext::wpvp_truce_salute;
+        creators["wpvp avoid killer"] = &TriggerContext::wpvp_avoid_killer;
         creators["can self resurrect"] = &TriggerContext::can_self_resurrect;
         creators["can fish"] = &TriggerContext::can_fish;
         creators["can use fishing bobber"] = &TriggerContext::can_use_fishing_bobber;
@@ -541,6 +543,7 @@ private:
     static Trigger* wpvp_reinforce(PlayerbotAI* botAI) { return new WpvpReinforceTrigger(botAI); }
     static Trigger* wpvp_emote_alert(PlayerbotAI* botAI) { return new WpvpEmoteAlertTrigger(botAI); }
     static Trigger* wpvp_truce_salute(PlayerbotAI* botAI) { return new WpvpTruceSaluteTrigger(botAI); }
+    static Trigger* wpvp_avoid_killer(PlayerbotAI* botAI) { return new WpvpAvoidKillerTrigger(botAI); }
     static Trigger* can_self_resurrect(PlayerbotAI* ai) { return new SelfResurrectTrigger(ai); }
     static Trigger* can_fish(PlayerbotAI* ai) { return new CanFishTrigger(ai); }
     static Trigger* can_use_fishing_bobber(PlayerbotAI* ai) { return new CanUseFishingBobberTrigger(ai); }

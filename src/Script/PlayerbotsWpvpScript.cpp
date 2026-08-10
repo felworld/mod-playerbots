@@ -10,6 +10,7 @@
 #include "WpvpChase.h"
 #include "WpvpDefense.h"
 #include "WpvpEmoteAlert.h"
+#include "WpvpGrudge.h"
 #include "WpvpSatiation.h"
 
 // Feeds the wpvp boards from player hooks: world PvP kills roll the killer
@@ -41,6 +42,11 @@ public:
         // this victim for a while - the anti-corpse-camping grace.
         WpvpSatiationBoard::instance().RecordKill(killer, killed);
 
+        // Victim side: a killed bot remembers its killer - out for revenge
+        // or keeping well away - and a kill settles any grudge the killer
+        // held against this victim.
+        WpvpGrudgeBoard::instance().RecordKill(killer, killed);
+
         if (sPlayerbotAIConfig.wpvpCalloutEnabled || sPlayerbotAIConfig.wpvpDefenseEnabled ||
             sPlayerbotAIConfig.wpvpReinforcementEnabled)
         {
@@ -56,6 +62,10 @@ public:
     void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 /*emoteNum*/, ObjectGuid guid) override
     {
         NoteTargetedEmoteAtEnemy(player, textEmote, guid);
+
+        // A beg/cry/shoo from someone under attack may move bot attackers
+        // to mercy.
+        NoteMercyPlea(player, textEmote, guid);
     }
 };
 

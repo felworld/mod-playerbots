@@ -50,6 +50,13 @@ public:
     bool UpdatePursuit(Player* bot, Player* target);
     bool IsBanned(Player* bot, Player* target);
 
+    // A beg/cry/shoo plea moved this bot to mercy (WpvpGrudge): drop the
+    // beggar and leave them alone. Reuses the abandoned-chase ban - the
+    // current target goes invalid and re-acquisition is blocked - but with
+    // no re-entrance distance: only the beggar's own next swing (NoteDamage)
+    // or the ban going stale puts them back on the menu.
+    void GrantMercy(Player* bot, Player* beggar);
+
 private:
     WpvpChaseBoard() = default;
 

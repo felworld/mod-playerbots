@@ -6,6 +6,7 @@
 #include "LevelPerception.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
+#include "WpvpGrudge.h"
 
 namespace
 {
@@ -18,6 +19,11 @@ namespace
     // Extra pull for an active combatant: someone already swinging at players
     // is a threat/target NOW, where an idle enemy is only a prospect.
     constexpr float ACTIVE_COMBATANT_PULL = 15.0f;
+
+    // And the strongest pull of all for the bot's own recent killer: a
+    // revenge grudge (WpvpGrudge) outranks every other attraction on the
+    // field, so the rezzed bot goes for them, not the nearest stranger.
+    constexpr float REVENGE_PULL = 30.0f;
 
     // Join dice hold for the same window as the attack-decision hash, so a
     // passerby that shrugged at a fight doesn't change its mind next tick.
@@ -55,6 +61,9 @@ float WpvpTargetScore(Player* bot, Player* candidate)
 
     if (WpvpActivePvpCombatant(candidate))
         score -= ACTIVE_COMBATANT_PULL;
+
+    if (WpvpGrudgeAgainst(bot, candidate) == WpvpGrudgeDisposition::Revenge)
+        score -= REVENGE_PULL;
 
     return score;
 }
