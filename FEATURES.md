@@ -170,6 +170,19 @@ take an assistive action
 that would newly PvP-flag them. `AiPlayerbot.EnableBystanderAssist`
 (default on) plus threshold knobs in `playerbots.conf.dist`.
 
+Players losing a PvP fight qualify too — the support half of [passerby
+assist](#passerby-assist), and the only help a bot too far below the
+enemy to fight can offer. Healer classes support such victims with
+heals, never by attacking (joining the fight is passerby assist's job),
+each supporter first passing `AiPlayerbot.BystanderPvpSupportChance`
+(default 50%, deterministic per bot/victim pair), and nobody heals into
+a dogpile of more than two player attackers. The first rescue heal pulls
+the healer into combat; it stays on its victim through that combat until
+the victim is safe or out of range, or the healer's own
+self-preservation gates trip (the enemy turning on the healer ends the
+rescue the moment the beating shows). The flagging rule is unchanged: an
+unflagged bot never heals a flagged victim.
+
 ## Social buffing
 
 Idle ungrouped mages, priests, druids, and paladins cast
@@ -645,9 +658,39 @@ up at least `AiPlayerbot.WpvpPeelAdvantageYards` (default 25) closer than
 the current fight — close threats beat a receding chase, and the margin is
 wide enough that the switch reads as opportunism rather than indecision
 (no ping-ponging between two similar targets). Battlegrounds keep their
-own targeting machinery. Alongside this, enemy sightings are now evaluated
-nearest-first (the scan used to take whichever acceptable enemy the grid
-happened to list first, not the closest). `0` disables peeling.
+own targeting machinery. Alongside this, enemy sightings are evaluated
+best-first by the kill-the-add score described under [passerby
+assist](#passerby-assist) (the scan used to take whichever acceptable
+enemy the grid happened to list first); the peel margin compares the same
+score, so switching and sighting can never disagree. `0` disables
+peeling.
+
+## Passerby assist
+
+On a PvP world it's rare for anyone to ignore a fight playing out in
+front of them — etiquette demands jumping in. An already-flagged solo bot
+that sees an enemy attacking a faction-mate within
+`AiPlayerbot.WpvpPasserbyAssistRadius` (default 40) yards joins the fight
+at `AiPlayerbot.WpvpPasserbyAssistChance` (default 90%), decided
+deterministically per bot/enemy pair so the choice holds instead of
+flickering. Joining an ally's fight skips the usual courage gates: even
+an enemy up to the "??" line gets jumped, and an underleveled enemy
+already fighting players draws no reluctance dice — they chose to be a
+combatant. Two hard lines remain: an unflagged bot never joins (etiquette
+does not demand flagging yourself for fights you happen to see), and a
+skull-level ("??") enemy is a massacre rather than a fight — the bot
+won't attack, though healer classes may still support the victim (see
+[bystander assist](#bystander-assist)).
+
+The other side of the same etiquette: an underleveled helper who joins a
+fight between equals is commonly targeted and killed first, like an add
+in a dungeon. Open-world target selection scores enemies instead of
+taking the nearest — an enemy perceivedly below the bot reads about four
+yards closer per level, and one already trading blows with players closer
+still — so the lowbie who piles in gets focused down. Because everyone
+watching saw a battle rather than a gank, a joiner who dies as the add
+doesn't feed the killer's gank-spree tally, and no WorldDefense
+escalation arms over adds killed mid-brawl.
 
 ## Duel openers
 

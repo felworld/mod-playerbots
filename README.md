@@ -48,7 +48,8 @@ is in [FEATURES.md](FEATURES.md). In brief:
   snapping onto mounts the instant the timer hits 30 seconds.
 - **[Bystander assist](FEATURES.md#bystander-assist)** — solo bots rescue
   nearby non-group players who look about to die, when the fight looks
-  winnable.
+  winnable; healer classes also support strangers losing a PvP fight and
+  keep the heals coming once committed.
 - **[Social buffing](FEATURES.md#social-buffing)** — idle bots buff
   passers-by, return buffs, and thank strangers for heals.
 - **[Stealth-spotting reactions](FEATURES.md#stealth-spotting-reactions)** —
@@ -115,6 +116,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Target peeling](FEATURES.md#target-peeling)** — a bot fighting one
   enemy player switches to another who shows up substantially closer,
   instead of tunneling on its first pick past fresh threats.
+- **[Passerby assist](FEATURES.md#passerby-assist)** — flagged bots join
+  a faction-mate's fight instead of walking past it, and an underleveled
+  helper who piles into an even fight gets focused down like an add.
 - **[Duel openers](FEATURES.md#duel-openers)** — bots use the pre-duel
   countdown like a player would: rogues and ferals stealth and slip out
   of detection range, warriors back off to Charge range, hunters trap

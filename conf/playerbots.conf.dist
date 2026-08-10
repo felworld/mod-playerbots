@@ -1237,10 +1237,14 @@ AiPlayerbot.WpvpChaseBreakChance = 50
 AiPlayerbot.WpvpChaseBreakSecondsMin = 12
 AiPlayerbot.WpvpChaseBreakSecondsMax = 30
 
-# While fighting one enemy player in the open world, another enemy showing up
-# at least this many yards closer than the current fight takes over as the
-# bot's target - close threats beat a receding chase. 0 disables peeling (the
-# first target keeps the bot's attention for good).
+# While fighting one enemy player in the open world, another enemy scoring
+# at least this many yards better than the current fight takes over as the
+# bot's target - close threats beat a receding chase. The score is distance
+# weighted by what the bot can see: an enemy perceivedly below the bot's
+# level reads a few yards closer per level, and one already trading blows
+# with players closer still - so an underleveled helper who joins a brawl
+# gets focused like an add in a dungeon. 0 disables peeling (the first
+# target keeps the bot's attention for good).
 # Default: 25
 AiPlayerbot.WpvpPeelAdvantageYards = 25
 
@@ -1343,6 +1347,23 @@ AiPlayerbot.WpvpReinforcementChance = 15
 # emoters alike, so pointing at a lurking rogue rallies the bots around you.
 # Default: 1 (enabled)
 AiPlayerbot.WpvpEmoteAlertEnabled = 1
+
+# Passerby assist: on a PvP world it is rare for anyone to ignore a fight in
+# front of them - an already-flagged solo bot that sees an enemy attacking a
+# faction-mate within Radius yards joins in, rolling Chance percent
+# (deterministic per bot/enemy pair, so the decision holds instead of
+# flickering). Joining an ally's fight skips the usual courage gates: even
+# an enemy up to the "??" line gets jumped, and no reluctance dice apply to
+# an underleveled enemy already fighting players. A skull-level enemy is a
+# massacre, not a fight - the bot won't attack, though healer classes may
+# still support the victim (see BystanderPvpSupportChance). An unflagged
+# bot never joins: etiquette does not demand flagging yourself. A joiner
+# who dies as the add doesn't feed the killer's gank-spree tally - everyone
+# watching saw a battle, not a gank.
+# Default: 1 (enabled) / 90 / 40
+AiPlayerbot.WpvpPasserbyAssistEnabled = 1
+AiPlayerbot.WpvpPasserbyAssistChance = 90
+AiPlayerbot.WpvpPasserbyAssistRadius = 40
 
 # Same-class truce: some pairs of same-class enemies honor the old player
 # code ("druids don't gank druids") - instead of an unprovoked world-PvP
@@ -2606,11 +2627,21 @@ AiPlayerbot.RandomBotSayWithoutMaster = 0
 # assistive action that would newly PvP-flag it, and it skips fights it
 # estimates as unwinnable by composition (an elite counts as roughly
 # three normal mobs; world bosses and mobs far above the bot's level
-# are never taken on).
+# are never taken on). Players losing a PVP fight qualify too: healer
+# classes support them with heals - never by attacking (joining the fight
+# is the passerby-assist path above) - each supporter first passing the
+# BystanderPvpSupportChance dice, and nobody heals into a dogpile of more
+# than two player attackers. Once a rescue heal lands the healer stays on
+# its victim through the combat it causes, until the victim is safe, out
+# of range, or the healer itself is below its self-preservation gates.
 AiPlayerbot.EnableBystanderAssist = 1
 # Radius (yards) within which a bot notices someone in distress.
 AiPlayerbot.BystanderAssistRadius = 40
-# A victim under creature attack counts as "in distress" when ANY of:
+# Chance (percent, deterministic per bot/victim pair) that a healer-class
+# bystander supports a stranger losing a player fight. Etiquette suggests
+# helping, but not every passerby commits to someone else's PvP.
+AiPlayerbot.BystanderPvpSupportChance = 50
+# A victim under attack counts as "in distress" when ANY of:
 # - health below BystanderDistressHealth percent (healer-class victims
 #   that still have mana use the stricter BystanderDistressHealerHealth),
 # - a mana user's mana below BystanderDistressLowMana percent while

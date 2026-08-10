@@ -215,6 +215,7 @@ public:
     uint32 bystanderAssistCooldown;
     uint32 bystanderAssistSelfHealth;
     uint32 bystanderAssistSelfMana;
+    uint32 bystanderPvpSupportChance;
 
     // social buffing (Felworld)
     bool enableSocialBuffing;
@@ -496,6 +497,9 @@ public:
     uint32 wpvpReinforcementDeaths;
     float wpvpReinforcementChance;
     bool wpvpEmoteAlertEnabled;
+    bool wpvpPasserbyAssistEnabled;
+    uint32 wpvpPasserbyAssistChance;
+    float wpvpPasserbyAssistRadius;
     uint32 bgStrategyComplianceChance;
     uint32 bgStrategyOrderDuration;
     std::array<uint32, MAX_CLASSES> wpvpClassTruceChance;

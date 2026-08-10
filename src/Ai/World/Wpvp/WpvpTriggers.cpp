@@ -6,6 +6,7 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "Timer.h"
+#include "WpvpAssist.h"
 #include "WpvpTruce.h"
 
 Unit* WpvpGoadTrigger::FindMark(PlayerbotAI* botAI, Player* bot)
@@ -109,5 +110,9 @@ bool WpvpPeelTrigger::IsActive()
     if (!alternative || alternative == current || !alternative->IsPlayer())
         return false;
 
-    return bot->GetDistance(alternative) + sPlayerbotAIConfig.wpvpPeelAdvantageYards <= bot->GetDistance(current);
+    // Same score as EnemyPlayerValue's sighting sort - distance with
+    // kill-the-add pull - so the trigger can never disagree with what the
+    // value would pick.
+    return WpvpTargetScore(bot, alternative->ToPlayer()) + sPlayerbotAIConfig.wpvpPeelAdvantageYards <=
+           WpvpTargetScore(bot, current->ToPlayer());
 }

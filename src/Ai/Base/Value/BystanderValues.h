@@ -21,9 +21,12 @@ class Unit;
 // druid can still drop form and throw a Healing Touch at a dying stranger.
 bool IsBystanderHealerClass(Player* player);
 
-// The nearby non-group player most in need of a rescue, or nullptr. Owns the
-// per-player health-sample history that backs the rapid-loss distress
-// criterion and the per-victim cooldown that stops assist ping-pong.
+// The nearby non-group player most in need of a rescue, or nullptr. Out of
+// combat it adopts new victims; in combat a healer only ever gets back the
+// victim it already adopted (sustain - the first support heal is what put it
+// in combat). Owns the per-player health-sample history that backs the
+// rapid-loss distress criterion and the per-victim cooldown that stops
+// assist ping-pong.
 class BystanderToAssistValue : public UnitCalculatedValue
 {
 public:
@@ -44,15 +47,18 @@ private:
     bool FindPreviousSample(ObjectGuid guid, uint32 now, uint8& prevHealthPct, uint32& prevAgeMs) const;
     void Prune(uint32 now);
     bool IsWinnable(Player* victim, std::vector<Unit*> const& attackers) const;
+    Unit* SustainTarget();
 
     std::unordered_map<ObjectGuid, std::deque<HealthSample>> _samples;
     std::unordered_map<ObjectGuid, uint32> _cooldownEndMs;
+    ObjectGuid _sustainVictim;  // victim adopted by the last assist
     uint32 _lastPruneMs = 0;
 };
 
 // The creature attacking the bystander that the bot should engage, or
-// nullptr. Only ever returns creatures: rescuing someone from another player
-// is out of scope, and that rule is structural here.
+// nullptr. Only ever returns creatures: the attack path never targets
+// players - joining a player fight is passerby assist's job
+// (EnemyPlayerValue) - and that rule is structural here.
 class BystanderAttackerValue : public UnitCalculatedValue
 {
 public:

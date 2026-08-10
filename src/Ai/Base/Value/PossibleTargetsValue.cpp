@@ -19,6 +19,7 @@
 #include "SpellMgr.h"
 #include "Unit.h"
 #include "AreaDefines.h"
+#include "WpvpAssist.h"
 
 // Level difference thresholds for attack probability
 constexpr int32 EXTREME_LEVEL_DIFF = 5;  // Don't attack if enemy is this much higher
@@ -88,6 +89,13 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         if (inCapitalCity)
             return true;
 
+        // Passerby assist (Felworld): an enemy caught attacking a nearby
+        // faction-mate is joined past the usual courage gates - up to the
+        // "??" line, jumping in is etiquette, not a picked fight. The dice,
+        // radius and flagging rules live in WpvpPasserbyAssistTarget.
+        if (WpvpPasserbyAssistTarget(bot, unit->ToPlayer()))
+            return true;
+
         // Level difference check (against the level the bot can see:
         // a "??" target counts as exactly the gap above it)
         int32 levelDifference = PerceivedLevel(bot, unit) - bot->GetLevel();
@@ -102,6 +110,12 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         // excursion's destination selection already level-gap-curved who goes
         // where). The suicide cap above still applies.
         if (levelDifference <= 0 && botAI->rpgInfo.GetStatus() == RPG_GO_WPVP)
+            return true;
+
+        // Kill the add (Felworld): an underleveled enemy already trading
+        // blows with players joined a fight on purpose - no reluctance dice,
+        // they get treated as the combatant they chose to be.
+        if (levelDifference <= 0 && WpvpActivePvpCombatant(unit->ToPlayer()))
             return true;
 
         // Calculate attack chance based on level difference

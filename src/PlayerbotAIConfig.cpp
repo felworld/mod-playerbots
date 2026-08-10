@@ -632,6 +632,8 @@ bool PlayerbotAIConfig::Initialize()
     bystanderAssistCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistCooldown", 30);
     bystanderAssistSelfHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistSelfHealth", 50);
     bystanderAssistSelfMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderAssistSelfMana", 30);
+    bystanderPvpSupportChance =
+        std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.BystanderPvpSupportChance", 50), 100);
 
     // social buffing (Felworld)
     enableSocialBuffing = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableSocialBuffing", true);
@@ -827,6 +829,10 @@ bool PlayerbotAIConfig::Initialize()
     wpvpReinforcementDeaths = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementDeaths", 2);
     wpvpReinforcementChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpReinforcementChance", 15.0f);
     wpvpEmoteAlertEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpEmoteAlertEnabled", true);
+    wpvpPasserbyAssistEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpPasserbyAssistEnabled", true);
+    wpvpPasserbyAssistChance =
+        std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpPasserbyAssistChance", 90), 100);
+    wpvpPasserbyAssistRadius = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpPasserbyAssistRadius", 40.0f);
     bgStrategyComplianceChance = sConfigMgr->GetOption<uint32>("AiPlayerbot.BgStrategyComplianceChance", 65);
     bgStrategyOrderDuration = sConfigMgr->GetOption<uint32>("AiPlayerbot.BgStrategyOrderDuration", 45);
     wpvpClassTruceChance.fill(0);

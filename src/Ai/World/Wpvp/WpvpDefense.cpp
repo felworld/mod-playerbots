@@ -5,6 +5,7 @@
 
 #include "BotDeathSafety.h"
 #include "ChatHelper.h"
+#include "CombatManager.h"
 #include "DBCStores.h"
 #include "FelworldEvents.h"
 #include "LevelPerception.h"
@@ -232,11 +233,29 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
                        Acore::StringFormat("{{\"killer\":\"{}\",\"killer_level\":{},\"zone\":{}}}",
                                            attacker->GetName(), attacker->GetLevel(), entry.zoneId));
 
+    // Joiner exemption (Felworld): a passerby who piled into an ongoing even
+    // fight and died as the add doesn't feed the spree - everyone watching
+    // saw a battle, not a gank. Evidence: the killer is still trading blows
+    // with a living even-match opponent.
+    bool addKill = false;
+    for (auto const& [guid, combatRef] : attacker->GetCombatManager().GetPvPCombatRefs())
+    {
+        Unit* other = combatRef->GetOther(attacker);
+        if (!other || other == victim || !other->IsPlayer() || !other->IsAlive())
+            continue;
+
+        if (uint32(other->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap > entry.attackerLevel)
+        {
+            addKill = true;
+            break;
+        }
+    }
+
     // Only genuine gank kills - victim a full gank gap below the attacker -
     // feed the spree tally: no number of even fights lost fair and square
     // warrants a WorldDefense plea. The attacker's level is the one the
     // victim could see; a skull already means further above than the gap.
-    if (uint32(victim->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= entry.attackerLevel)
+    if (!addKill && uint32(victim->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap <= entry.attackerLevel)
     {
         if (!entry.firstKillMs ||
             getMSTimeDiff(entry.firstKillMs, now) > sPlayerbotAIConfig.wpvpEscalationWindow * IN_MILLISECONDS)

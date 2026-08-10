@@ -10,6 +10,7 @@
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "Vehicle.h"
+#include "WpvpAssist.h"
 #include "WpvpChase.h"
 #include "WpvpGuardRespect.h"
 #include "WpvpSatiation.h"
@@ -121,28 +122,31 @@ Unit* EnemyPlayerValue::Calculate()
 
     GuidVector players = AI_VALUE(GuidVector, "nearest enemy players");
 
-    // Nearest first: grid iteration order isn't distance order, and both the
-    // "first acceptable wins" loop and the peel margin below assume it.
-    std::vector<Player*> candidates;
+    // Most attractive first: grid iteration order is meaningless, and both
+    // the "first acceptable wins" loop and the peel margin below assume the
+    // ordering. The score is distance with kill-the-add pull (Felworld): an
+    // enemy perceivedly below the bot, or one already fighting players,
+    // reads as effectively closer - the underleveled helper who joins a
+    // brawl gets focused like an add in a dungeon.
+    std::vector<std::pair<float, Player*>> candidates;
     candidates.reserve(players.size());
     for (auto const& gTarget : players)
         if (Player* pTarget = dynamic_cast<Player*>(botAI->GetUnit(gTarget)))
-            candidates.push_back(pTarget);
+            candidates.push_back({ WpvpTargetScore(bot, pTarget), pTarget });
 
     std::sort(candidates.begin(), candidates.end(),
-              [&](Player const* p1, Player const* p2)
-              { return bot->GetDistance(p1) < bot->GetDistance(p2); });
+              [](auto const& p1, auto const& p2) { return p1.first < p2.first; });
 
+    float const engagedScore = engaged ? WpvpTargetScore(bot, engaged->ToPlayer()) : 0.0f;
     float const maxAggroDistance = GetMaxAttackDistance();
     bool const onWpvpExcursion = botAI->rpgInfo.GetStatus() == RPG_GO_WPVP;
-    for (Player* pTarget : candidates)
+    for (auto const& [score, pTarget] : candidates)
     {
-        // Peel margin: while engaged, a bystander only wins when they're
-        // WpvpPeelAdvantageYards closer than the current fight - enough of a
+        // Peel margin: while engaged, a bystander only wins when they score
+        // WpvpPeelAdvantageYards better than the current fight - enough of a
         // gap that switching reads as opportunism, not indecision. Sorted
-        // nearest-first, so once the margin fails here nobody later beats it.
-        if (engaged &&
-            bot->GetDistance(pTarget) + sPlayerbotAIConfig.wpvpPeelAdvantageYards > bot->GetDistance(engaged))
+        // best-first, so once the margin fails here nobody later beats it.
+        if (engaged && score + sPlayerbotAIConfig.wpvpPeelAdvantageYards > engagedScore)
             return engaged;
 
         if (pTarget == pVictim)
@@ -162,11 +166,18 @@ Unit* EnemyPlayerValue::Calculate()
         // Aggro weak enemies from further away; excursion bots came to pick fights,
         // so they commit at full range regardless of the health comparison.
         // If controlling mobile vehicle only agro close enemies (otherwise will never reach objective)
-        float const aggroDistance = controllingVehicle ? 5.0f
-                                    : (controllingCannon || onWpvpExcursion ||
-                                       bot->GetHealth() > pTarget->GetHealth())
-                                        ? maxAggroDistance
-                                        : 20.0f;
+        float aggroDistance = controllingVehicle ? 5.0f
+                              : (controllingCannon || onWpvpExcursion ||
+                                 bot->GetHealth() > pTarget->GetHealth())
+                                  ? maxAggroDistance
+                                  : 20.0f;
+
+        // Passerby assist (Felworld): a fight against a faction-mate inside
+        // the assist radius is joined even where the health comparison above
+        // would have kept the bot at its short range.
+        if (!controllingVehicle && WpvpPasserbyAssistTarget(bot, pTarget))
+            aggroDistance = std::max(aggroDistance, sPlayerbotAIConfig.wpvpPasserbyAssistRadius);
+
         if (!bot->IsWithinDist(pTarget, aggroDistance))
             continue;
 
@@ -179,8 +190,9 @@ Unit* EnemyPlayerValue::Calculate()
             // don't gank druids" code - decline the unprovoked attack and
             // queue a salute instead. Only this phase is gated: self-defense
             // (1) and party assists (3) stay - the truce is an offer, not
-            // pacifism, and it's off the moment they swing first.
-            if (WpvpTruceHolds(bot, pTarget))
+            // pacifism, and it's off the moment they swing first. Swinging
+            // at ANYONE counts: an active combatant forfeits the courtesy.
+            if (!WpvpActivePvpCombatant(pTarget) && WpvpTruceHolds(bot, pTarget))
             {
                 WpvpTruceBoard::instance().NotePassing(bot, pTarget);
                 continue;

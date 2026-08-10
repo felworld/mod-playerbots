@@ -6,6 +6,7 @@
 #include "BystanderValues.h"
 
 #include "BystanderDistress.h"
+#include "DeterministicRoll.h"
 #include "LevelPerception.h"
 #include "Playerbots.h"
 
@@ -17,6 +18,16 @@ namespace
     // history; keeps the rate baseline meaningfully older than "this tick".
     constexpr uint32 SAMPLE_SPACING_MS = 1000;
     constexpr uint32 PRUNE_INTERVAL_MS = 10 * 1000;
+
+    // PvP support dice (issue #53): stable per bot/victim pair for the same
+    // window as the other deterministic PvP decisions.
+    constexpr uint64 PVP_SUPPORT_ROLL_SALT = 0x4845414c;  // 'HEAL'
+    constexpr uint32 PVP_SUPPORT_ROLL_WINDOW = 2 * MINUTE;
+
+    // A supporter can out-heal one or two enemies' damage; healing into a
+    // squad stomp just gets the healer killed too - the PvP analog of the
+    // creature-fight winnability estimate below.
+    constexpr size_t MAX_SUPPORTABLE_PLAYER_ATTACKERS = 2;
 
     BystanderDistressConfig DistressConfig()
     {
@@ -37,6 +48,16 @@ namespace
         std::vector<Unit*> attackers;
         for (Unit* attacker : victim->getAttackers())
             if (attacker && attacker->IsAlive() && attacker->IsCreature())
+                attackers.push_back(attacker);
+
+        return attackers;
+    }
+
+    std::vector<Unit*> LivingPlayerAttackers(Player* victim)
+    {
+        std::vector<Unit*> attackers;
+        for (Unit* attacker : victim->getAttackers())
+            if (attacker && attacker->IsAlive() && attacker->IsPlayer())
                 attackers.push_back(attacker);
 
         return attackers;
@@ -78,10 +99,17 @@ Unit* BystanderToAssistValue::Calculate()
     uint32 now = getMSTime();
     Prune(now);
 
-    // v1: a bot only volunteers while free and in good shape - grouped bots
-    // have a party to answer to, in-combat bots have their own problems.
-    if (bot->GetGroup() || bot->IsInCombat())
+    // A bot only volunteers while free and in good shape - grouped bots have
+    // a party to answer to. In combat nobody new gets adopted; a healer
+    // mid-rescue keeps its victim (the first support heal is what put it in
+    // combat).
+    if (bot->GetGroup())
         return nullptr;
+
+    if (bot->IsInCombat())
+        return IsBystanderHealerClass(bot) ? SustainTarget() : nullptr;
+
+    _sustainVictim.Clear();
 
     if (bot->GetHealthPct() < float(sPlayerbotAIConfig.bystanderAssistSelfHealth))
         return nullptr;
@@ -117,8 +145,9 @@ Unit* BystanderToAssistValue::Calculate()
         if (!player->IsInCombat())
             continue;
 
-        std::vector<Unit*> attackers = LivingCreatureAttackers(player);
-        if (attackers.empty())
+        std::vector<Unit*> creatureAttackers = LivingCreatureAttackers(player);
+        std::vector<Unit*> playerAttackers = LivingPlayerAttackers(player);
+        if (creatureAttackers.empty() && playerAttackers.empty())
             continue;
 
         // Path-aware PvP safety: only pick victims this bot can legally help.
@@ -129,8 +158,11 @@ Unit* BystanderToAssistValue::Calculate()
         }
         else
         {
+            // Non-healers help by attacking a creature attacker. A victim
+            // under player attack only is not theirs to rescue here: joining
+            // the fight is passerby assist's job (EnemyPlayerValue).
             bool anyAttackable = false;
-            for (Unit* attacker : attackers)
+            for (Unit* attacker : creatureAttackers)
                 if (CanAttackWithoutFlagging(bot, attacker))
                 {
                     anyAttackable = true;
@@ -141,9 +173,23 @@ Unit* BystanderToAssistValue::Calculate()
                 continue;
         }
 
+        // PvP support dice (issue #53): not every passerby commits to
+        // someone else's player fight - each would-be supporter rolls once
+        // per victim per window.
+        if (creatureAttackers.empty() &&
+            !DeterministicRollPasses(bot->GetGUID().GetRawValue(), guid.GetRawValue(),
+                                     PVP_SUPPORT_ROLL_SALT, PVP_SUPPORT_ROLL_WINDOW,
+                                     sPlayerbotAIConfig.bystanderPvpSupportChance))
+            continue;
+
         // Anti-dogpile: stand down when enough others are already on it.
         std::unordered_set<ObjectGuid> helpers;
-        for (Unit* attacker : attackers)
+        for (Unit* attacker : creatureAttackers)
+            for (Unit* helper : attacker->getAttackers())
+                if (helper && helper != player && helper->IsPlayer())
+                    helpers.insert(helper->GetGUID());
+
+        for (Unit* attacker : playerAttackers)
             for (Unit* helper : attacker->getAttackers())
                 if (helper && helper != player && helper->IsPlayer())
                     helpers.insert(helper->GetGUID());
@@ -157,7 +203,8 @@ Unit* BystanderToAssistValue::Calculate()
         snapshot.manaPct = uint8(player->GetPowerPct(POWER_MANA));
         snapshot.isHealerCapableClass = IsBystanderHealerClass(player);
         snapshot.inCombat = true;
-        snapshot.creatureAttackerCount = uint8(std::min<size_t>(attackers.size(), 255));
+        snapshot.creatureAttackerCount = uint8(std::min<size_t>(creatureAttackers.size(), 255));
+        snapshot.playerAttackerCount = uint8(std::min<size_t>(playerAttackers.size(), 255));
 
         uint8 prevHealthPct = 0;
         uint32 prevAgeMs = 0;
@@ -168,7 +215,13 @@ Unit* BystanderToAssistValue::Calculate()
         if (!IsBystanderInDistress(snapshot, config))
             continue;
 
-        if (!IsWinnable(player, attackers))
+        // Creature fights are judged by composition; player fights by
+        // dogpile size - support goes to someone losing a fight, not into a
+        // massacre-by-numbers.
+        if (!creatureAttackers.empty() && !IsWinnable(player, creatureAttackers))
+            continue;
+
+        if (playerAttackers.size() > MAX_SUPPORTABLE_PLAYER_ATTACKERS)
             continue;
 
         if (player->GetHealthPct() < bestHealthPct)
@@ -184,6 +237,45 @@ Unit* BystanderToAssistValue::Calculate()
 void BystanderToAssistValue::MarkAssisted(ObjectGuid victimGuid)
 {
     _cooldownEndMs[victimGuid] = getMSTime() + sPlayerbotAIConfig.bystanderAssistCooldown * IN_MILLISECONDS;
+
+    // Adopt for sustain: the assist that just fired may pull the bot into
+    // combat, and the rescue continues through it.
+    _sustainVictim = victimGuid;
+}
+
+// Mid-rescue: the victim adopted by the last assist, for as long as the
+// rescue still makes sense - alive, still under attack, in range, legal to
+// heal, and the bot itself still in shape to help. No dice, cooldowns or
+// distress re-checks here: those gate ADOPTING a victim, not standing by one.
+Unit* BystanderToAssistValue::SustainTarget()
+{
+    if (_sustainVictim.IsEmpty())
+        return nullptr;
+
+    Unit* unit = botAI->GetUnit(_sustainVictim);
+    Player* victim = unit ? unit->ToPlayer() : nullptr;
+    if (!victim || !victim->IsAlive() || !victim->IsInCombat() ||
+        bot->GetDistance(victim) > sPlayerbotAIConfig.bystanderAssistRadius ||
+        (LivingCreatureAttackers(victim).empty() && LivingPlayerAttackers(victim).empty()))
+    {
+        _sustainVictim.Clear();
+        return nullptr;
+    }
+
+    // The same self-preservation gates as adoption: a healer taking a
+    // beating (the enemy turned on it) or running dry stops supporting and
+    // fights its own fight.
+    if (bot->GetHealthPct() < float(sPlayerbotAIConfig.bystanderAssistSelfHealth))
+        return nullptr;
+
+    if (bot->getPowerType() == POWER_MANA &&
+        bot->GetPowerPct(POWER_MANA) < float(sPlayerbotAIConfig.bystanderAssistSelfMana))
+        return nullptr;
+
+    if (!CanHealWithoutFlagging(bot, victim))
+        return nullptr;
+
+    return victim;
 }
 
 void BystanderToAssistValue::SampleHealth(Player* player, uint32 now)

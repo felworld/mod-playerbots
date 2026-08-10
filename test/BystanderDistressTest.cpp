@@ -49,11 +49,31 @@ TEST(BystanderDistressTest, OutOfCombatIsNeverDistress)
     EXPECT_FALSE(IsBystanderInDistress(s, DefaultConfig()));
 }
 
-TEST(BystanderDistressTest, NoCreatureAttackersIsNeverDistress)
+TEST(BystanderDistressTest, NoAttackersIsNeverDistress)
 {
-    // In combat but only player attackers: PvP rescue is out of scope.
+    // In combat with nobody actually on them (attackers all dead or gone).
     BystanderSnapshot s = Fighting(10, 0);
     EXPECT_FALSE(IsBystanderInDistress(s, DefaultConfig()));
+}
+
+TEST(BystanderDistressTest, PlayerAttackersQualifyForDistress)
+{
+    // Losing a PvP fight counts (issue #53): the PvP-support path heals
+    // strangers under player attack by the same distress criteria.
+    BystanderSnapshot s = Fighting(10, 0);
+    s.playerAttackerCount = 1;
+    EXPECT_TRUE(IsBystanderInDistress(s, DefaultConfig()));
+
+    s.healthPct = 65;
+    EXPECT_FALSE(IsBystanderInDistress(s, DefaultConfig()));
+}
+
+TEST(BystanderDistressTest, MixedSwarmCountsBothKinds)
+{
+    // Two mobs plus a player dogpiling counts as a swarm of three.
+    BystanderSnapshot s = Fighting(80, 2);
+    s.playerAttackerCount = 1;
+    EXPECT_TRUE(IsBystanderInDistress(s, DefaultConfig()));
 }
 
 TEST(BystanderDistressTest, DrainedManaUserIsDistressAtModerateHealth)

@@ -297,6 +297,14 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
         // The startle/emote halves guard on !IsInCombat themselves (Felworld).
         if (sPlayerbotAIConfig.enableStealthReactions)
             engine->addStrategy("stealth react", false);
+
+        // Bystander assist runs in combat too (Felworld): the first support
+        // heal on a rescue victim puts the healer in combat, and stopping
+        // there would abandon them. Out of combat the value adopts victims;
+        // in combat it only ever returns the one already adopted (sustain),
+        // so this adds no new ways to ENTER combat.
+        if (sPlayerbotAIConfig.enableBystanderAssist)
+            engine->addStrategy("bystander assist", false);
     }
 
     if (sPlayerbotAIConfig.autoAvoidAoe && facade->HasRealPlayerMaster())

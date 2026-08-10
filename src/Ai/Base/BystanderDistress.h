@@ -34,18 +34,19 @@ struct BystanderSnapshot
     bool isHealerCapableClass;    // priest / paladin / druid / shaman
     bool inCombat;
     uint8_t creatureAttackerCount;
+    uint8_t playerAttackerCount;  // PvP victims qualify for support heals too
     bool hasPrevSample;
     uint8_t prevHealthPct;        // meaningful only when hasPrevSample
     uint32_t prevSampleAgeMs;     // meaningful only when hasPrevSample
 };
 
-// "Seems like they're going to die": under creature attack AND any of a
-// drained mana pool, low health, rapid health loss, or a mob swarm. Healer
-// classes with mana remaining can usually save themselves, so they need a
-// stronger health signal.
+// "Seems like they're going to die": under attack (creatures or, for the
+// PvP-support path, players) AND any of a drained mana pool, low health,
+// rapid health loss, or a swarm. Healer classes with mana remaining can
+// usually save themselves, so they need a stronger health signal.
 inline bool IsBystanderInDistress(BystanderSnapshot const& s, BystanderDistressConfig const& c)
 {
-    if (!s.inCombat || !s.creatureAttackerCount)
+    if (!s.inCombat || (!s.creatureAttackerCount && !s.playerAttackerCount))
         return false;
 
     if (s.hasMana && s.manaPct < c.lowMana && s.healthPct < c.lowManaHealth)
@@ -59,7 +60,8 @@ inline bool IsBystanderInDistress(BystanderSnapshot const& s, BystanderDistressC
         uint8_t(s.prevHealthPct - s.healthPct) >= c.rateHealthLoss)
         return true;
 
-    if (s.creatureAttackerCount >= c.distressMobCount && s.healthPct < c.swarmHealthCeiling)
+    if (s.creatureAttackerCount + s.playerAttackerCount >= c.distressMobCount &&
+        s.healthPct < c.swarmHealthCeiling)
         return true;
 
     return false;
