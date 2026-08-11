@@ -47,7 +47,8 @@ inline bool IsSocialReactionFresh(SocialReactionEvent const& event, uint32 windo
 
 // The nearby friendly player this bot should walk-up buff, or nullptr. Owns
 // the per-target cooldown that keeps a bot from courting the same stranger
-// every scan.
+// every scan, and the giver-side cooldown that paces its overall generosity
+// so it doesn't methodically work through a whole crowd.
 class PasserbyToBuffValue : public UnitCalculatedValue
 {
 public:
@@ -59,6 +60,7 @@ public:
 
 private:
     std::unordered_map<ObjectGuid, uint32> _cooldownEndMs;
+    uint32 _giverReadyMs = 0;
     uint32 _lastPruneMs = 0;
 };
 

@@ -221,6 +221,7 @@ public:
     bool enableSocialBuffing;
     float socialBuffRadius;
     uint32 socialBuffCooldown;
+    uint32 socialBuffGiverCooldown;
     uint32 socialBuffSelfMana;
     bool enableHealThanks;
     uint32 socialThankCooldown;

@@ -639,6 +639,7 @@ bool PlayerbotAIConfig::Initialize()
     enableSocialBuffing = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableSocialBuffing", true);
     socialBuffRadius = sConfigMgr->GetOption<float>("AiPlayerbot.SocialBuffRadius", 30.0f);
     socialBuffCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialBuffCooldown", 600);
+    socialBuffGiverCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialBuffGiverCooldown", 60);
     socialBuffSelfMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialBuffSelfMana", 40);
     enableHealThanks = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableHealThanks", true);
     socialThankCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialThankCooldown", 180);

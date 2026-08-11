@@ -194,7 +194,11 @@ give up on someone who already has one: it works down the same
 role-based priority list the greater-blessing assignment uses (so a
 target wearing Might gets Kings) and offers the best flavour they aren't
 already carrying, never Might to a mage, priest, or warlock and never
-Wisdom to a warrior, rogue, or death knight. Bots also answer a stranger's heal with a targeted /thank emote
+Wisdom to a warrior, rogue, or death knight. Generosity is paced: a bot
+gives at most one walk-up buff per `AiPlayerbot.SocialBuffGiverCooldown`
+window (default 60s), so in a busy spot it blesses whoever happens to be
+nearest rather than methodically working through the crowd — buffing
+back is exempt. Bots also answer a stranger's heal with a targeted /thank emote
 (mod-llm supplies the spoken "thx"). Like bystander assist, no action is
 ever taken that would newly PvP-flag the bot: flagged targets are only
 buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and

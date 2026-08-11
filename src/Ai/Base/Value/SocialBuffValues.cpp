@@ -147,6 +147,14 @@ Unit* PasserbyToBuffValue::Calculate()
         return nullptr;
 
     uint32 now = getMSTime();
+
+    // Giver-side pacing: a real player might buff whoever happens to be next
+    // to them, not methodically bless a whole plaza. One walk-up buff per
+    // cooldown window; buff-backs bypass this value, so answering a buff is
+    // never blocked (though it does restart the window).
+    if (now < _giverReadyMs)
+        return nullptr;
+
     if (now - _lastPruneMs > PRUNE_INTERVAL_MS)
     {
         _lastPruneMs = now;
@@ -197,5 +205,7 @@ Unit* PasserbyToBuffValue::Calculate()
 
 void PasserbyToBuffValue::MarkBuffed(ObjectGuid targetGuid)
 {
-    _cooldownEndMs[targetGuid] = getMSTime() + sPlayerbotAIConfig.socialBuffCooldown * IN_MILLISECONDS;
+    uint32 now = getMSTime();
+    _cooldownEndMs[targetGuid] = now + sPlayerbotAIConfig.socialBuffCooldown * IN_MILLISECONDS;
+    _giverReadyMs = now + sPlayerbotAIConfig.socialBuffGiverCooldown * IN_MILLISECONDS;
 }

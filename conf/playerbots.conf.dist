@@ -2701,6 +2701,10 @@ AiPlayerbot.SocialBuffRadius = 30
 # Per-target cooldown (seconds) after buffing (or trying to), so a bot
 # doesn't court the same stranger every scan.
 AiPlayerbot.SocialBuffCooldown = 600
+# Per-bot cooldown (seconds) between walk-up buffs, so a bot blesses at most
+# one stranger per window instead of working through a whole crowd. Buffing
+# back whoever buffed the bot is never blocked by this.
+AiPlayerbot.SocialBuffGiverCooldown = 60
 # A bot only volunteers buffs while its own mana is above this percent.
 AiPlayerbot.SocialBuffSelfMana = 40
 # Bots respond to a stranger's heal with a targeted /thank emote (the LLM
