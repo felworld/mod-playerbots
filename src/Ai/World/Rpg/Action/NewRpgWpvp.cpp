@@ -119,6 +119,12 @@ WpvpZoneCategory ClassifyWpvpDestination(Player* invader, uint32 zoneId, uint32 
     return WpvpZoneCategory::EnemyHomeZone;
 }
 
+bool WpvpOnDefenseMission(PlayerbotAI* botAI)
+{
+    auto* data = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data);
+    return data && data->defend;
+}
+
 void EndWpvpExcursion(PlayerbotAI* botAI, char const* reason)
 {
     auto* data = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data);

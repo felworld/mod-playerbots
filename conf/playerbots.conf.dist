@@ -1338,19 +1338,27 @@ AiPlayerbot.WpvpEscalationWindow = 600
 # Reactive defense: idle bots that hear a defense callout may travel in to
 # hunt the reported ganker. Each eligible bot (same faction, level within
 # LevelSlack below the attacker, not busy) rolls ResponseChance percent once
-# per ganker - no responder cap, so a big spree can draw a posse.
+# per ganker, and at most ResponderCap roll winners actually set out (0 =
+# uncapped): the chance says how eager each bot is, the cap says how many
+# the battlefield can absorb, so wave size doesn't scale with the server's
+# whole idle-bot population.
 # An attacker who preys on players GankLevelGap or more levels below them
 # rolls at the full ResponseChance; an evenly matched attacker (as brawl
 # participants are) draws only EvenFightChance - stopping a lowbie ganker
 # rallies people, a fair fight far away mostly doesn't. The same gap draws
 # the too-strong-to-shout line for the callout speakers and the
 # outmatched-eyewitness line for escalations above.
-# Default: 1 (enabled) / 10 / 3 / 3 / 5
+# Responders stay on mission: while on a defense trip a bot never opens on
+# a bystander GankLevelGap or more levels below it (a lowbie already
+# fighting players is still fair game) - it came to stop a ganker, not to
+# start a spree of its own.
+# Default: 1 (enabled) / 10 / 3 / 3 / 5 / 3
 AiPlayerbot.WpvpDefenseEnabled = 1
 AiPlayerbot.WpvpDefenseResponseChance = 10
 AiPlayerbot.WpvpDefenseLevelSlack = 3
 AiPlayerbot.WpvpDefenseEvenFightChance = 3
 AiPlayerbot.WpvpGankLevelGap = 5
+AiPlayerbot.WpvpDefenseResponderCap = 3
 
 # Defense against town raids: the faction-wide "... is under attack!"
 # broadcast (a guard dying to an enemy player, scripted town alarms) files
@@ -1377,13 +1385,16 @@ AiPlayerbot.WpvpGuardRespectLevelGap = 5
 # outside help (killers who were never among their victims - bot defenders
 # or a real player riding in), their faction sends one reinforcement wave:
 # idle same-faction bots each roll ReinforcementChance percent once to
-# travel in and back them up. No chat is involved - the ask is assumed to
+# travel in and back them up, and the wave holds at most ReinforcementCap
+# riders (0 = uncapped). No chat is involved - the ask is assumed to
 # happen over a backchannel. Travel delay, dwell and level slack reuse the
-# defense-response settings.
-# Default: 1 (enabled) / 2 / 15
+# defense-response settings; reinforcers count as defense responders for
+# the stay-on-mission rule above.
+# Default: 1 (enabled) / 2 / 15 / 3
 AiPlayerbot.WpvpReinforcementEnabled = 1
 AiPlayerbot.WpvpReinforcementDeaths = 2
 AiPlayerbot.WpvpReinforcementChance = 15
+AiPlayerbot.WpvpReinforcementCap = 3
 
 # Emote alerts: a targeted emote (/point, /charge, nearly anything - sincere
 # respect gestures like /salute and /bow are exempt, see the same-class truce

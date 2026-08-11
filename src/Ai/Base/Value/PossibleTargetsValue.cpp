@@ -12,6 +12,7 @@
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "LevelPerception.h"
+#include "NewRpgWpvp.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
 #include "SpellAuraDefines.h"
@@ -124,8 +125,10 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         // A world-pvp excursion bot came specifically to pick fights, so no
         // reluctance toward lower-level targets - ganking is the point (the
         // excursion's destination selection already level-gap-curved who goes
-        // where). The suicide cap above still applies.
-        if (levelDifference <= 0 && botAI->rpgInfo.GetStatus() == RPG_GO_WPVP)
+        // where). The suicide cap above still applies. Defend-mode excursions
+        // are exempt from the exemption: a responder came to stop a ganker,
+        // not to start a spree of its own.
+        if (levelDifference <= 0 && botAI->rpgInfo.GetStatus() == RPG_GO_WPVP && !WpvpOnDefenseMission(botAI))
             return true;
 
         // Kill the add (Felworld): an underleveled enemy already trading
@@ -133,6 +136,16 @@ bool PossibleTargetsValue::AcceptUnit(Unit* unit)
         // they get treated as the combatant they chose to be.
         if (levelDifference <= 0 && WpvpActivePvpCombatant(unit->ToPlayer()))
             return true;
+
+        // On-mission responders (Felworld): a defender never opens on an
+        // outmatched bystander - not even with the reluctance dice below,
+        // which across a whole response wave still add up to a lowbie purge.
+        // Each such kill would also file the defender as a fresh "ganker" on
+        // the enemy's board, so waves answer waves. Near-level enemies and
+        // the hunted ganker stay fair game (the dice below and the courage
+        // rules), as does any lowbie already fighting players (the add rule).
+        if (levelDifference <= -int32(sPlayerbotAIConfig.wpvpGankLevelGap) && WpvpOnDefenseMission(botAI))
+            return false;
 
         // Calculate attack chance based on level difference
         uint32 attackChance = 100; // Default 100%: Bot and target's levels are very close

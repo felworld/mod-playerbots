@@ -91,6 +91,8 @@ struct WpvpDefenseEntry
     bool escalated{false};        // the one WorldDefense shout has been made
     uint32 avengedDeaths{0};      // deaths to someone who was NOT one of their victims
     uint32 reinforceArmedMs{0};   // 0 until the attacker's faction gets its one reinforcement wave
+    uint32 defenseResponses{0};   // defenders who actually set out after this attacker
+    uint32 reinforceResponses{0}; // faction-mates who actually rode in to back them up
 };
 
 // Shared bulletin board of active gankers, keyed by attacker. Producers:
@@ -184,6 +186,13 @@ public:
     // One response roll per bot per attacker, ever: whether the dice pass or
     // fail, the bot doesn't roll for this ganker again.
     bool TryClaimResponseRoll(ObjectGuid bot, ObjectGuid attacker);
+
+    // A passed dice roll still has to win one of the entry's limited response
+    // slots (WpvpDefenseResponderCap / WpvpReinforcementCap) before the bot
+    // actually sets out. The per-bot chance says how eager each bot is; the
+    // slots say how many the battlefield can absorb - without them the wave
+    // size scales with the whole server's idle-bot population.
+    bool TryClaimResponseSlot(ObjectGuid attacker, bool reinforce);
 
 private:
     WpvpDefenseBoard() = default;

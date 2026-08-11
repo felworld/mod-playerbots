@@ -23,6 +23,11 @@ bool RealPlayerNear(WorldPosition& pos, float range);
 // Returns false if the hub's map isn't loaded.
 bool ComputeWpvpPositions(WorldLocation const& hubLoc, uint32 zoneId, NewRpgInfo::GoWpvp& out);
 
+// The bot's current wpvp excursion is a defend-mode one - a defense
+// responder or a reinforcer, not an invader. False when the bot isn't on
+// an excursion at all.
+bool WpvpOnDefenseMission(PlayerbotAI* botAI);
+
 // Shared teardown for a world-PvP excursion (also used by the GM kill
 // switch): removes the excursion strategies and returns the bot to idle.
 // The PvP flag is left to decay naturally. The reason is logged (INFO for

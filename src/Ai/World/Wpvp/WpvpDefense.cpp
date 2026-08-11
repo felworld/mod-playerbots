@@ -491,6 +491,10 @@ bool WpvpDefenseBoard::FindRespondable(TeamId team, uint8 botLevel, ObjectGuid b
         if (entry.defendingTeam != team || !IsRespondable(entry, now))
             continue;
 
+        if (sPlayerbotAIConfig.wpvpDefenseResponderCap &&
+            entry.defenseResponses >= sPlayerbotAIConfig.wpvpDefenseResponderCap)
+            continue;
+
         if (botLevel + sPlayerbotAIConfig.wpvpDefenseLevelSlack < entry.attackerLevel)
             continue;
 
@@ -567,6 +571,10 @@ bool WpvpDefenseBoard::FindReinforceable(TeamId team, uint8 botLevel, ObjectGuid
         if (!entry.reinforceArmedMs || getMSTimeDiff(entry.reinforceArmedMs, now) >= RESPONDABLE_WINDOW_MS)
             continue;
 
+        if (sPlayerbotAIConfig.wpvpReinforcementCap &&
+            entry.reinforceResponses >= sPlayerbotAIConfig.wpvpReinforcementCap)
+            continue;
+
         if (botLevel + sPlayerbotAIConfig.wpvpDefenseLevelSlack < entry.attackerLevel)
             continue;
 
@@ -593,6 +601,23 @@ bool WpvpDefenseBoard::TryClaimResponseRoll(ObjectGuid bot, ObjectGuid attacker)
         _responseRolls.clear();
 
     return _responseRolls.insert(RollKey(bot, attacker)).second;
+}
+
+bool WpvpDefenseBoard::TryClaimResponseSlot(ObjectGuid attacker, bool reinforce)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    auto it = _entries.find(attacker);
+    if (it == _entries.end())
+        return false;
+
+    WpvpDefenseEntry& entry = it->second;
+    uint32 cap = reinforce ? sPlayerbotAIConfig.wpvpReinforcementCap : sPlayerbotAIConfig.wpvpDefenseResponderCap;
+    uint32& taken = reinforce ? entry.reinforceResponses : entry.defenseResponses;
+    if (cap && taken >= cap)
+        return false;
+
+    ++taken;
+    return true;
 }
 
 void WpvpDefenseBoard::Prune(uint32 now)
@@ -796,6 +821,9 @@ bool WpvpDefenseResponseAction::Execute(Event /*event*/)
     if (frand(0.0f, 100.0f) >= chance)
         return false;
 
+    if (!WpvpDefenseBoard::instance().TryClaimResponseSlot(entry.attacker, false))
+        return false;
+
     return StartWpvpDefenseResponse(botAI, entry.zoneId, entry.pos, entry.attacker);
 }
 
@@ -840,6 +868,9 @@ bool WpvpReinforceAction::Execute(Event /*event*/)
         return false;
 
     if (frand(0.0f, 100.0f) >= sPlayerbotAIConfig.wpvpReinforcementChance)
+        return false;
+
+    if (!WpvpDefenseBoard::instance().TryClaimResponseSlot(entry.attacker, true))
         return false;
 
     // Same travel machinery as a defense response, but the "defend target"
