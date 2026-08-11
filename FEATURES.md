@@ -400,6 +400,15 @@ being all 80s. Invaders goad unflagged enemies into attacking with rude
 emotes; rogues/druids both go more often and deliver theirs by dropping
 stealth right next to the mark, while Night Elves of other classes
 Shadowmeld and hold the ambush instead.
+Going home is literal: when the excursion ends — dwell expired (any
+running fight is finished first), died too often, or the reported
+attacker long gone — a bot that far outlevels the zone leaves for
+level-appropriate grounds via the same guarded teleport, instead of
+idling on the battlefield. Without that, contested leveling zones never
+drain: ended excursions pile up as idle outleveled fighters who keep
+brawling and re-answering every fresh callout, and the zone becomes a
+permanent meat grinder. Bots within the zone's own level bracket (plus
+the defense level slack) stay — they live there.
 `AiPlayerbot.RpgStatusProbWeight.GoWpvp` sets the frequency (0 disables);
 `AiPlayerbot.Wpvp*` knobs cover the rest; the `.playerbots wpvp` GM
 commands ([below](#commands-added-in-this-fork)) provide a test hook,
@@ -1039,8 +1048,10 @@ a no-op:
   public channel); broadcast attempts whose channel rolls all failed count
   `playerbots_broadcast_suppressed`, so the roll economy is visible.
 - **World PvP** — defense-board events (`kill`, `attacker_death`,
-  `callout`, `defender_on_scene`, `escalation`) and excursion starts (by
-  origin: own roll vs. defense response) and ends (by reason). Kills,
+  `callout`, `defender_on_scene`, `escalation`, plus `went_home` when an
+  ended excursion teleports an outleveled bot out of the zone) and
+  excursion starts (by origin: own roll vs. defense response) and ends
+  (by reason). Kills,
   deaths, defeats, callouts, and excursion boundaries are also written to
   the characters DB `felworld_events` table per participant, which is what
   the Character Inspector dashboard replays.

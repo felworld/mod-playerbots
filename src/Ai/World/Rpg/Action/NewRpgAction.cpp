@@ -249,8 +249,10 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
             else
             {
                 // Dwell phase: go home on expiry, or if something yanked the
-                // bot far away (e.g. the death-count inn teleport).
-                if (GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration)
+                // bot far away (e.g. the death-count inn teleport). Expiry
+                // waits out any running fight - ending the excursion mid-swing
+                // would strip the wpvp strategies and skip the trip home.
+                if (!bot->IsInCombat() && GetMSTimeDiffToNow(data.arrivedT) > data.dwellDuration)
                 {
                     EndWpvpExcursion(botAI, "dwell time expired");
                     return true;
@@ -285,7 +287,7 @@ bool NewRpgStatusUpdateAction::Execute(Event /*event*/)
                             WpvpDefenseBoard::instance().NoteDefenderOnScene(data.defendTarget, bot->GetTeamId(),
                                                                              bot->GetLevel());
                     }
-                    else if (GetMSTimeDiffToNow(data.defendLastSeenT) > 90 * IN_MILLISECONDS)
+                    else if (!bot->IsInCombat() && GetMSTimeDiffToNow(data.defendLastSeenT) > 90 * IN_MILLISECONDS)
                     {
                         EndWpvpExcursion(botAI, "defense target is gone");
                         return true;

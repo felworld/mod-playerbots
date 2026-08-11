@@ -14,6 +14,7 @@
 #include "RandomPlayerbotMgr.h"
 #include "SharedDefines.h"
 #include "Timer.h"
+#include "TravelMgr.h"
 
 bool SampleGroundNear(Map* map, WorldLocation const& hub, float bearing, float bearingSpread, float distMin,
                       float distMax, float zTolerance, WorldPosition& out)
@@ -147,6 +148,27 @@ void EndWpvpExcursion(PlayerbotAI* botAI, char const* reason)
     }
 
     botAI->rpgInfo.ChangeToIdle();
+
+    // "Go home" has to be literal. A bot left idling on the battlefield keeps
+    // brawling and re-answering same-zone callouts in a zone it has far
+    // outleveled, and the local grind/camp rolls can't route it out (they only
+    // pick same-zone spots for its level) - so hot zones never drain and a
+    // steady-state meat grinder forms. Bots the zone's bracket could plausibly
+    // host stay put: they live here.
+    Player* bot = botAI->GetBot();
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot) || !bot->IsAlive() || bot->IsInCombat())
+        return;
+
+    uint32 bracketLow = 0;
+    uint32 bracketHigh = 0;
+    if (!sTravelMgr.GetZoneLevelBracket(bot->GetZoneId(), bracketLow, bracketHigh) ||
+        bot->GetLevel() <= bracketHigh + sPlayerbotAIConfig.wpvpDefenseLevelSlack)
+        return;
+
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "went_home"));
+    Felworld::LogEvent(bot->GetGUID(), "wpvp_went_home",
+                       Acore::StringFormat("{{\"zone\":{}}}", bot->GetZoneId()));
+    sRandomPlayerbotMgr.RandomTeleportForLevel(bot);
 }
 
 bool NewRpgGoWpvpAction::Execute(Event /*event*/)
