@@ -198,7 +198,8 @@ Wisdom to a warrior, rogue, or death knight. Generosity is paced: a bot
 gives at most one walk-up buff per `AiPlayerbot.SocialBuffGiverCooldown`
 window (default 60s), so in a busy spot it blesses whoever happens to be
 nearest rather than methodically working through the crowd — buffing
-back is exempt. Bots also answer a stranger's heal with a targeted /thank emote
+back is exempt. A bot that is eating or drinking finishes its meal
+before volunteering. Bots also answer a stranger's heal with a targeted /thank emote
 (mod-llm supplies the spoken "thx"). Like bystander assist, no action is
 ever taken that would newly PvP-flag the bot: flagged targets are only
 buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and

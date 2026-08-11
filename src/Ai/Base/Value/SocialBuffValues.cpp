@@ -5,6 +5,7 @@
 
 #include "SocialBuffValues.h"
 
+#include "NonCombatActions.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "Playerbots.h"
 
@@ -140,6 +141,12 @@ Unit* PasserbyToBuffValue::Calculate()
 
     // Like bystander assist v1: only free, comfortable bots volunteer.
     if (bot->GetGroup() || bot->IsInCombat() || !bot->IsAlive())
+        return nullptr;
+
+    // Finish the drink first: standing up to cast strips the seated regen
+    // aura, and the eat/drink hold re-seats the bot before the cast can land,
+    // livelocking both until the bar is full.
+    if (BotConsumables::IsEatingFood(bot) || BotConsumables::IsDrinking(bot))
         return nullptr;
 
     if (bot->getPowerType() == POWER_MANA &&
