@@ -8,6 +8,7 @@
 
 #include "BudgetValues.h"
 #include "ChooseRpgTargetAction.h"
+#include "DuelChallenge.h"
 #include "EmoteAction.h"
 #include "Formations.h"
 #include "GossipDef.h"
@@ -473,15 +474,10 @@ bool RpgDuelAction::isUseful()
     if (sPlayerbotAIConfig.IsInPvpProhibitedZone(bot->GetZoneId()))
         return false;
 
-    // Players can only fight a duel with each other outside (=not inside dungeons and not in capital cities)
-    AreaTableEntry const* casterAreaEntry = sAreaTableStore.LookupEntry(bot->GetAreaId());
-    if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
-    {
-        // Dueling isn't allowed here
-        return false;
-    }
-
-    return true;
+    // Covers the core's area rule plus location etiquette (outdoors, not in
+    // a capital, no NPC crowding the spot, flat ground).
+    Player* player = AI_VALUE(GuidPosition, "rpg target").GetPlayer();
+    return player && IsGoodDuelGround(bot, player);
 }
 
 bool RpgDuelAction::Execute(Event /*event*/)

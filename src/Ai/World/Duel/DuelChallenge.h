@@ -33,6 +33,13 @@ public:
     bool Execute(Event event) override;
 };
 
+// Location etiquette for bot-initiated duels, checked on top of the core's
+// own area rule: both outdoors, neither in a capital city, no NPC crowding
+// the prospective flag spot and reasonably flat ground around it - i.e. the
+// spots players actually pick. Shared by the roaming duel trigger and the
+// legacy rpg duel path.
+bool IsGoodDuelGround(Player* bot, Player* target);
+
 // Post-duel flavor for bots, called from the OnPlayerDuelEnd hook: winner
 // cheers (sometimes with a line), loser cries/salutes.
 void OnBotDuelEnded(Player* winner, Player* loser, DuelCompleteType type);

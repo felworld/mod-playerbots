@@ -7,6 +7,7 @@
 #include "RpgTriggers.h"
 
 #include "BudgetValues.h"
+#include "DuelChallenge.h"
 #include "GuildCreateActions.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -388,12 +389,10 @@ bool RpgDuelTrigger::IsActive()
     if (bot->duel || player->duel || !player->GetSocial() || player->GetSocial()->HasIgnore(bot->GetGUID()))
         return false;
 
-    AreaTableEntry const* targetAreaEntry = sAreaTableStore.LookupEntry(player->GetAreaId());
-    if (targetAreaEntry && !(targetAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
-    {
-        // Dueling isn't allowed here
+    // Covers the core's area rule plus location etiquette (outdoors, not in
+    // a capital, no NPC crowding the spot, flat ground).
+    if (!IsGoodDuelGround(bot, player))
         return false;
-    }
 
     // Sparring for fun next to an actual battlefield reads wrong - hold the
     // duel while world PvP is live (or was moments ago) in this zone.
