@@ -483,6 +483,9 @@ public:
     uint32 wpvpChaseBreakSecondsMin, wpvpChaseBreakSecondsMax;
     float wpvpPeelAdvantageYards;
     uint32 wpvpGoadCooldown;
+    uint32 wpvpRaidChance;
+    uint32 wpvpRaidBoredomSeconds;
+    bool wpvpRaidFlightMasters;
     bool wpvpCalloutEnabled;
     uint32 wpvpCalloutZoneCooldown;
     uint32 wpvpCalloutAttackerCooldown;
@@ -495,6 +498,7 @@ public:
     float wpvpDefenseDelayFactor;
     uint32 wpvpDefenseDwellMinutesMin, wpvpDefenseDwellMinutesMax;
     uint32 wpvpDefenseLevelSlack;
+    bool wpvpNpcAttackDefense;
     uint32 wpvpEscalationKills;
     uint32 wpvpEscalationWindow;
     bool wpvpReinforcementEnabled;

@@ -1,5 +1,6 @@
 #include "WpvpTriggers.h"
 
+#include "BotDeathSafety.h"
 #include "NewRpgInfo.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -95,6 +96,30 @@ bool WpvpShadowmeldTrigger::IsActive()
         return false;
 
     return true;
+}
+
+bool WpvpRaidTrigger::IsActive()
+{
+    if (!sPlayerbotAIConfig.wpvpRaidChance)
+        return false;
+
+    auto* data = std::get_if<NewRpgInfo::GoWpvp>(&botAI->rpgInfo.data);
+    if (!data || !data->arrivedT || data->raidRolled)
+        return false;
+
+    // Defenders came to stop trouble, not to start it.
+    if (data->defend)
+        return false;
+
+    if (bot->IsInCombat())
+        return false;
+
+    // Bored: dwelt out the whole boredom window...
+    if (GetMSTimeDiffToNow(data->arrivedT) < sPlayerbotAIConfig.wpvpRaidBoredomSeconds * IN_MILLISECONDS)
+        return false;
+
+    // ...and still nobody to fight anywhere on screen.
+    return !BotDeathSafety::EnemyPlayerNear(bot, sPlayerbotAIConfig.wpvpVisionDistance);
 }
 
 bool WpvpPeelTrigger::IsActive()

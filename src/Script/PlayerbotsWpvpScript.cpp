@@ -3,6 +3,8 @@
  * and/or modify it under version 3 of the License, or (at your option), any later version.
  */
 
+#include "AllCreatureScript.h"
+#include "Creature.h"
 #include "Player.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -83,8 +85,38 @@ public:
     }
 };
 
+// The core calls OnZoneUnderAttack alongside the faction-wide "X is under
+// attack!" broadcast (a guard dying to a player, scripted town alarms). Real
+// players get the yellow text; bots get the same news as a defense-board
+// entry - no bot chat, the server already made the announcement.
+class PlayerbotsWpvpCreatureScript : public AllCreatureScript
+{
+public:
+    PlayerbotsWpvpCreatureScript() : AllCreatureScript("PlayerbotsWpvpCreatureScript") {}
+
+    void OnZoneUnderAttack(Creature* creature, Player* attacker) override
+    {
+        if (!sPlayerbotAIConfig.wpvpNpcAttackDefense)
+            return;
+
+        if (!sPlayerbotAIConfig.wpvpCalloutEnabled && !sPlayerbotAIConfig.wpvpDefenseEnabled &&
+            !sPlayerbotAIConfig.wpvpReinforcementEnabled)
+            return;
+
+        // Responders can only travel to the open world; a scripted alarm
+        // inside an instance is not somewhere the cavalry can ride.
+        if (!attacker->IsInWorld() || attacker->GetMap()->Instanceable())
+            return;
+
+        // Mirror the core's broadcast audience: the attacker's opposing team.
+        TeamId defendingTeam = attacker->GetTeamId() == TEAM_ALLIANCE ? TEAM_HORDE : TEAM_ALLIANCE;
+        WpvpDefenseBoard::instance().RecordZoneUnderAttack(attacker, defendingTeam, creature->GetLevel());
+    }
+};
+
 void AddPlayerbotsWpvpScripts()
 {
     new PlayerbotsWpvpScript();
     new PlayerbotsWpvpUnitScript();
+    new PlayerbotsWpvpCreatureScript();
 }

@@ -125,6 +125,14 @@ public:
     // feed a shouting match.
     void RecordKill(Player* attacker, Player* victim);
 
+    // From the core's zone-under-attack hook (guard deaths, scripted alarms):
+    // the server just told the whole defending faction "X is under attack!",
+    // which counts as the callout that makes the entry respondable - no bot
+    // eyewitness needed. The broadcast names only the place, so the level
+    // filed is an estimate every defender can make: "strong enough to kill
+    // our level-N guard". A real eyewitness read already on the board wins.
+    void RecordZoneUnderAttack(Player* attacker, TeamId defendingTeam, uint8 npcLevel);
+
     // A tracked ganker died: the spree is contested, the tally resets and
     // any not-yet-claimed escalation is cancelled. Deaths to someone who was
     // never one of their victims (outside help - bot defenders or a real

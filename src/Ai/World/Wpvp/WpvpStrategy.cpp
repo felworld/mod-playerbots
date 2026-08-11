@@ -13,6 +13,14 @@ void WpvpExcursionStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     );
     triggers.push_back(
         new TriggerNode(
+            "wpvp raid",
+            {
+                NextAction("wpvp raid", 48.0f)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
             "wpvp shadowmeld",
             {
                 NextAction("shadowmeld", 20.0f)

@@ -335,6 +335,7 @@ public:
         creators["new rpg go moonglade"] = &ActionContext::new_rpg_go_moonglade;
         creators["start duel"] = &ActionContext::start_duel;
         creators["wpvp goad"] = &ActionContext::wpvp_goad;
+        creators["wpvp raid"] = &ActionContext::wpvp_raid;
         creators["wpvp defense callout"] = &ActionContext::wpvp_defense_callout;
         creators["wpvp escalation callout"] = &ActionContext::wpvp_escalation_callout;
         creators["wpvp defense response"] = &ActionContext::wpvp_defense_response;
@@ -585,6 +586,7 @@ private:
     static Action* new_rpg_go_moonglade(PlayerbotAI* ai) { return new NewRpgGoMoongladeAction(ai); }
     static Action* start_duel(PlayerbotAI* ai) { return new StartDuelAction(ai); }
     static Action* wpvp_goad(PlayerbotAI* ai) { return new WpvpGoadAction(ai); }
+    static Action* wpvp_raid(PlayerbotAI* ai) { return new WpvpRaidAction(ai); }
     static Action* wpvp_defense_callout(PlayerbotAI* ai) { return new WpvpDefenseCalloutAction(ai); }
     static Action* wpvp_escalation_callout(PlayerbotAI* ai) { return new WpvpEscalationCalloutAction(ai); }
     static Action* wpvp_defense_response(PlayerbotAI* ai) { return new WpvpDefenseResponseAction(ai); }

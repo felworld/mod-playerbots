@@ -38,6 +38,18 @@ public:
     bool IsActive() override;
 };
 
+// A bored invader: dwelling on a world-PvP excursion past the boredom window
+// with no enemy player anywhere in sight. One dice roll per excursion (made
+// by the action) for the classic bait play - kill a guard or the flight
+// master so the zone-under-attack alarm summons defenders to fight.
+class WpvpRaidTrigger : public Trigger
+{
+public:
+    WpvpRaidTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wpvp raid", 10) {}
+
+    bool IsActive() override;
+};
+
 // While fighting one enemy player in the open world, another acceptable enemy
 // has shown up at least AiPlayerbot.WpvpPeelAdvantageYards closer than the
 // current fight - the point where a human would switch. "enemy player target"

@@ -81,6 +81,7 @@ struct NewRpgInfo
         uint32 arrivedT{0};           // timestamp of reaching the anchor (0 = still travelling)
         uint32 dwellDuration{0};      // ms to loiter once arrived
         uint32 lastGoadT{0};          // last goad emote timestamp (stealth classes)
+        bool raidRolled{false};       // the one bored-raid dice roll has been made
         uint8 deathCount{0};
         bool strategiesApplied{false};
         bool test{false};             // started by "wpvp test": progress logs at INFO

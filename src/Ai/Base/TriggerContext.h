@@ -277,6 +277,7 @@ public:
         creators["go moonglade status"] = &TriggerContext::go_moonglade_status;
         creators["start duel possible"] = &TriggerContext::start_duel_possible;
         creators["wpvp goad"] = &TriggerContext::wpvp_goad;
+        creators["wpvp raid"] = &TriggerContext::wpvp_raid;
         creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
         creators["wpvp peel"] = &TriggerContext::wpvp_peel;
         creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
@@ -535,6 +536,7 @@ private:
     static Trigger* go_moonglade_status(PlayerbotAI* botAI) { return new NewRpgStatusTrigger(botAI, RPG_GO_MOONGLADE); }
     static Trigger* start_duel_possible(PlayerbotAI* botAI) { return new StartDuelPossibleTrigger(botAI); }
     static Trigger* wpvp_goad(PlayerbotAI* botAI) { return new WpvpGoadTrigger(botAI); }
+    static Trigger* wpvp_raid(PlayerbotAI* botAI) { return new WpvpRaidTrigger(botAI); }
     static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
     static Trigger* wpvp_peel(PlayerbotAI* botAI) { return new WpvpPeelTrigger(botAI); }
     static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }

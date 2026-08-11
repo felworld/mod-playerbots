@@ -403,7 +403,15 @@ participate — overleveled "gankers" follow a level-gap curve rather than
 being all 80s. Invaders goad unflagged enemies into attacking with rude
 emotes; rogues/druids both go more often and deliver theirs by dropping
 stealth right next to the mark, while Night Elves of other classes
-Shadowmeld and hold the ambush instead.
+Shadowmeld and hold the ambush instead. A bored invader — dwelling past
+`AiPlayerbot.WpvpRaidBoredomSeconds` with no enemy player in sight — may
+roll `AiPlayerbot.WpvpRaidChance` (once per excursion) for the classic
+bait play: attack a nearby town guard it clearly outlevels so the
+guard's death fires the faction-wide "... is under attack!" alarm and
+defenders come to it (see the defense section below).
+`AiPlayerbot.WpvpRaidFlightMasters` additionally allows the notorious
+flight-master kill; it ships off, since a dead flight master denies the
+taxi service to everyone for minutes.
 Going home is literal: when the excursion ends — dwell expired (any
 running fight is finished first), died too often, or the reported
 attacker long gone — a bot that far outlevels the zone leaves for
@@ -468,6 +476,20 @@ out, hunted, and — if the tables turn — reinforced exactly like a bot.
 `AiPlayerbot.WpvpDefense*` and `AiPlayerbot.WpvpReinforcement*` knobs;
 the `!wpvp defend` chat command ([below](#commands-added-in-this-fork))
 lets you order a defense yourself.
+Town raids count as callouts too: the server's own faction-wide
+"... is under attack!" broadcast (a guard dying to an enemy player,
+scripted town alarms) files the attacker on the defense board exactly as
+if a bot had shouted, so defenders may ride out even when nobody
+witnessed anything — against raiding bots and raiding real players
+alike. Attack a town and the militia actually comes. The broadcast names
+only the place, so until an eyewitness files a real sighting the
+attacker is assumed to be about the dead guard's level ("strong enough
+to kill our level-25 guard") when deciding who responds — the first wave
+may misjudge a much stronger raider, which is authentic. Bots never
+repeat the broadcast in chat (the server already told everyone), and
+NPC deaths never feed gank-spree escalation — WorldDefense pleas remain
+earned by killing players. `AiPlayerbot.WpvpNpcAttackDefenseEnabled`
+turns it off.
 
 WorldDefense itself is made listenable: 3.3.5 clients treat the DBC
 channel as unjoinable (its vanilla PvP-rank gate left with the old honor

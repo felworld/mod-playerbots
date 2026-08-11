@@ -303,6 +303,30 @@ void WpvpDefenseBoard::RecordKill(Player* attacker, Player* victim)
     Prune(now);
 }
 
+void WpvpDefenseBoard::RecordZoneUnderAttack(Player* attacker, TeamId defendingTeam, uint8 npcLevel)
+{
+    std::lock_guard<std::mutex> lock(_mutex);
+    uint32 now = getMSTime();
+    WpvpDefenseEntry& entry = _entries[attacker->GetGUID()];
+    RefreshAttackerFacts(entry, attacker, nullptr, now);
+    entry.defendingTeam = defendingTeam;
+
+    // Only fill in the level when nobody has actually seen the attacker: the
+    // guard-kill inference is a floor, not a sighting, and must never
+    // overwrite a real eyewitness read.
+    if (!entry.attackerLevel)
+        entry.attackerLevel = npcLevel;
+
+    // The server's faction-wide broadcast is the callout.
+    entry.calledOutMs = now;
+
+    METRIC_VALUE("playerbots_wpvp", 1, METRIC_TAG("event", "zone_under_attack"));
+    Felworld::LogEvent(attacker->GetGUID(), "wpvp_zone_under_attack",
+                       Acore::StringFormat("{{\"zone\":{},\"npc_level\":{}}}", entry.zoneId, npcLevel));
+
+    Prune(now);
+}
+
 void WpvpDefenseBoard::RecordAttackerDeath(Player* attacker, ObjectGuid killer)
 {
     std::lock_guard<std::mutex> lock(_mutex);

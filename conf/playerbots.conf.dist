@@ -1279,6 +1279,19 @@ AiPlayerbot.WpvpPeelAdvantageYards = 25
 # Default: 90
 AiPlayerbot.WpvpGoadCooldown = 90
 
+# Bored-invader raids: an excursion bot that has dwelt RaidBoredomSeconds at
+# its hub with no enemy player in sight rolls RaidChance percent - once per
+# excursion - to attack a nearby hostile guard it clearly outlevels (by
+# WpvpGankLevelGap or more). The guard's death fires the faction-wide
+# "... is under attack!" alarm, baiting defenders into coming to fight.
+# RaidFlightMasters additionally allows the classic flight-master kill -
+# authentically obnoxious (it denies the taxi service for minutes), so it
+# ships disabled. RaidChance 0 disables raids entirely.
+# Default: 15 / 120 / 0 (disabled)
+AiPlayerbot.WpvpRaidChance = 15
+AiPlayerbot.WpvpRaidBoredomSeconds = 120
+AiPlayerbot.WpvpRaidFlightMasters = 0
+
 # Defender bots call out invaders in the LocalDefense channel. Zone cooldown
 # throttles messages per zone+faction; attacker cooldown throttles repeat
 # callouts about the same invader (seconds). Only bots the invader plausibly
@@ -1338,6 +1351,18 @@ AiPlayerbot.WpvpDefenseResponseChance = 10
 AiPlayerbot.WpvpDefenseLevelSlack = 3
 AiPlayerbot.WpvpDefenseEvenFightChance = 3
 AiPlayerbot.WpvpGankLevelGap = 5
+
+# Defense against town raids: the faction-wide "... is under attack!"
+# broadcast (a guard dying to an enemy player, scripted town alarms) files
+# the attacker on the defense board just like a spoken callout, so idle
+# defenders may ride out even when no bot witnessed anything - it works
+# against raiding bots and raiding real players alike. The broadcast names
+# only the place, so until an eyewitness reports otherwise the attacker is
+# assumed to be about the dead guard's level ("strong enough to kill our
+# level-N guard") when deciding who responds. Bots never repeat the
+# broadcast in chat - the server already told everyone.
+# Default: 1 (enabled)
+AiPlayerbot.WpvpNpcAttackDefenseEnabled = 1
 
 # Guard respect: a bot never opens or continues a world-PvP fight under the
 # cover of hostile guards that outlevel it by GuardRespectLevelGap or more -

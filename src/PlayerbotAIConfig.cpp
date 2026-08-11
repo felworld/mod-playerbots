@@ -811,6 +811,9 @@ bool PlayerbotAIConfig::Initialize()
         std::max(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpChaseBreakSecondsMax", 30), wpvpChaseBreakSecondsMin);
     wpvpPeelAdvantageYards = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpPeelAdvantageYards", 25.0f);
     wpvpGoadCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpGoadCooldown", 90);
+    wpvpRaidChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpRaidChance", 15), 100);
+    wpvpRaidBoredomSeconds = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpRaidBoredomSeconds", 120);
+    wpvpRaidFlightMasters = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpRaidFlightMasters", false);
     wpvpCalloutEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpCalloutEnabled", true);
     wpvpCalloutZoneCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutZoneCooldown", 180);
     wpvpCalloutAttackerCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpCalloutAttackerCooldown", 600);
@@ -827,6 +830,7 @@ bool PlayerbotAIConfig::Initialize()
     wpvpDefenseDwellMinutesMin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMin", 3);
     wpvpDefenseDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMax", 8);
     wpvpDefenseLevelSlack = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseLevelSlack", 3);
+    wpvpNpcAttackDefense = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpNpcAttackDefenseEnabled", true);
     wpvpEscalationKills = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationKills", 3);
     wpvpEscalationWindow = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationWindow", 600);
     wpvpReinforcementEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpReinforcementEnabled", true);
