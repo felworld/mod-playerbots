@@ -1352,13 +1352,22 @@ AiPlayerbot.WpvpEscalationWindow = 600
 # a bystander GankLevelGap or more levels below it (a lowbie already
 # fighting players is still fair game) - it came to stop a ganker, not to
 # start a spree of its own.
-# Default: 1 (enabled) / 10 / 3 / 3 / 5 / 3
+# The response is also proportional to the threat: a traveling responder
+# may outlevel the reported attacker by at most ResponseLevelMargin levels
+# (0 = no cap) - a level-30 ganker draws 30s, not the faction's mains -
+# until the fight escalates to a WorldDefense plea, after which anyone may
+# answer. Reinforcement waves (below) apply the same margin against the
+# strongest outside killer their faction-mate died to. Explicit "wpvp
+# defend" orders and walk-up emote alerts ignore the margin: an order is
+# an order, and a passing main wading in is its own classic story.
+# Default: 1 (enabled) / 10 / 3 / 3 / 5 / 3 / 5
 AiPlayerbot.WpvpDefenseEnabled = 1
 AiPlayerbot.WpvpDefenseResponseChance = 10
 AiPlayerbot.WpvpDefenseLevelSlack = 3
 AiPlayerbot.WpvpDefenseEvenFightChance = 3
 AiPlayerbot.WpvpGankLevelGap = 5
 AiPlayerbot.WpvpDefenseResponderCap = 3
+AiPlayerbot.WpvpResponseLevelMargin = 5
 
 # Defense against town raids: the faction-wide "... is under attack!"
 # broadcast (a guard dying to an enemy player, scripted town alarms) files
@@ -1390,11 +1399,16 @@ AiPlayerbot.WpvpGuardRespectLevelGap = 5
 # happen over a backchannel. Travel delay, dwell and level slack reuse the
 # defense-response settings; reinforcers count as defense responders for
 # the stay-on-mission rule above.
-# Default: 1 (enabled) / 2 / 15 / 3
+# If the deaths keep coming - EscalationDeaths more of them (0 = never)
+# after the wave armed - the ResponseLevelMargin cap lifts and a fresh
+# wave's worth of slots opens: the bracket-level friends weren't enough,
+# now the mains log on.
+# Default: 1 (enabled) / 2 / 15 / 3 / 2
 AiPlayerbot.WpvpReinforcementEnabled = 1
 AiPlayerbot.WpvpReinforcementDeaths = 2
 AiPlayerbot.WpvpReinforcementChance = 15
 AiPlayerbot.WpvpReinforcementCap = 3
+AiPlayerbot.WpvpReinforcementEscalationDeaths = 2
 
 # Emote alerts: a targeted emote (/point, /charge, nearly anything - sincere
 # respect gestures like /salute and /bow are exempt, see the same-class truce

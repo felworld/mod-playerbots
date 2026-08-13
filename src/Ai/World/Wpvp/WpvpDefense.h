@@ -91,6 +91,8 @@ struct WpvpDefenseEntry
     bool escalated{false};        // the one WorldDefense shout has been made
     uint32 avengedDeaths{0};      // deaths to someone who was NOT one of their victims
     uint32 reinforceArmedMs{0};   // 0 until the attacker's faction gets its one reinforcement wave
+    uint8 maxAvengerLevel{0};     // strongest outside killer so far, as the dying attacker saw them
+    bool reinforceEscalated{false}; // deaths kept coming after the wave: level cap off, fresh slots
     uint32 defenseResponses{0};   // defenders who actually set out after this attacker
     uint32 reinforceResponses{0}; // faction-mates who actually rode in to back them up
 };
@@ -138,8 +140,10 @@ public:
     // A tracked ganker died: the spree is contested, the tally resets and
     // any not-yet-claimed escalation is cancelled. Deaths to someone who was
     // never one of their victims (outside help - bot defenders or a real
-    // player riding in) count toward arming the one reinforcement wave from
-    // the ganker's own faction.
+    // player riding in) count toward arming the reinforcement wave from the
+    // ganker's own faction, sized against the strongest such killer the
+    // dying player saw; if the deaths keep coming after the wave armed, the
+    // wave escalates - level cap off, fresh slots.
     void RecordAttackerDeath(Player* attacker, ObjectGuid killer);
 
     // From the defend-mode dwell loop: a live defender is in the zone with
@@ -214,7 +218,10 @@ private:
 // Set up a defense response for this bot: reuse the wpvp excursion status in
 // defend mode, aimed at the given spot. Same-zone bots just run over; remote
 // bots wait out a distance-scaled travel delay, then guarded-teleport in.
-bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker);
+// `reinforce` only relabels the log/telemetry origin - the reinforcement
+// path rides the same machinery with a faction-mate as the defend target.
+bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker,
+                              bool reinforce = false);
 
 // World PvP is happening around this bot, or just was: a board entry in its
 // zone from the last couple of minutes, or a PvP-flagged enemy player inside

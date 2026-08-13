@@ -360,8 +360,27 @@ void WpvpDefenseBoard::RecordAttackerDeath(Player* attacker, ObjectGuid killer)
     if (killer && std::find(entry.victims.begin(), entry.victims.end(), killer) == entry.victims.end())
     {
         ++entry.avengedDeaths;
+
+        // The dying player saw exactly who got them: the wave their faction
+        // sends is sized against the strongest outside killer reported so
+        // far, at the level the victim could read off the frame.
+        if (killerPlayer)
+            entry.maxAvengerLevel = std::max(entry.maxAvengerLevel, PerceivedLevel(attacker, killerPlayer));
+
         if (!entry.reinforceArmedMs && entry.avengedDeaths >= sPlayerbotAIConfig.wpvpReinforcementDeaths)
             entry.reinforceArmedMs = getMSTime();
+        else if (entry.reinforceArmedMs && !entry.reinforceEscalated &&
+                 sPlayerbotAIConfig.wpvpReinforcementEscalationDeaths &&
+                 entry.avengedDeaths >= sPlayerbotAIConfig.wpvpReinforcementDeaths +
+                                            sPlayerbotAIConfig.wpvpReinforcementEscalationDeaths)
+        {
+            // The bracket-level friends came and the deaths kept coming:
+            // the level cap comes off and a fresh wave's slots open - this
+            // is the moment the mains log on.
+            entry.reinforceEscalated = true;
+            entry.reinforceResponses = 0;
+            entry.reinforceArmedMs = getMSTime();
+        }
     }
 }
 
@@ -498,6 +517,14 @@ bool WpvpDefenseBoard::FindRespondable(TeamId team, uint8 botLevel, ObjectGuid b
         if (botLevel + sPlayerbotAIConfig.wpvpDefenseLevelSlack < entry.attackerLevel)
             continue;
 
+        // Proportionality: the responders who travel in match the threat's
+        // bracket - a level-30 ganker draws 30s, not the faction's mains.
+        // Once the fight has escalated to a WorldDefense plea ("keeps
+        // killing people in..."), anyone may answer.
+        if (!entry.escalated && sPlayerbotAIConfig.wpvpResponseLevelMargin &&
+            botLevel > uint32(entry.attackerLevel) + sPlayerbotAIConfig.wpvpResponseLevelMargin)
+            continue;
+
         if (_responseRolls.count(RollKey(botGuid, entry.attacker)))
             continue;
 
@@ -578,6 +605,15 @@ bool WpvpDefenseBoard::FindReinforceable(TeamId team, uint8 botLevel, ObjectGuid
         if (botLevel + sPlayerbotAIConfig.wpvpDefenseLevelSlack < entry.attackerLevel)
             continue;
 
+        // Proportionality: the wave matches the strongest outside killer
+        // the faction-mate reported dying to (their own bracket when the
+        // killer was never seen). Once escalated - the deaths kept coming
+        // after the first wave - the cap is off and the mains may ride.
+        uint8 threatLevel = entry.maxAvengerLevel ? entry.maxAvengerLevel : entry.attackerLevel;
+        if (!entry.reinforceEscalated && sPlayerbotAIConfig.wpvpResponseLevelMargin &&
+            botLevel > uint32(threatLevel) + sPlayerbotAIConfig.wpvpResponseLevelMargin)
+            continue;
+
         if (_responseRolls.count(RollKey(botGuid, entry.attacker)))
             continue;
 
@@ -642,7 +678,8 @@ bool WpvpHappeningNearby(Player* bot)
     return BotDeathSafety::EnemyPlayerNear(bot, sPlayerbotAIConfig.wpvpVisionDistance);
 }
 
-bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker)
+bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition const& target, ObjectGuid attacker,
+                              bool reinforce)
 {
     WorldLocation loc(target.GetMapId(), target.GetPositionX(), target.GetPositionY(), target.GetPositionZ(),
                       target.GetOrientation());
@@ -670,14 +707,15 @@ bool StartWpvpDefenseResponse(PlayerbotAI* botAI, uint32 zoneId, WorldPosition c
         payload.departT = getMSTime() + uint32(seconds) * IN_MILLISECONDS;
     }
 
-    LOG_DEBUG("playerbots", "[New RPG] Bot {} responds to defense callout in zone {} (attacker {}, departs in {}s)",
-              bot->GetName(), zoneId, attacker.ToString(),
+    char const* origin = reinforce ? "reinforce" : "defense";
+    LOG_DEBUG("playerbots", "[New RPG] Bot {} responds to {} in zone {} (attacker {}, departs in {}s)",
+              bot->GetName(), reinforce ? "reinforcement call" : "defense callout", zoneId, attacker.ToString(),
               payload.departT ? (payload.departT - getMSTime()) / IN_MILLISECONDS : 0);
     botAI->rpgInfo.ChangeToGoWpvp(std::move(payload));
 
-    METRIC_VALUE("playerbots_wpvp_excursion_start", 1, METRIC_TAG("origin", "defense"));
+    METRIC_VALUE("playerbots_wpvp_excursion_start", 1, METRIC_TAG("origin", origin));
     Felworld::LogEvent(bot->GetGUID(), "wpvp_excursion_start",
-                       Acore::StringFormat("{{\"origin\":\"defense\",\"zone\":{}}}", zoneId));
+                       Acore::StringFormat("{{\"origin\":\"{}\",\"zone\":{}}}", origin, zoneId));
     return true;
 }
 
@@ -876,7 +914,7 @@ bool WpvpReinforceAction::Execute(Event /*event*/)
     // Same travel machinery as a defense response, but the "defend target"
     // is our own faction-mate: stick around while they're still in the
     // fight, drift home once they're gone for good.
-    return StartWpvpDefenseResponse(botAI, entry.zoneId, entry.pos, entry.attacker);
+    return StartWpvpDefenseResponse(botAI, entry.zoneId, entry.pos, entry.attacker, /*reinforce*/ true);
 }
 
 bool WpvpDefendCommandAction::Execute(Event event)

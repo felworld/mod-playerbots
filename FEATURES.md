@@ -474,13 +474,25 @@ couple of times to outside help — killers who weren't among their victims
 chat involved (we assume the ask happened over some backchannel). All of
 it keys off actual PvP kills, so a real player ganking lowbies is called
 out, hunted, and — if the tables turn — reinforced exactly like a bot.
-Two guardrails keep the answering from snowballing into an invasion of
+Three guardrails keep the answering from snowballing into an invasion of
 its own. Waves are capped: per ganker, at most
 `AiPlayerbot.WpvpDefenseResponderCap` defenders and
 `AiPlayerbot.WpvpReinforcementCap` reinforcers actually set out — the
 per-bot chance says how eager each bot is, the cap says how many the
 battlefield can absorb, so wave size doesn't scale with the server's
-idle-bot population. And responders stay on mission: a bot on a defense
+idle-bot population. Waves are proportional: a traveling responder may
+outlevel the threat by at most `AiPlayerbot.WpvpResponseLevelMargin`
+levels — a level-30 skirmish draws 30s, not the faction's mains. For
+defenders the threat is the reported attacker; for reinforcers it's the
+strongest outside killer their faction-mate died to, at the level the
+victim could read off the frame. The cap lifts when the fight genuinely
+escalates: for defense, the WorldDefense "keeps killing people" plea; for
+reinforcements, `AiPlayerbot.WpvpReinforcementEscalationDeaths` further
+deaths after the first wave armed, which also opens a fresh wave's worth
+of slots — the bracket-level friends weren't enough, now the mains log
+on. (Explicit `!wpvp defend` orders and walk-up emote alerts ignore the
+margin: an order is an order, and a passing main wading in is its own
+classic story.) And responders stay on mission: a bot on a defense
 trip never opens on a bystander a full gank gap below it (a lowbie
 already fighting players is still fair game) — it came to stop a ganker,
 not to start a spree of its own, and without that rule every defender

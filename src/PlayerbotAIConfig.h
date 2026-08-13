@@ -499,6 +499,7 @@ public:
     uint32 wpvpDefenseDwellMinutesMin, wpvpDefenseDwellMinutesMax;
     uint32 wpvpDefenseLevelSlack;
     uint32 wpvpDefenseResponderCap;
+    uint32 wpvpResponseLevelMargin;
     bool wpvpNpcAttackDefense;
     uint32 wpvpEscalationKills;
     uint32 wpvpEscalationWindow;
@@ -506,6 +507,7 @@ public:
     uint32 wpvpReinforcementDeaths;
     float wpvpReinforcementChance;
     uint32 wpvpReinforcementCap;
+    uint32 wpvpReinforcementEscalationDeaths;
     bool wpvpEmoteAlertEnabled;
     bool wpvpPasserbyAssistEnabled;
     uint32 wpvpPasserbyAssistChance;

@@ -831,6 +831,7 @@ bool PlayerbotAIConfig::Initialize()
     wpvpDefenseDwellMinutesMax = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseDwellMinutesMax", 8);
     wpvpDefenseLevelSlack = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseLevelSlack", 3);
     wpvpDefenseResponderCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpDefenseResponderCap", 3);
+    wpvpResponseLevelMargin = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpResponseLevelMargin", 5);
     wpvpNpcAttackDefense = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpNpcAttackDefenseEnabled", true);
     wpvpEscalationKills = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationKills", 3);
     wpvpEscalationWindow = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpEscalationWindow", 600);
@@ -838,6 +839,8 @@ bool PlayerbotAIConfig::Initialize()
     wpvpReinforcementDeaths = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementDeaths", 2);
     wpvpReinforcementChance = sConfigMgr->GetOption<float>("AiPlayerbot.WpvpReinforcementChance", 15.0f);
     wpvpReinforcementCap = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementCap", 3);
+    wpvpReinforcementEscalationDeaths =
+        sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpReinforcementEscalationDeaths", 2);
     wpvpEmoteAlertEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpEmoteAlertEnabled", true);
     wpvpPasserbyAssistEnabled = sConfigMgr->GetOption<bool>("AiPlayerbot.WpvpPasserbyAssistEnabled", true);
     wpvpPasserbyAssistChance =
