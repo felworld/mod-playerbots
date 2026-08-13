@@ -24,6 +24,12 @@ namespace
     constexpr uint64 PVP_SUPPORT_ROLL_SALT = 0x4845414c;  // 'HEAL'
     constexpr uint32 PVP_SUPPORT_ROLL_WINDOW = 2 * MINUTE;
 
+    // Stand-down diagnostics: at most one line (and, for a gated bot, one
+    // observation-only scan) per bot per window. Enough to answer "a player
+    // was dying next to a bot - why didn't it help?" without letting a
+    // lingering distress spam a line per tick.
+    constexpr uint32 STAND_DOWN_LOG_THROTTLE_MS = 10 * IN_MILLISECONDS;
+
     // A supporter can out-heal one or two enemies' damage; healing into a
     // squad stomp just gets the healer killed too - the PvP analog of the
     // creature-fight winnability estimate below.
@@ -106,17 +112,37 @@ Unit* BystanderToAssistValue::Calculate()
     if (bot->GetGroup())
         return nullptr;
 
+    // A gate on the bot itself no longer ends the matter silently: with a
+    // real player visibly dying nearby, "why didn't that bot help?" deserves
+    // an answer in the log, so a gated bot still runs the scan below - as a
+    // throttled, observation-only pass that adopts nobody.
+    char const* botGate = nullptr;
     if (bot->IsInCombat())
-        return IsBystanderHealerClass(bot) ? SustainTarget() : nullptr;
+    {
+        if (IsBystanderHealerClass(bot))
+            if (Unit* sustained = SustainTarget())
+                return sustained;
 
-    _sustainVictim.Clear();
+        botGate = "already fighting its own fight";
+    }
+    else
+    {
+        _sustainVictim.Clear();
 
-    if (bot->GetHealthPct() < float(sPlayerbotAIConfig.bystanderAssistSelfHealth))
-        return nullptr;
+        if (bot->GetHealthPct() < float(sPlayerbotAIConfig.bystanderAssistSelfHealth))
+            botGate = "own health too low to volunteer";
+        else if (bot->getPowerType() == POWER_MANA &&
+                 bot->GetPowerPct(POWER_MANA) < float(sPlayerbotAIConfig.bystanderAssistSelfMana))
+            botGate = "own mana too low to volunteer";
+    }
 
-    if (bot->getPowerType() == POWER_MANA &&
-        bot->GetPowerPct(POWER_MANA) < float(sPlayerbotAIConfig.bystanderAssistSelfMana))
-        return nullptr;
+    bool mayLog = now >= _nextStandDownLogMs;
+    if (botGate)
+    {
+        if (!mayLog)
+            return nullptr;
+        _nextStandDownLogMs = now + STAND_DOWN_LOG_THROTTLE_MS;
+    }
 
     bool healerBot = IsBystanderHealerClass(bot);
     BystanderDistressConfig config = DistressConfig();
@@ -132,14 +158,13 @@ Unit* BystanderToAssistValue::Calculate()
             continue;
 
         // Sample everyone in sight, not just candidates: the rate baseline
-        // must already exist by the time someone gets in trouble.
-        SampleHealth(player, now);
+        // must already exist by the time someone gets in trouble. The
+        // observation-only pass leaves the samples alone - gated bots never
+        // fed the baseline, and a once-per-window sample would only muddy it.
+        if (!botGate)
+            SampleHealth(player, now);
 
         if (bot->GetDistance(player) > sPlayerbotAIConfig.bystanderAssistRadius)
-            continue;
-
-        auto cooldown = _cooldownEndMs.find(guid);
-        if (cooldown != _cooldownEndMs.end() && now < cooldown->second)
             continue;
 
         if (!player->IsInCombat())
@@ -148,53 +173,6 @@ Unit* BystanderToAssistValue::Calculate()
         std::vector<Unit*> creatureAttackers = LivingCreatureAttackers(player);
         std::vector<Unit*> playerAttackers = LivingPlayerAttackers(player);
         if (creatureAttackers.empty() && playerAttackers.empty())
-            continue;
-
-        // Path-aware PvP safety: only pick victims this bot can legally help.
-        if (healerBot)
-        {
-            if (!CanHealWithoutFlagging(bot, player))
-                continue;
-        }
-        else
-        {
-            // Non-healers help by attacking a creature attacker. A victim
-            // under player attack only is not theirs to rescue here: joining
-            // the fight is passerby assist's job (EnemyPlayerValue).
-            bool anyAttackable = false;
-            for (Unit* attacker : creatureAttackers)
-                if (CanAttackWithoutFlagging(bot, attacker))
-                {
-                    anyAttackable = true;
-                    break;
-                }
-
-            if (!anyAttackable)
-                continue;
-        }
-
-        // PvP support dice (issue #53): not every passerby commits to
-        // someone else's player fight - each would-be supporter rolls once
-        // per victim per window.
-        if (creatureAttackers.empty() &&
-            !DeterministicRollPasses(bot->GetGUID().GetRawValue(), guid.GetRawValue(),
-                                     PVP_SUPPORT_ROLL_SALT, PVP_SUPPORT_ROLL_WINDOW,
-                                     sPlayerbotAIConfig.bystanderPvpSupportChance))
-            continue;
-
-        // Anti-dogpile: stand down when enough others are already on it.
-        std::unordered_set<ObjectGuid> helpers;
-        for (Unit* attacker : creatureAttackers)
-            for (Unit* helper : attacker->getAttackers())
-                if (helper && helper != player && helper->IsPlayer())
-                    helpers.insert(helper->GetGUID());
-
-        for (Unit* attacker : playerAttackers)
-            for (Unit* helper : attacker->getAttackers())
-                if (helper && helper != player && helper->IsPlayer())
-                    helpers.insert(helper->GetGUID());
-
-        if (helpers.size() >= sPlayerbotAIConfig.bystanderAssistMaxHelpers)
             continue;
 
         BystanderSnapshot snapshot = {};
@@ -215,14 +193,98 @@ Unit* BystanderToAssistValue::Calculate()
         if (!IsBystanderInDistress(snapshot, config))
             continue;
 
+        // This one looks like they're about to die: from here on, every
+        // reason not to help has a name. The gates are pure predicates, so
+        // evaluating them only for distressed victims (they used to run
+        // first) changes nothing but the log's ability to say which one hit.
+        char const* standDown = botGate;
+
+        if (!standDown)
+        {
+            auto cooldown = _cooldownEndMs.find(guid);
+            if (cooldown != _cooldownEndMs.end() && now < cooldown->second)
+                standDown = "assisted them moments ago";
+        }
+
+        // Path-aware PvP safety: only pick victims this bot can legally help.
+        if (!standDown)
+        {
+            if (healerBot)
+            {
+                if (!CanHealWithoutFlagging(bot, player))
+                    standDown = "healing them would newly PvP-flag";
+            }
+            else
+            {
+                // Non-healers help by attacking a creature attacker. A victim
+                // under player attack only is not theirs to rescue here:
+                // joining the fight is passerby assist's job (EnemyPlayerValue).
+                bool anyAttackable = false;
+                for (Unit* attacker : creatureAttackers)
+                    if (CanAttackWithoutFlagging(bot, attacker))
+                    {
+                        anyAttackable = true;
+                        break;
+                    }
+
+                if (!anyAttackable)
+                    standDown = creatureAttackers.empty()
+                        ? "only players attack them - support is a healer's job"
+                        : "attacking their attacker would newly PvP-flag";
+            }
+        }
+
+        // PvP support dice (issue #53): not every passerby commits to
+        // someone else's player fight - each would-be supporter rolls once
+        // per victim per window.
+        if (!standDown && creatureAttackers.empty() &&
+            !DeterministicRollPasses(bot->GetGUID().GetRawValue(), guid.GetRawValue(),
+                                     PVP_SUPPORT_ROLL_SALT, PVP_SUPPORT_ROLL_WINDOW,
+                                     sPlayerbotAIConfig.bystanderPvpSupportChance))
+            standDown = "sat out by the PvP-support dice";
+
+        // Anti-dogpile: stand down when enough others are already on it.
+        if (!standDown)
+        {
+            std::unordered_set<ObjectGuid> helpers;
+            for (Unit* attacker : creatureAttackers)
+                for (Unit* helper : attacker->getAttackers())
+                    if (helper && helper != player && helper->IsPlayer())
+                        helpers.insert(helper->GetGUID());
+
+            for (Unit* attacker : playerAttackers)
+                for (Unit* helper : attacker->getAttackers())
+                    if (helper && helper != player && helper->IsPlayer())
+                        helpers.insert(helper->GetGUID());
+
+            if (helpers.size() >= sPlayerbotAIConfig.bystanderAssistMaxHelpers)
+                standDown = "enough helpers on it already";
+        }
+
         // Creature fights are judged by composition; player fights by
         // dogpile size - support goes to someone losing a fight, not into a
         // massacre-by-numbers.
-        if (!creatureAttackers.empty() && !IsWinnable(player, creatureAttackers))
-            continue;
+        if (!standDown && !creatureAttackers.empty() && !IsWinnable(player, creatureAttackers))
+            standDown = "fight judged unwinnable";
 
-        if (playerAttackers.size() > MAX_SUPPORTABLE_PLAYER_ATTACKERS)
+        if (!standDown && playerAttackers.size() > MAX_SUPPORTABLE_PLAYER_ATTACKERS)
+            standDown = "too many player attackers to heal into";
+
+        if (standDown)
+        {
+            // Only a real player's distress earns a line - bots grind each
+            // other into distress all day, and that would drown the log.
+            if (mayLog && !GET_PLAYERBOT_AI(player))
+            {
+                mayLog = false;
+                _nextStandDownLogMs = now + STAND_DOWN_LOG_THROTTLE_MS;
+                LOG_DEBUG("playerbots",
+                    "Bystander assist: {} sees {} in distress ({}% hp, {} attackers) but stands down: {}",
+                    bot->GetName(), player->GetName(), snapshot.healthPct,
+                    uint32(creatureAttackers.size() + playerAttackers.size()), standDown);
+            }
             continue;
+        }
 
         if (player->GetHealthPct() < bestHealthPct)
         {

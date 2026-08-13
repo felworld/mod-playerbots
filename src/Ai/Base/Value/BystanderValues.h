@@ -53,6 +53,7 @@ private:
     std::unordered_map<ObjectGuid, uint32> _cooldownEndMs;
     ObjectGuid _sustainVictim;  // victim adopted by the last assist
     uint32 _lastPruneMs = 0;
+    uint32 _nextStandDownLogMs = 0;  // throttle for the stand-down diagnostics
 };
 
 // The creature attacking the bystander that the bot should engage, or
