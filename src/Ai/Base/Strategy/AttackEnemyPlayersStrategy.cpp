@@ -12,6 +12,11 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 {
     triggers.push_back(new TriggerNode("enemy player near",
                                        { NextAction("attack enemy player", 55.0f) }));
+    // A bot that just declined to initiate on low bars (see WpvpReadiness)
+    // sits down and fixes them while the opportunity is warm - the actions'
+    // own guards keep it from drinking in an armed enemy's face (Felworld).
+    triggers.push_back(new TriggerNode("wpvp drink up",
+                                       { NextAction("drink", 4.25f), NextAction("food", 4.24f) }));
     // An avoidant-grudge killer coming near outranks the salutes and
     // callouts below - the bot pleads and gets out of their way (Felworld).
     triggers.push_back(new TriggerNode("wpvp avoid killer",

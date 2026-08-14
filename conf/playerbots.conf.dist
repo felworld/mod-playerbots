@@ -1274,6 +1274,18 @@ AiPlayerbot.WpvpChaseBreakSecondsMax = 30
 # Default: 25
 AiPlayerbot.WpvpPeelAdvantageYards = 25
 
+# Initiation readiness: before starting an unprovoked open-world fight a bot
+# glances at its own bars the way a player would - "more advantage now, or
+# after I'm full up?". Below these health/mana percents it passes (and sits
+# down to drink or eat while the opportunity is warm, if it can do so safely)
+# unless the target's state makes "now" better: they are already fighting
+# other players, read 5+ levels below the bot, or are the bot's revenge
+# grudge. Self-defense, party assists and battlegrounds are never gated.
+# The mana bar only applies to mana classes. 0 disables either bar.
+# Default: 80 / 60
+AiPlayerbot.WpvpInitiateSelfHealth = 80
+AiPlayerbot.WpvpInitiateSelfMana = 60
+
 # Cooldown (seconds) between goad attempts by a stealthed rogue/druid trying
 # to provoke unflagged enemies into attacking.
 # Default: 90

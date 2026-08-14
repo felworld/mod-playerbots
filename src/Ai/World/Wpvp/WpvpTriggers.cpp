@@ -8,6 +8,7 @@
 #include "Playerbots.h"
 #include "Timer.h"
 #include "WpvpAssist.h"
+#include "WpvpReadiness.h"
 #include "WpvpTruce.h"
 
 Unit* WpvpGoadTrigger::FindMark(PlayerbotAI* botAI, Player* bot)
@@ -31,6 +32,15 @@ Unit* WpvpGoadTrigger::FindMark(PlayerbotAI* botAI, Player* bot)
         if (enemyPlayer && WpvpTruceHolds(bot, enemyPlayer))
         {
             WpvpTruceBoard::instance().NotePassing(bot, enemyPlayer);
+            continue;
+        }
+
+        // Initiation readiness (Felworld): don't taunt someone into a fight
+        // the bot would then decline to start - same bars-and-advantage
+        // ledger as the sighting scan.
+        if (enemyPlayer && !WpvpReadyToInitiate(bot, enemyPlayer))
+        {
+            WpvpNoteGatedOpportunity(bot, enemyPlayer);
             continue;
         }
 
@@ -120,6 +130,17 @@ bool WpvpRaidTrigger::IsActive()
 
     // ...and still nobody to fight anywhere on screen.
     return !BotDeathSafety::EnemyPlayerNear(bot, sPlayerbotAIConfig.wpvpVisionDistance);
+}
+
+bool WpvpDrinkUpTrigger::IsActive()
+{
+    if (bot->IsInCombat() || bot->InBattleground() || bot->InArena())
+        return false;
+
+    if (WpvpBarsReadyToInitiate(bot))
+        return false;
+
+    return WpvpGatedOpportunityRecent(bot);
 }
 
 bool WpvpPeelTrigger::IsActive()

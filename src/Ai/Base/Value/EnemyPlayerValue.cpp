@@ -14,6 +14,7 @@
 #include "WpvpChase.h"
 #include "WpvpGrudge.h"
 #include "WpvpGuardRespect.h"
+#include "WpvpReadiness.h"
 #include "WpvpSatiation.h"
 #include "WpvpTerrainLos.h"
 #include "WpvpTruce.h"
@@ -163,6 +164,17 @@ Unit* EnemyPlayerValue::Calculate()
         {
             if (pTarget->HasAura(23335))
                 return pTarget;
+        }
+
+        // Initiation readiness (Felworld): an unengaged bot below its
+        // health/mana comfort bars passes on the unprovoked pick unless this
+        // target's state makes "now" better than "after I'm full up" - see
+        // WpvpReadyToInitiate. Self-defense (phase 1) and party assists
+        // (phase 3) are never gated.
+        if (!engaged && !WpvpReadyToInitiate(bot, pTarget))
+        {
+            WpvpNoteGatedOpportunity(bot, pTarget);
+            continue;
         }
 
         // Aggro weak enemies from further away; excursion bots came to pick fights,

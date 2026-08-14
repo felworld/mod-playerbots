@@ -121,6 +121,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Target peeling](FEATURES.md#target-peeling)** — a bot fighting one
   enemy player switches to another who shows up substantially closer,
   instead of tunneling on its first pick past fresh threats.
+- **[Initiation readiness](FEATURES.md#initiation-readiness)** — a bot
+  below its health/mana comfort bars passes on starting an open-world
+  fight and drinks up first, unless the target's state makes striking
+  now the better play.
 - **[Passerby assist](FEATURES.md#passerby-assist)** — flagged bots join
   a faction-mate's fight instead of walking past it, and an underleveled
   helper who piles into an even fight gets focused down like an add.

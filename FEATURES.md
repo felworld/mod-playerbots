@@ -765,6 +765,25 @@ enemy the grid happened to list first); the peel margin compares the same
 score, so switching and sighting can never disagree. `0` disables
 peeling.
 
+## Initiation readiness
+
+Bots used to start open-world fights at any state of their own bars — a
+mage at half mana would jump a flagged enemy it had no business engaging.
+Before an unprovoked pick (the sighting scan and the stealth goad), a bot
+now weighs the fight the way a player would — "more advantage now, or
+after I'm full up?". Below `AiPlayerbot.WpvpInitiateSelfHealth` percent
+health (default 80) or, for mana classes,
+`AiPlayerbot.WpvpInitiateSelfMana` percent mana (default 60), it passes —
+unless "now" is clearly better: the target is already trading blows with
+other players, reads 5+ levels below the bot, or is the bot's revenge
+grudge (revenge doesn't wait on a drink). A bot that passes sits down to
+drink or eat while the opportunity is still warm, so what you see is a
+mage eyeing you over its water — the existing consumable safety guard
+keeps it from doing that within 40 yards of an armed flagged enemy.
+Self-defense, party assists and battlegrounds are never gated: nobody
+checks their mana bar when jumped. `0` disables either bar. Stand-downs
+are logged as `wpvp_initiate_gated` events.
+
 ## Passerby assist
 
 On a PvP world it's rare for anyone to ignore a fight playing out in

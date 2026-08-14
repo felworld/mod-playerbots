@@ -280,6 +280,7 @@ public:
         creators["wpvp raid"] = &TriggerContext::wpvp_raid;
         creators["wpvp shadowmeld"] = &TriggerContext::wpvp_shadowmeld;
         creators["wpvp peel"] = &TriggerContext::wpvp_peel;
+        creators["wpvp drink up"] = &TriggerContext::wpvp_drink_up;
         creators["wpvp defense callout"] = &TriggerContext::wpvp_defense_callout;
         creators["wpvp escalation callout"] = &TriggerContext::wpvp_escalation_callout;
         creators["wpvp defense response"] = &TriggerContext::wpvp_defense_response;
@@ -539,6 +540,7 @@ private:
     static Trigger* wpvp_raid(PlayerbotAI* botAI) { return new WpvpRaidTrigger(botAI); }
     static Trigger* wpvp_shadowmeld(PlayerbotAI* botAI) { return new WpvpShadowmeldTrigger(botAI); }
     static Trigger* wpvp_peel(PlayerbotAI* botAI) { return new WpvpPeelTrigger(botAI); }
+    static Trigger* wpvp_drink_up(PlayerbotAI* botAI) { return new WpvpDrinkUpTrigger(botAI); }
     static Trigger* wpvp_defense_callout(PlayerbotAI* botAI) { return new WpvpDefenseCalloutTrigger(botAI); }
     static Trigger* wpvp_escalation_callout(PlayerbotAI* botAI) { return new WpvpEscalationCalloutTrigger(botAI); }
     static Trigger* wpvp_defense_response(PlayerbotAI* botAI) { return new WpvpDefenseResponseTrigger(botAI); }

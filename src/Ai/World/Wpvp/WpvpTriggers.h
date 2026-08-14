@@ -50,6 +50,18 @@ public:
     bool IsActive() override;
 };
 
+// The bot just declined to start a fight because its own bars were below the
+// WpvpInitiateSelf comfort thresholds (see WpvpReadiness) and the pass is
+// still warm: sit down and fix them. The drink/food actions' own safety
+// guards keep the bot from doing so within 40yd of an armed flagged enemy.
+class WpvpDrinkUpTrigger : public Trigger
+{
+public:
+    WpvpDrinkUpTrigger(PlayerbotAI* botAI) : Trigger(botAI, "wpvp drink up", 5) {}
+
+    bool IsActive() override;
+};
+
 // While fighting one enemy player in the open world, another acceptable enemy
 // has shown up at least AiPlayerbot.WpvpPeelAdvantageYards closer than the
 // current fight - the point where a human would switch. "enemy player target"

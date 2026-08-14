@@ -482,6 +482,8 @@ public:
     uint32 wpvpChaseBreakChance;
     uint32 wpvpChaseBreakSecondsMin, wpvpChaseBreakSecondsMax;
     float wpvpPeelAdvantageYards;
+    uint32 wpvpInitiateSelfHealth;
+    uint32 wpvpInitiateSelfMana;
     uint32 wpvpGoadCooldown;
     uint32 wpvpRaidChance;
     uint32 wpvpRaidBoredomSeconds;
