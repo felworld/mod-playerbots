@@ -1017,6 +1017,16 @@ refills the population automatically. This is a runtime override — a config
 reload or restart reverts to `AiPlayerbot.Enabled` (which Felworld drives
 per session mode via the `AC_AI_PLAYERBOT_ENABLED` env var).
 
+## Ghost perception
+
+A released ghost's client culls the living world: only other ghosts, spirit
+healers, gameobjects, grouped teammates, and units near the ghost's own
+corpse still render. Bot perception was a raw grid scan that ignored all of
+that, so a dead bot kept "seeing" — and reacting to — live players and NPCs
+at full sight range. While ghosted, the nearest-unit perception values now
+run through the same server visibility check a real client is subject to.
+No config knobs.
+
 ## Corpse-run pacing
 
 The [core fork](https://github.com/felworld/azerothcore) adds

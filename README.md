@@ -170,6 +170,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   ignore speech they couldn't understand.
 - **[Runtime bot toggle](FEATURES.md#runtime-bot-toggle)** — `.playerbots
   enable|disable|status` flips random bots live, without a restart.
+- **[Ghost perception](FEATURES.md#ghost-perception)** — a dead bot's
+  awareness is culled the way a ghost's screen is: it no longer sees or
+  reacts to the living world while running back to its corpse.
 - **[Corpse-run pacing](FEATURES.md#corpse-run-pacing)** —
   `AiPlayerbot.GhostMoveSpeedRate` scales the core's `Rate.MoveSpeed.Ghost`
   for bots, so their corpse runs can be paced separately from humans'.
