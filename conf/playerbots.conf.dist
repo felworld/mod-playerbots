@@ -853,6 +853,11 @@ AiPlayerbot.RandomBotXPRate = 1.0
 # Rate.MoveSpeed.Ghost * AiPlayerbot.GhostMoveSpeedRate
 AiPlayerbot.GhostMoveSpeedRate = 1.0
 
+# Resurrection sickness starting level for bots, replacing Death.SicknessLevel
+# so bot spirit-healer rezzes keep their cost even when the server disables
+# sickness (e.g. for real players). Default: 0 (follow Death.SicknessLevel)
+AiPlayerbot.ResurrectionSicknessLevel = 0
+
 #
 #
 ####################################################################################################

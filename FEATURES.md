@@ -1030,6 +1030,18 @@ runs can be paced separately from human ones.
 (`AiPlayerbot.GhostMoveSpeedRate = 0.5`): humans get a quick corpse run,
 bots stay dead as long as a normal one takes.
 
+## Resurrection sickness for bots
+
+The [core fork](https://github.com/felworld/azerothcore) adds an
+`OnPlayerResurrectSicknessLevel` hook that lets modules adjust the
+`Death.SicknessLevel` a player is held to when taking a spirit-healer
+resurrection. `AiPlayerbot.ResurrectionSicknessLevel` (default 0 = follow
+the server setting) replaces that level for bot sessions.
+[Our configs](https://github.com/felworld/configs) disable sickness
+server-wide (`Death.SicknessLevel = 81`) and restore the standard level 11
+threshold for bots: humans skip the debuff, while a bot that opts for an
+instant spirit-healer rez still pays its cost.
+
 ## Class service commands
 
 The class utilities other players provide on a busy server — a mage handing

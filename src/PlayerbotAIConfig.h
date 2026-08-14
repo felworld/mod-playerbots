@@ -412,6 +412,7 @@ public:
     bool disableRandomLevels;
     float randomBotXPRate;
     float ghostMoveSpeedRate;
+    int32 resurrectionSicknessLevel;
     uint32 randomBotAllianceRatio;
     uint32 randomBotHordeRatio;
     bool disableDeathKnightLogin;
