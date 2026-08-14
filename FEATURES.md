@@ -1034,11 +1034,8 @@ The [core fork](https://github.com/felworld/azerothcore) adds
 running back to their corpse. `AiPlayerbot.GhostMoveSpeedRate` (default
 1.0) multiplies that rate for bot sessions — the same shape as
 `AiPlayerbot.RandomBotXPRate` on top of the server XP rate — so bot corpse
-runs can be paced separately from human ones.
-[Our configs](https://github.com/felworld/configs) double ghost speed
-(`Rate.MoveSpeed.Ghost = 2`) and halve it back for bots
-(`AiPlayerbot.GhostMoveSpeedRate = 0.5`): humans get a quick corpse run,
-bots stay dead as long as a normal one takes.
+runs can be paced separately from human ones, e.g. quick corpse runs for
+humans while bots stay dead as long as a normal one takes.
 
 ## Resurrection sickness for bots
 
@@ -1048,9 +1045,9 @@ The [core fork](https://github.com/felworld/azerothcore) adds an
 resurrection. `AiPlayerbot.ResurrectionSicknessLevel` (default 0 = follow
 the server setting) replaces that level for bot sessions.
 [Our configs](https://github.com/felworld/configs) disable sickness
-server-wide (`Death.SicknessLevel = 81`) and restore the standard level 11
-threshold for bots: humans skip the debuff, while a bot that opts for an
-instant spirit-healer rez still pays its cost.
+server-wide and restore the standard threshold for bots: humans skip the
+debuff, while a bot that opts for an instant spirit-healer rez still pays
+its cost.
 
 ## Class service commands
 
