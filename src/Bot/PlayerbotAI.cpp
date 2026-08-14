@@ -279,13 +279,12 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         SetNextCheckDelay(0);
     wasInCombat = nowInCombat;
 
-    // Living players cannot target a ghost in the world (ghosts are visible only
-    // to other ghosts), so drop any selection that lingers on a player who has
-    // released — unless the bot is a ghost itself.
-    if (!bot->HasGhostAura())
-        if (Unit* selected = bot->GetSelectedUnit())
-            if (selected->IsPlayer() && selected->HasGhostAura())
-                bot->SetSelection(ObjectGuid());
+    // A real client drops its target when the unit vanishes from view (released
+    // ghost, vanish, invisibility, GM mode, ...). Bots have no client to do that,
+    // so mirror it here: drop any selection the bot can no longer see.
+    if (Unit* selected = bot->GetSelectedUnit())
+        if (!bot->CanSeeOrDetect(selected))
+            bot->SetSelection(ObjectGuid());
 
     if (!CanUpdateAI())
         return;
