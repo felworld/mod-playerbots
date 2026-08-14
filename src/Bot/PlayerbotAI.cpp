@@ -279,6 +279,14 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
         SetNextCheckDelay(0);
     wasInCombat = nowInCombat;
 
+    // Living players cannot target a ghost in the world (ghosts are visible only
+    // to other ghosts), so drop any selection that lingers on a player who has
+    // released — unless the bot is a ghost itself.
+    if (!bot->HasGhostAura())
+        if (Unit* selected = bot->GetSelectedUnit())
+            if (selected->IsPlayer() && selected->HasGhostAura())
+                bot->SetSelection(ObjectGuid());
+
     if (!CanUpdateAI())
         return;
 
