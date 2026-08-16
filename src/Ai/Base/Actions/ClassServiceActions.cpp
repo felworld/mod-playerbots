@@ -81,8 +81,7 @@ bool GroupHasRealPlayers(Group* group)
         if (!member)
             continue;
 
-        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
-        if (!memberAI || memberAI->IsRealPlayer())
+        if (IsRealPlayer(member) || IsSelfBot(member))
             return true;
     }
 
@@ -106,8 +105,7 @@ bool IsServiceCircle(PlayerbotAI* botAI, Player* requester)
 
 bool IsRealCustomer(Player* requester)
 {
-    PlayerbotAI* requesterAI = GET_PLAYERBOT_AI(requester);
-    return !requesterAI || requesterAI->IsRealPlayer();
+    return IsRealPlayer(requester) || IsSelfBot(requester);
 }
 }
 

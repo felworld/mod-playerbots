@@ -5,22 +5,22 @@
  */
 
 #include "GenericTriggers.h"
-
-#include <string>
-
-#include "GenericBuffUtils.h"
 #include "BattlegroundWS.h"
 #include "BotDeathSafety.h"
+#include "Corpse.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
 #include "EngineeringDeviceActions.h"
 #include "EngineeringTinkerActions.h"
-#include "ThrowExplosivesAction.h"
+#include "GenericBuffUtils.h"
 #include "NonCombatActions.h"
+#include "ThrowExplosivesAction.h"
 #include "ItemVisitors.h"
 #include "LastSpellCastValue.h"
 #include "LevelPerception.h"
 #include "ObjectGuid.h"
+#include "Player.h"
+#include "PlayerbotAI.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "PositionValue.h"
@@ -28,9 +28,7 @@
 #include "TemporarySummon.h"
 #include "ThreatManager.h"
 #include "Timer.h"
-#include "PlayerbotAI.h"
-#include "Player.h"
-#include "Corpse.h"
+#include <string>
 
 bool LowManaTrigger::IsActive()
 {

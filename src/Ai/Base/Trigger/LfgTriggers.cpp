@@ -5,7 +5,6 @@
  */
 
 #include "LfgTriggers.h"
-
 #include "Group.h"
 #include "LFGMgr.h"
 #include "Playerbots.h"
@@ -34,7 +33,7 @@ bool LfgOutsideDungeonTrigger::IsActive()
 
     // Never drag a bot away from a real player who deliberately stayed outside - only follow a
     // master who is already inside.
-    if (botAI->HasRealPlayerMaster())
+    if (botAI->HasGameClientMaster())
     {
         Player* master = botAI->GetMaster();
         if (!master || !master->IsInWorld() || master->GetMapId() != mapId)
@@ -46,6 +45,6 @@ bool LfgOutsideDungeonTrigger::IsActive()
 
 bool UnknownDungeonTrigger::IsActive()
 {
-    return botAI->HasActivePlayerMaster() && botAI->GetMaster() && botAI->GetMaster()->IsInWorld() &&
+    return IsRealPlayer(botAI->GetMaster()) && botAI->GetMaster() && botAI->GetMaster()->IsInWorld() &&
            botAI->GetMaster()->GetMap()->IsDungeon() && bot->GetMapId() == botAI->GetMaster()->GetMapId();
 }

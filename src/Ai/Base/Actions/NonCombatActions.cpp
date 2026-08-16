@@ -5,7 +5,6 @@
  */
 
 #include "NonCombatActions.h"
-
 #include "Battleground.h"
 #include "Event.h"
 #include "Playerbots.h"

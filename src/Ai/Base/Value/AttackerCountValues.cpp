@@ -5,7 +5,6 @@
  */
 
 #include "AttackerCountValues.h"
-
 #include "Playerbots.h"
 #include "LevelPerception.h"
 #include "SharedDefines.h"

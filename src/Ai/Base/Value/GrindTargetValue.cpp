@@ -5,7 +5,6 @@
  */
 
 #include "GrindTargetValue.h"
-
 #include "NewRpgInfo.h"
 #include "LevelPerception.h"
 #include "Playerbots.h"
