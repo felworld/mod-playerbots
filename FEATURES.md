@@ -745,7 +745,11 @@ range. The fresh reflex grudge always speaks first; the vendetta fills in
 when no short-term memory stands.
 
 Killing the offender settles the vendetta — the bot stops hunting, but
-the tally survives, and a single fresh gank re-opens it. There is no
+the tally survives, and a single fresh gank re-opens it. Fleeing and
+pleading can settle it too: if the bot's last encounter with the
+tormentor ended in flight and pleas and no re-kill followed within ~5
+minutes, the vendetta is forgiven at the next sighting — the griefer
+stopped their behavior, and the bot lets it go (until the next gank). There is no
 settling exemption in the ledger itself: a successful revenge kill is
 still an unprovoked death from the other side's point of view, so two
 bots can absolutely end up in a mutual, self-sustaining feud — true to

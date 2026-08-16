@@ -117,8 +117,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Vendettas](FEATURES.md#vendettas)** — repeated unprovoked ganks
   harden into a permanent, database-backed grudge: the bot hunts its
   tormentor on sight across sessions (or fears them while outleveled),
-  a revenge kill settles the score until the next offense, and mutual
-  bot feuds can form organically.
+  a revenge kill — or an escape the tormentor lets stand — settles the
+  score until the next offense, and mutual bot feuds can form
+  organically.
 - **[Chase break-off](FEATURES.md#chase-break-off)** — a bot whose
   world-PvP target cleanly escapes rolls to give up the chase every so
   often instead of pursuing forever; most turn back quickly, the odd one

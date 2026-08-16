@@ -22,9 +22,11 @@ class Unit;
 // sight, past courage dice, satiation and truces - or, while the killer
 // still plainly outclasses the bot, as fear: avoid and plead, turning to
 // vengeance once the bot catches up in levels. Killing the offender settles
-// the vendetta; the tally stays on the books, and one fresh gank re-opens
-// it. Real players get ledger entries as killers only - a human's
-// resentment is their own.
+// the vendetta - and so does a successful escape: when the last encounter
+// ended with the bot fleeing and pleading and the tormentor let it live,
+// the vendetta is forgiven at the next sighting. Either way the tally
+// stays on the books, and one fresh gank re-opens it. Real players get
+// ledger entries as killers only - a human's resentment is their own.
 class WpvpVendettaBoard
 {
 public:
@@ -51,9 +53,16 @@ public:
     // settled vendetta.
     void RecordKill(Player* killer, Player* victim);
 
+    // The bot is fleeing this enemy (WpvpAvoidKillerAction), whichever
+    // board drove the retreat. If the encounter ends without a re-kill,
+    // the open vendetta is forgiven at the next sighting - the pleas
+    // worked, the griefer stopped.
+    void NoteFled(Player* bot, Player* enemy);
+
     // The vendetta's contribution to WpvpGrudgeAgainst: None without an
     // open vendetta; Avoidant while the enemy reads WPVP_REVENGE_OUTCLASS_GAP
-    // levels above the bot; Revenge otherwise.
+    // levels above the bot; Revenge otherwise. Settles a vendetta whose
+    // last encounter was a successful escape (see NoteFled).
     WpvpGrudgeDisposition Disposition(Player* bot, Player* enemy);
 
     // Guids of every enemy this bot holds an open vendetta against.
@@ -72,6 +81,7 @@ private:
         uint32 camps{0};
         uint32 lastGankAt{0};  // epoch seconds
         bool settled{false};
+        uint32 lastFledAt{0};  // epoch seconds, in-memory only
         uint32 nextPleaMs{0};  // in-memory only
     };
 

@@ -25,6 +25,14 @@ constexpr uint32 INITIATED_TTL_MS = 2 * MINUTE * IN_MILLISECONDS;
 // One plea per open vendetta per this long - the grudge board's beat.
 constexpr uint32 PLEA_COOLDOWN_MS = 20 * IN_MILLISECONDS;
 
+// This long after the bot last fled the tormentor with no re-kill, the
+// escape counts as successful and the vendetta is forgiven. The flee mark
+// refreshes every avoidance tick, so the clock only starts once the
+// tormentor actually breaks off - and the settle is evaluated lazily at
+// the next sighting, so the window just has to outlast a pause in the
+// beating (shorter than CAMP_WINDOW_SECONDS by design).
+constexpr uint32 FORGIVE_WINDOW_SECONDS = 5 * MINUTE;
+
 uint32 EpochNow()
 {
     return uint32(GameTime::GetGameTime().count());
@@ -160,10 +168,32 @@ void WpvpVendettaBoard::RecordKill(Player* killer, Player* victim)
     }
 }
 
+void WpvpVendettaBoard::NoteFled(Player* bot, Player* enemy)
+{
+    if (!sPlayerbotAIConfig.wpvpVendettaGanks || !bot || !enemy)
+        return;
+
+    uint32 const now = EpochNow();
+
+    std::lock_guard<std::mutex> lock(_mutex);
+
+    auto held = _ledger.find(bot->GetGUID());
+    if (held == _ledger.end())
+        return;
+
+    auto it = held->second.find(enemy->GetGUID());
+    if (it == held->second.end() || !Open(it->second))
+        return;
+
+    it->second.lastFledAt = now;
+}
+
 WpvpGrudgeDisposition WpvpVendettaBoard::Disposition(Player* bot, Player* enemy)
 {
     if (!sPlayerbotAIConfig.wpvpVendettaGanks || !bot || !enemy)
         return WpvpGrudgeDisposition::None;
+
+    uint32 const now = EpochNow();
 
     {
         std::lock_guard<std::mutex> lock(_mutex);
@@ -175,6 +205,23 @@ WpvpGrudgeDisposition WpvpVendettaBoard::Disposition(Player* bot, Player* enemy)
         auto it = held->second.find(enemy->GetGUID());
         if (it == held->second.end() || !Open(it->second))
             return WpvpGrudgeDisposition::None;
+
+        // The last encounter ended with the bot fleeing and pleading, and
+        // no re-kill followed: the tormentor relented, and the vendetta is
+        // forgiven. The tally stays - one fresh gank re-opens it.
+        Vendetta& vendetta = it->second;
+        if (vendetta.lastFledAt > vendetta.lastGankAt && now - vendetta.lastFledAt >= FORGIVE_WINDOW_SECONDS)
+        {
+            vendetta.settled = true;
+            Persist(bot->GetGUID(), enemy->GetGUID(), vendetta);
+
+            METRIC_VALUE("playerbots_wpvp_vendetta", 1, METRIC_TAG("event", "forgiven"));
+            LOG_DEBUG("playerbots", "Bot {} forgives its vendetta against {} - the pleas worked", bot->GetName(),
+                      enemy->GetName());
+            Felworld::LogEvent(bot->GetGUID(), "wpvp_vendetta_forgiven",
+                               Acore::StringFormat("{{\"killer\":\"{}\"}}", enemy->GetName()));
+            return WpvpGrudgeDisposition::None;
+        }
     }
 
     // Outside the lock - PerceivedLevel reads world state. A tormentor who

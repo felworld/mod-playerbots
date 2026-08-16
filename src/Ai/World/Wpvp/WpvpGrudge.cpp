@@ -325,6 +325,11 @@ bool WpvpAvoidKillerAction::Execute(Event /*event*/)
         bot->SetSelection(oldSelection);
     }
 
+    // Whichever board drove the retreat, the vendetta ledger hears about
+    // the encounter: if no re-kill follows, the escape succeeded and any
+    // open vendetta is forgiven at the next sighting.
+    WpvpVendettaBoard::instance().NoteFled(bot, killer);
+
     // Then leg it. The trigger keeps firing while the killer stays inside
     // notice range, so a killer who keeps closing keeps being fled.
     return MoveAway(killer, AVOID_RETREAT_STEP, false);
