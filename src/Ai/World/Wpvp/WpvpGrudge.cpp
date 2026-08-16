@@ -1,5 +1,6 @@
 #include "WpvpGrudge.h"
 
+#include <algorithm>
 #include <unordered_set>
 #include <vector>
 
@@ -20,14 +21,10 @@
 #include "Timer.h"
 #include "World.h"
 #include "WpvpChase.h"
+#include "WpvpVendetta.h"
 
 namespace
 {
-// Revenge wants a winnable rematch: a killer who reads this far above the
-// bot never inspires one (mirrors the courage gates' EXTREME_LEVEL_DIFF -
-// revenge bypasses those dice, so the suicide line is enforced here).
-constexpr int32 REVENGE_OUTCLASS_GAP = 5;
-
 // How close the killer gets before an avoidant bot reacts, and how far each
 // retreat leg runs. The notice range matches the passerby-assist scale - the
 // killer being "on the bot's screen" - and the step is long enough that one
@@ -50,19 +47,36 @@ bool IsPleaEmote(uint32 textEmote)
 
 WpvpGrudgeDisposition WpvpGrudgeAgainst(Player* bot, Player* enemy)
 {
-    if (!sPlayerbotAIConfig.wpvpGrudgeMinutes || !bot || !enemy)
+    if (!bot || !enemy)
         return WpvpGrudgeDisposition::None;
 
-    return WpvpGrudgeBoard::instance().Disposition(bot->GetGUID(), enemy->GetGUID());
+    // The fresh reflex speaks first: a bot that just died to this enemy is
+    // fleeing or hunting on that memory, whatever the long ledger says.
+    if (sPlayerbotAIConfig.wpvpGrudgeMinutes)
+        if (WpvpGrudgeDisposition const reflex = WpvpGrudgeBoard::instance().Disposition(bot->GetGUID(), enemy->GetGUID());
+            reflex != WpvpGrudgeDisposition::None)
+            return reflex;
+
+    return WpvpVendettaBoard::instance().Disposition(bot, enemy);
 }
 
 Player* WpvpAvoidantKillerNear(Player* bot, float range)
 {
-    if (!sPlayerbotAIConfig.wpvpGrudgeMinutes)
+    if (!sPlayerbotAIConfig.wpvpGrudgeMinutes && !sPlayerbotAIConfig.wpvpVendettaGanks)
         return nullptr;
 
+    std::vector<ObjectGuid> candidates;
+    if (sPlayerbotAIConfig.wpvpGrudgeMinutes)
+        candidates = WpvpGrudgeBoard::instance().AvoidantKillers(bot->GetGUID());
+
+    // Open vendettas may read avoidant too (a tormentor who still outclasses
+    // the bot); WpvpGrudgeAgainst below sorts revenge from fear.
+    for (ObjectGuid const& guid : WpvpVendettaBoard::instance().VendettaEnemies(bot->GetGUID()))
+        if (std::find(candidates.begin(), candidates.end(), guid) == candidates.end())
+            candidates.push_back(guid);
+
     Player* nearest = nullptr;
-    for (ObjectGuid const& guid : WpvpGrudgeBoard::instance().AvoidantKillers(bot->GetGUID()))
+    for (ObjectGuid const& guid : candidates)
     {
         Player* killer = ObjectAccessor::GetPlayer(*bot, guid);
         if (!killer || !killer->IsAlive() || !bot->CanSeeOrDetect(killer))
@@ -73,6 +87,9 @@ Player* WpvpAvoidantKillerNear(Player* bot, float range)
 
         // Already trading blows: dodging is over, self-defense owns the bot.
         if (bot->GetCombatManager().GetPvPCombatRefs().count(guid))
+            continue;
+
+        if (WpvpGrudgeAgainst(bot, killer) != WpvpGrudgeDisposition::Avoidant)
             continue;
 
         if (!nearest || bot->GetDistance(killer) < bot->GetDistance(nearest))
@@ -177,7 +194,7 @@ void WpvpGrudgeBoard::RecordKill(Player* killer, Player* victim)
     // teaches a lesson - and a killer who plainly outclasses the bot never
     // does.
     bool const revenge = grudge.deaths == 1 &&
-                         int32(PerceivedLevel(victim, killer)) - int32(victim->GetLevel()) < REVENGE_OUTCLASS_GAP &&
+                         int32(PerceivedLevel(victim, killer)) - int32(victim->GetLevel()) < WPVP_REVENGE_OUTCLASS_GAP &&
                          urand(1, 100) <= sPlayerbotAIConfig.wpvpRevengeChance;
     grudge.disposition = revenge ? WpvpGrudgeDisposition::Revenge : WpvpGrudgeDisposition::Avoidant;
 
@@ -282,7 +299,12 @@ bool WpvpAvoidKillerAction::Execute(Event /*event*/)
 
     // The plea first: face them and wave the fight off. Not just theater -
     // the text-emote hook may move a bot killer to mercy (NoteMercyPlea).
-    if (WpvpGrudgeBoard::instance().ClaimPleaEmote(bot->GetGUID(), killer->GetGUID()))
+    // The plea beat is owned by whichever board drives the avoidance.
+    bool const claimed =
+        WpvpGrudgeBoard::instance().Disposition(bot->GetGUID(), killer->GetGUID()) == WpvpGrudgeDisposition::Avoidant
+            ? WpvpGrudgeBoard::instance().ClaimPleaEmote(bot->GetGUID(), killer->GetGUID())
+            : WpvpVendettaBoard::instance().ClaimPleaEmote(bot->GetGUID(), killer->GetGUID());
+    if (claimed)
     {
         static constexpr TextEmotes PLEAS[] = {TEXT_EMOTE_SHOO, TEXT_EMOTE_BEG, TEXT_EMOTE_CRY};
         TextEmotes const plea = PLEAS[urand(0, 2)];

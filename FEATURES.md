@@ -722,6 +722,39 @@ fight off must not double as a silent callout. `AiPlayerbot.WpvpGrudgeMinutes = 
 disables grudges; `AiPlayerbot.WpvpRevengeChance = 0` makes every grudge
 avoidant.
 
+## Vendettas
+
+The grudge above is a fifteen-minute reflex that evaporates on restart.
+Underneath it sits a persistent ledger in the playerbots database: every
+*unprovoked* world-PvP death a bot suffers is tallied per killer, across
+sessions, forever. Deaths in fights the bot itself picked — a revenge
+sortie, a courage-dice initiation, riding out to a defense call — never
+count: losing a fight you chose breeds no resentment, being hunted does.
+Enough ganks (`AiPlayerbot.WpvpVendettaGanks`, default 3 — or
+`AiPlayerbot.WpvpVendettaCampGanks`, default 2, when any were re-kills
+within ~10 minutes of the last, i.e. camping) open a **vendetta**.
+
+An open vendetta acts like a revenge grudge that never expires: attack on
+sight past the courage dice, satiation, and same-class truces, at full
+vision range — except while the killer still plainly outclasses the bot,
+when it reads as fear instead (avoid, plead, retreat, like an avoidant
+grudge). The disposition is derived at the moment of sighting, so a bot
+repeatedly camped at low level by someone far above it fears them for as
+long as the gap holds — and comes for them once it has leveled into
+range. The fresh reflex grudge always speaks first; the vendetta fills in
+when no short-term memory stands.
+
+Killing the offender settles the vendetta — the bot stops hunting, but
+the tally survives, and a single fresh gank re-opens it. There is no
+settling exemption in the ledger itself: a successful revenge kill is
+still an unprovoked death from the other side's point of view, so two
+bots can absolutely end up in a mutual, self-sustaining feud — true to
+world-PvP life. Vendettas form against real players and bots alike (only
+bots *hold* them; a human's resentment is their own), and the
+`playerbots_wpvp_vendetta` table doubles as a browsable history of who
+griefed whom. `AiPlayerbot.WpvpVendettaGanks = 0` disables vendettas;
+`AiPlayerbot.WpvpVendettaCampGanks = 0` removes the camping accelerator.
+
 ## Chase break-off
 
 Nothing in the pursuit path had a distance or time bound, so a bot whose

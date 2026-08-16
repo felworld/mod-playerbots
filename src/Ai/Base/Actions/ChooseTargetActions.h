@@ -78,6 +78,7 @@ public:
     AttackEnemyPlayerAction(PlayerbotAI* botAI) : AttackAction(botAI, "attack enemy player") {}
 
     std::string const GetTargetName() override { return "enemy player target"; }
+    bool Execute(Event event) override;
     bool isUseful() override;
 };
 

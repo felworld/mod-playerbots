@@ -7,6 +7,7 @@
 #include "ChooseTargetActions.h"
 
 #include "ChooseRpgTargetAction.h"
+#include "CombatManager.h"
 #include "Event.h"
 #include "LootObjectStack.h"
 #include "NewRpgStrategy.h"
@@ -15,6 +16,23 @@
 #include "PossibleRpgTargetsValue.h"
 #include "PvpTriggers.h"
 #include "ServerFacade.h"
+#include "WpvpVendetta.h"
+
+bool AttackEnemyPlayerAction::Execute(Event event)
+{
+    // Who threw the first punch matters to the vendetta ledger: attacking
+    // an enemy the bot isn't already trading blows with is the bot picking
+    // this fight, and losing a fight you picked breeds no resentment.
+    Unit* target = GetTarget();
+    bool const initiating = target && target->IsPlayer() && !bot->InBattleground() &&
+                            !bot->GetCombatManager().GetPvPCombatRefs().count(target->GetGUID());
+
+    bool const result = AttackAction::Execute(event);
+    if (result && initiating)
+        WpvpVendettaBoard::instance().NoteBotInitiated(bot, target->ToPlayer());
+
+    return result;
+}
 
 bool AttackEnemyPlayerAction::isUseful()
 {

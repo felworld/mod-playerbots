@@ -479,6 +479,8 @@ public:
     uint32 wpvpSatiationMinutes;
     uint32 wpvpGrudgeMinutes;
     uint32 wpvpRevengeChance;
+    uint32 wpvpVendettaGanks;
+    uint32 wpvpVendettaCampGanks;
     uint32 wpvpBegMercyChance;
     uint32 wpvpChaseBreakChance;
     uint32 wpvpChaseBreakSecondsMin, wpvpChaseBreakSecondsMax;

@@ -29,13 +29,19 @@ enum class WpvpGrudgeDisposition : uint8
     Avoidant,
 };
 
-// The bot's standing toward this enemy, None once expired or when grudges
-// are disabled.
+// Revenge wants a winnable rematch: an enemy who reads this far above the
+// bot inspires fear instead (mirrors the courage gates' EXTREME_LEVEL_DIFF -
+// revenge bypasses those dice, so the suicide line is enforced here).
+constexpr int32 WPVP_REVENGE_OUTCLASS_GAP = 5;
+
+// The bot's standing toward this enemy: the short-term reflex grudge above
+// when one stands, else the persistent vendetta ledger (WpvpVendetta), else
+// None.
 WpvpGrudgeDisposition WpvpGrudgeAgainst(Player* bot, Player* enemy);
 
-// The nearest living avoidant-grudge killer within range that the bot can
-// see and is not already trading blows with (once they attack, self-defense
-// owns the bot and dodging them stops making sense).
+// The nearest living enemy within range that the bot avoids (reflex grudge
+// or vendetta), can see, and is not already trading blows with (once they
+// attack, self-defense owns the bot and dodging them stops making sense).
 Player* WpvpAvoidantKillerNear(Player* bot, float range);
 
 // From the text-emote hook: a /beg, /cry, or /shoo by someone under attack

@@ -1246,6 +1246,23 @@ AiPlayerbot.WpvpSatiationMinutes = 10
 AiPlayerbot.WpvpGrudgeMinutes = 15
 AiPlayerbot.WpvpRevengeChance = 60
 
+# Repeated unprovoked ganks harden into a vendetta - stored in the
+# playerbots database, surviving restarts, and never expiring on its own.
+# Only deaths in fights the bot did not itself pick count: losing a revenge
+# sortie or a fight the bot started breeds no resentment, being hunted
+# does. A re-kill within ~10 minutes of the last one (camping) reaches the
+# threshold at WpvpVendettaCampGanks deaths instead of WpvpVendettaGanks.
+# An open vendetta acts like a standing revenge grudge - attack on sight,
+# past courage dice, satiation and truces - or, while the killer still
+# plainly outclasses the bot, as fear: avoid and plead, turning to
+# vengeance once the bot catches up in levels. Killing the offender
+# settles the vendetta; the tally stays, and one fresh gank re-opens it.
+# WpvpVendettaGanks 0 disables vendettas; WpvpVendettaCampGanks 0 removes
+# the camping accelerator.
+# Default: 3 / 2
+AiPlayerbot.WpvpVendettaGanks = 3
+AiPlayerbot.WpvpVendettaCampGanks = 2
+
 # Begging for your life sometimes works: a /beg, /cry, or /shoo emote by
 # a player who is being attacked by a bot (or aimed at a bot stalking
 # them) rolls this % chance per bot to move it to mercy - it breaks off

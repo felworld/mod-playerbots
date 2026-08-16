@@ -9,11 +9,13 @@
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "ScriptMgr.h"
+#include "WorldScript.h"
 #include "WpvpChase.h"
 #include "WpvpDefense.h"
 #include "WpvpEmoteAlert.h"
 #include "WpvpGrudge.h"
 #include "WpvpSatiation.h"
+#include "WpvpVendetta.h"
 
 // Feeds the wpvp boards from player hooks: world PvP kills roll the killer
 // bot's satiation dice (anti-corpse-camping) and bump the killer's
@@ -49,6 +51,10 @@ public:
         // held against this victim.
         WpvpGrudgeBoard::instance().RecordKill(killer, killed);
 
+        // The persistent layer: unprovoked deaths tally toward a durable
+        // vendetta, and this kill settles any open vendetta the killer held.
+        WpvpVendettaBoard::instance().RecordKill(killer, killed);
+
         if (sPlayerbotAIConfig.wpvpCalloutEnabled || sPlayerbotAIConfig.wpvpDefenseEnabled ||
             sPlayerbotAIConfig.wpvpReinforcementEnabled)
         {
@@ -82,6 +88,10 @@ public:
     void OnDamage(Unit* attacker, Unit* victim, uint32& /*damage*/) override
     {
         WpvpChaseBoard::instance().NoteDamage(attacker, victim);
+
+        // A bot that picked a fight owns its outcome for as long as it
+        // keeps swinging - refresh its vendetta-ledger initiation mark.
+        WpvpVendettaBoard::instance().RefreshInitiated(attacker, victim);
     }
 };
 
@@ -114,9 +124,20 @@ public:
     }
 };
 
+// The vendetta ledger lives in the playerbots database; read it back before
+// any bot logs in.
+class PlayerbotsWpvpWorldScript : public WorldScript
+{
+public:
+    PlayerbotsWpvpWorldScript() : WorldScript("PlayerbotsWpvpWorldScript", { WORLDHOOK_ON_STARTUP }) {}
+
+    void OnStartup() override { WpvpVendettaBoard::instance().LoadFromDB(); }
+};
+
 void AddPlayerbotsWpvpScripts()
 {
     new PlayerbotsWpvpScript();
     new PlayerbotsWpvpUnitScript();
     new PlayerbotsWpvpCreatureScript();
+    new PlayerbotsWpvpWorldScript();
 }
