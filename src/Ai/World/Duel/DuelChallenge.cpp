@@ -203,7 +203,7 @@ bool StartDuelPossibleTrigger::IsActive()
         return false;
 
     // Do not auto duel if the master is around and not AFK.
-    if (botAI->HasRealPlayerMaster() && botAI->GetMaster() && !botAI->GetMaster()->isAFK())
+    if (botAI->HasGameClientMaster() && botAI->GetMaster() && !botAI->GetMaster()->isAFK())
         return false;
 
     NewRpgInfo& info = botAI->rpgInfo;

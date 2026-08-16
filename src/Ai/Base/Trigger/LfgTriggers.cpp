@@ -33,7 +33,7 @@ bool LfgOutsideDungeonTrigger::IsActive()
 
     // Never drag a bot away from a real player who deliberately stayed outside - only follow a
     // master who is already inside.
-    if (botAI->HasRealPlayerMaster())
+    if (botAI->HasGameClientMaster())
     {
         Player* master = botAI->GetMaster();
         if (!master || !master->IsInWorld() || master->GetMapId() != mapId)

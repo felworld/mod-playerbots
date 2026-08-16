@@ -16,7 +16,7 @@ bool QuestCompetitionInviteTrigger::IsActive()
     if (bot->GetGroup() || bot->InBattleground() || bot->InBattlegroundQueue())
         return false;
 
-    if (!sRandomPlayerbotMgr.IsRandomBot(bot) || botAI->HasActivePlayerMaster())
+    if (!sRandomPlayerbotMgr.IsRandomBot(bot) || IsRealPlayer(botAI->GetMaster()))
         return false;
 
     QuestCompetitionInfo& info = botAI->questCompetitionInfo;
