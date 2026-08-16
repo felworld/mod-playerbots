@@ -5,7 +5,6 @@
  */
 
 #include "TargetValue.h"
-
 #include "CombatManager.h"
 #include "Creature.h"
 #include "LastMovementValue.h"

@@ -5,7 +5,7 @@
  */
 
 #include "WtsAction.h"
-
+#include "AiFactory.h"
 #include "ChatHelper.h"
 #include "Event.h"
 #include "PlayerbotTextMgr.h"

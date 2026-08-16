@@ -5,7 +5,6 @@
  */
 
 #include "RogueTriggers.h"
-
 #include "Formulas.h"
 #include "GenericTriggers.h"
 #include "PlayerbotAIConfig.h"

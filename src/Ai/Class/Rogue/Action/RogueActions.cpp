@@ -5,7 +5,6 @@
  */
 
 #include "RogueActions.h"
-
 #include "Event.h"
 #include "FelworldEvents.h"
 #include "Metric.h"
