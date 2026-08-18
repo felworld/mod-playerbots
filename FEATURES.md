@@ -390,6 +390,22 @@ any other city dweller, instead of idling outside the walls — where the
 zone isn't a capital, so the next activity roll would immediately send it
 somewhere else in the world.
 
+## No city picnics
+
+Bots don't sit down to eat or drink inside capital cities. The low-health
+and low-mana reflexes that make a bot break out food and water in the
+field used to fire anywhere out of combat, so a bot hearthing home after
+a grinding session would plop down cross-legged in the middle of the
+Orgrimmar or Stormwind bank district for a meal — one of the more
+recognizable "nobody's home" tells, since real players just don't do
+that. Inside a city rest area (the same zones that accrue rested XP) the
+eat/drink actions are now suppressed entirely: low bars wait for natural
+out-of-combat regeneration, or for the bot to walk back out of the
+gates, where the normal behavior resumes immediately. A meal already in
+progress when the bot crosses the city border still finishes. Inns and
+taverns outside capitals are unaffected. No config option — it's always
+on.
+
 ## World PvP excursions
 
 Random bots occasionally travel to enemy or contested

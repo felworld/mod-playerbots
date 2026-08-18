@@ -113,6 +113,13 @@ bool DrinkAction::Execute(Event event)
 
 bool DrinkAction::isUseful()
 {
+    // Nobody sits down mid-plaza for a drink in a capital — suppress the
+    // low-bar reflex in city rest areas and let natural regen (or the trip
+    // back out of the gates) cover it. A meal already underway is unaffected:
+    // "continue eating" holds until the bot is interrupted or full.
+    if (bot->HasRestFlag(REST_FLAG_IN_CITY))
+        return false;
+
     return UseItemAction::isUseful() && AI_VALUE2(bool, "has mana", "self target") &&
            AI_VALUE2(uint8, "mana", "self target") < 100 && !BotConsumables::IsDrinking(bot) &&
            BotConsumables::IsSafeToConsume(botAI, bot);
@@ -178,6 +185,10 @@ bool EatAction::Execute(Event event)
 
 bool EatAction::isUseful()
 {
+    // See DrinkAction::isUseful — no eating in city rest areas.
+    if (bot->HasRestFlag(REST_FLAG_IN_CITY))
+        return false;
+
     return UseItemAction::isUseful() && AI_VALUE2(uint8, "health", "self target") < 100 &&
            !BotConsumables::IsEatingFood(bot) && BotConsumables::IsSafeToConsume(botAI, bot);
 }

@@ -77,6 +77,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Busy capital cities](FEATURES.md#busy-capital-cities)** — bots in a
   friendly capital linger around the bank/AH/inn district instead of
   immediately heading back out, keeping Orgrimmar and Stormwind populated.
+- **[No city picnics](FEATURES.md#no-city-picnics)** — bots don't sit
+  down to eat or drink inside capitals; low bars wait for natural regen
+  or the walk back out of the gates.
 - **[World PvP excursions](FEATURES.md#world-pvp-excursions)** — bots
   travel to enemy or contested towns to lurk and pick fights, with goading
   emotes and level-gap-curved gankers.
