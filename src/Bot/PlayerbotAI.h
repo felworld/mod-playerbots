@@ -546,6 +546,7 @@ public:
     void WaitForSpellCast(Spell* spell);
     bool PlaySound(uint32 emote);
     bool PlayEmote(uint32 emote);
+    bool PlayEmote(uint32 emote, ObjectGuid target);
     void Ping(float x, float y);
     Item* FindPoison() const;
     Item* FindAmmo() const;

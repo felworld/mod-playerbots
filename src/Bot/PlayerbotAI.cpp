@@ -2044,12 +2044,18 @@ bool PlayerbotAI::PlaySound(uint32 emote)
 
 bool PlayerbotAI::PlayEmote(uint32 emote)
 {
+    return PlayEmote(emote,
+        (master && (ServerFacade::instance().GetDistance2d(bot, master) < 30.0f) && urand(0, 1)) ? master->GetGUID()
+        : (bot->GetTarget() && urand(0, 1))                                                      ? bot->GetTarget()
+                                                                                                 : ObjectGuid::Empty);
+}
+
+bool PlayerbotAI::PlayEmote(uint32 emote, ObjectGuid target)
+{
     WorldPacket data(SMSG_TEXT_EMOTE);
     data << (TextEmotes)emote;
     data << EmoteAction::GetNumberOfEmoteVariants((TextEmotes)emote, bot->getRace(), bot->getGender());
-    data << ((master && (ServerFacade::instance().GetDistance2d(bot, master) < 30.0f) && urand(0, 1)) ? master->GetGUID()
-             : (bot->GetTarget() && urand(0, 1))                                            ? bot->GetTarget()
-                                                                                            : ObjectGuid::Empty);
+    data << target;
     bot->GetSession()->HandleTextEmoteOpcode(data);
 
     return true;
