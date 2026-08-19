@@ -451,9 +451,13 @@ attacking Goldshire!"), throttled per zone and per attacker. A callout
 takes evidence, not just presence — on a PvP-type realm everyone in a
 contested zone is flagged, so an enemy quietly grinding mobs is everyday
 leveling, not an attack. Bots report an enemy they see fighting the
-defending side (a friendly player, their pet, or the town's guards and
-civilians), or a still-fresh ganker the defense channels already named
-merely prowling past — and the wording follows what was seen ("Bloguk is
+town's guards and civilians; an enemy fighting a friendly player (or
+their pet) only when that victim is genuinely outmatched — by level (a
+full gank gap below the attacker) or by numbers (two or more enemies on
+them), since an even scrap lost fair and square is a sight, not an
+alarm, whether the victim is a bystander or the spotter itself; or a
+still-fresh ganker the defense channels already named merely prowling
+past — and the wording follows what was seen ("Bloguk is
 attacking Elissa near Goldshire!" / "That ganker Bloguk is prowling
 around Goldshire now."). An
 uncontested *gank* spree — kills of victims at least the gank gap below

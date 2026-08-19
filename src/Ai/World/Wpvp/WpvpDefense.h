@@ -52,9 +52,12 @@ struct WpvpCalloutNotification
     uint32 killCount{0};       // Escalation only: uncontested kills so far
     // FirstCallout only: what the attacker was seen doing, and - for
     // AttackingPlayer - who they were fighting (the speaker's own name when
-    // the speaker is the one attacked).
+    // the speaker is the one attacked), that victim's exact level (a friendly
+    // frame always shows one), and how many enemy players were on them.
     WpvpCalloutActivity activity{WpvpCalloutActivity::AttackingNpcs};
     std::string victimName;
+    uint8 victimLevel{0};
+    uint8 victimAttackerCount{0};
     std::string prebakedLine;  // the line playerbots itself would say
 };
 

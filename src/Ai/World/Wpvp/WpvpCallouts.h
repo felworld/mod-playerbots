@@ -44,16 +44,19 @@ private:
 // The opposing player this bot would report, and what they were seen doing.
 // Flagged presence alone is not it: on a PvP-type realm everyone in a
 // contested zone is flagged, so the flag says nothing about intent. An enemy
-// qualifies by being seen in combat with the defending side - the bot,
-// another player, or friendly NPCs - or by being a still-fresh ganker the
-// defense channels already called out (Prowling). Enemies the bot outlevels
-// by the gank gap are skipped either way: nothing to raise an alarm over.
-// Returns false when there is nothing to report.
+// qualifies by being seen in combat with the defending side - friendly NPCs,
+// or a player (the bot included) who is genuinely outmatched, by level or by
+// numbers: an even scrap is a sight, not an alarm. A still-fresh ganker the
+// defense channels already called out qualifies on sight (Prowling). Enemies
+// the bot outlevels by the gank gap are skipped either way: nothing to raise
+// an alarm over. Returns false when there is nothing to report.
 struct WpvpIntruderSighting
 {
     Player* intruder{nullptr};
     WpvpCalloutActivity activity{WpvpCalloutActivity::Prowling};
-    std::string victimName;  // AttackingPlayer only
+    std::string victimName;        // AttackingPlayer only
+    uint8 victimLevel{0};          // AttackingPlayer only: exact - a friendly frame
+    uint8 victimAttackerCount{0};  // AttackingPlayer only: distinct enemy players on the victim
 };
 
 bool FindWpvpIntruder(PlayerbotAI* botAI, WpvpIntruderSighting& out);

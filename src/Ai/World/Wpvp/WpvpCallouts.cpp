@@ -1,5 +1,7 @@
 #include "WpvpCallouts.h"
 
+#include <algorithm>
+
 #include "DBCStores.h"
 #include "LevelPerception.h"
 #include "WpvpDefense.h"
@@ -67,6 +69,20 @@ void WpvpCalloutThrottle::Prune(uint32 now)
 
 namespace
 {
+// Distinct enemy players with the victim in their sights - a pet and its
+// owner count once. What a bystander reads off the fight when judging
+// whether someone is outnumbered.
+uint8 EnemyPlayersOn(Player* victim, Player* bot)
+{
+    GuidUnorderedSet counted;
+    for (Unit* attacker : victim->getAttackers())
+        if (Player* player = attacker->GetCharmerOrOwnerPlayerOrPlayerItself())
+            if (!player->IsFriendlyTo(bot))
+                counted.insert(player->GetGUID());
+
+    return uint8(counted.size());
+}
+
 // Combat with the defending side is what makes an enemy report-worthy;
 // fighting mobs is just leveling. Checks both directions - who the enemy is
 // swinging at and who is swinging at them - since a caster kiting guards has
@@ -88,14 +104,27 @@ bool ObservedHostility(Player* enemy, Player* bot, WpvpIntruderSighting& out)
         return false;
 
     // A pet in the fight means its owner is in the fight.
-    if (Player* victim = foe->GetCharmerOrOwnerPlayerOrPlayerItself())
+    Player* victim = foe->GetCharmerOrOwnerPlayerOrPlayerItself();
+    if (!victim)
     {
-        out.activity = WpvpCalloutActivity::AttackingPlayer;
-        out.victimName = victim->GetName();
-    }
-    else
         out.activity = WpvpCalloutActivity::AttackingNpcs;
+        return true;
+    }
 
+    // An even player-vs-player scrap is a sight, not an alarm - the same
+    // line the spree tally draws for kills. Only a victim genuinely
+    // outmatched, by level or by numbers, is worth telling the zone about.
+    uint8 attackerCount = EnemyPlayersOn(victim, bot);
+    if (attackerCount < 2 &&
+        uint32(victim->GetLevel()) + sPlayerbotAIConfig.wpvpGankLevelGap > PerceivedLevel(bot, enemy))
+        return false;
+
+    out.activity = WpvpCalloutActivity::AttackingPlayer;
+    out.victimName = victim->GetName();
+    out.victimLevel = victim->GetLevel();
+    // The named enemy is in the fight even when nobody has the victim
+    // targeted right now (a ganker between swings, a chase).
+    out.victimAttackerCount = std::max<uint8>(attackerCount, 1);
     return true;
 }
 }
@@ -256,6 +285,8 @@ bool WpvpDefenseCalloutAction::Execute(Event /*event*/)
     notification.attackerLevelText = PerceivedLevelText(bot, intruder);
     notification.activity = sighting.activity;
     notification.victimName = sighting.victimName;
+    notification.victimLevel = sighting.victimLevel;
+    notification.victimAttackerCount = sighting.victimAttackerCount;
     notification.prebakedLine = msg;
     FireWpvpCalloutNotification(notification);
 
