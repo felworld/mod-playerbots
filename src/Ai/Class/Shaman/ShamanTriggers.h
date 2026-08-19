@@ -153,6 +153,12 @@ public:
 // Fires only on high-value magic buffs (absorbs, HoTs, and a shortlist of major offensive/defensive
 // buffs) instead of anything dispellable, with a slow check interval and a mana gate, so Purge
 // doesn't starve the shock/damage kit at ACTION_DISPEL priority.
+class HexTrigger : public HasCcTargetTrigger
+{
+public:
+    HexTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "hex") {}
+};
+
 class PurgeTrigger : public SpellTrigger
 {
 public:

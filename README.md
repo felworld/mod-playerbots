@@ -130,6 +130,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Target peeling](FEATURES.md#target-peeling)** — a bot fighting one
   enemy player switches to another who shows up substantially closer,
   instead of tunneling on its first pick past fresh threats.
+- **[Shaman combat overhaul](FEATURES.md#shaman-combat-overhaul)** —
+  shamans stop Purge-spamming and actually fight: high-value-only Purge,
+  Frost Shock kiting, instant shocks while moving, Hex, and Grounding /
+  Earthbind totems against player opponents.
 - **[Initiation readiness](FEATURES.md#initiation-readiness)** — a bot
   below its health/mana comfort bars passes on starting an open-world
   fight and drinks up first, unless the target's state makes striking

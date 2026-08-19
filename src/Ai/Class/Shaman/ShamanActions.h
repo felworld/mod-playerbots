@@ -173,6 +173,12 @@ public:
     CastPurgeAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "purge") {}
 };
 
+class CastHexAction : public CastCrowdControlSpellAction
+{
+public:
+    CastHexAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "hex") {}
+};
+
 class CastCleanseSpiritAction : public CastCureSpellAction
 {
 public:

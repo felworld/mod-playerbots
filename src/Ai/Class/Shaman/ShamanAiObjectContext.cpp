@@ -138,6 +138,7 @@ public:
     {
         creators["wind shear"] = &ShamanATriggerFactoryInternal::wind_shear;
         creators["purge"] = &ShamanATriggerFactoryInternal::purge;
+        creators["hex"] = &ShamanATriggerFactoryInternal::hex;
         creators["main hand weapon no imbue"] = &ShamanATriggerFactoryInternal::main_hand_weapon_no_imbue;
         creators["off hand weapon no imbue"] = &ShamanATriggerFactoryInternal::off_hand_weapon_no_imbue;
         creators["water shield"] = &ShamanATriggerFactoryInternal::water_shield;
@@ -219,6 +220,7 @@ private:
     static Trigger* water_walking_on_party(PlayerbotAI* botAI) { return new WaterWalkingOnPartyTrigger(botAI); }
     static Trigger* wind_shear(PlayerbotAI* botAI) { return new WindShearInterruptSpellTrigger(botAI); }
     static Trigger* purge(PlayerbotAI* botAI) { return new PurgeTrigger(botAI); }
+    static Trigger* hex(PlayerbotAI* botAI) { return new HexTrigger(botAI); }
     static Trigger* main_hand_weapon_no_imbue(PlayerbotAI* botAI) { return new MainHandWeaponNoImbueTrigger(botAI); }
     static Trigger* off_hand_weapon_no_imbue(PlayerbotAI* botAI) { return new OffHandWeaponNoImbueTrigger(botAI); }
     static Trigger* water_shield(PlayerbotAI* botAI) { return new WaterShieldTrigger(botAI); }
@@ -281,6 +283,7 @@ public:
         creators["windfury weapon main hand"] = &ShamanAiObjectContextInternal::windfury_weapon_main_hand;
         creators["earthliving weapon main hand"] = &ShamanAiObjectContextInternal::earthliving_weapon_main_hand;
         creators["purge"] = &ShamanAiObjectContextInternal::purge;
+        creators["hex"] = &ShamanAiObjectContextInternal::hex;
         creators["healing wave"] = &ShamanAiObjectContextInternal::healing_wave;
         creators["lesser healing wave"] = &ShamanAiObjectContextInternal::lesser_healing_wave;
         creators["healing wave on party"] = &ShamanAiObjectContextInternal::healing_wave_on_party;
@@ -392,6 +395,7 @@ private:
     static Action* earthliving_weapon_main_hand(PlayerbotAI* botAI) { return new CastEarthlivingWeaponMainHandAction(botAI); }
     static Action* windfury_weapon_main_hand(PlayerbotAI* botAI) { return new CastWindfuryWeaponMainHandAction(botAI); }
     static Action* purge(PlayerbotAI* botAI) { return new CastPurgeAction(botAI); }
+    static Action* hex(PlayerbotAI* botAI) { return new CastHexAction(botAI); }
     static Action* healing_wave(PlayerbotAI* botAI) { return new CastHealingWaveAction(botAI); }
     static Action* lesser_healing_wave(PlayerbotAI* botAI) { return new CastLesserHealingWaveAction(botAI); }
     static Action* healing_wave_on_party(PlayerbotAI* botAI) { return new CastHealingWaveOnPartyAction(botAI); }

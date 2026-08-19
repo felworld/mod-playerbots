@@ -822,6 +822,34 @@ enemy the grid happened to list first); the peel margin compares the same
 score, so switching and sighting can never disagree. `0` disables
 peeling.
 
+## Shaman combat overhaul
+
+Shamans in PvP mostly stood around auto-attacking and Purging: the Purge
+trigger fired every second on *any* dispellable magic buff at a priority
+above the entire damage kit, Frost Shock was dead code (registered but
+never wired into a strategy), Hex didn't exist, and the totem loadouts
+were hardcoded per spec with no Grounding or Earthbind ever. Now:
+
+- **Purge discipline** — Purge only fires on buffs worth the global
+  cooldown (absorb shields, HoTs, and majors like Bloodlust/Heroism,
+  Earth Shield, Hand of Freedom, Inner Focus, Power Infusion), checks
+  every 5 seconds instead of every second, and is skipped below 40% mana.
+- **Frost Shock** — snares enemies fleeing or chasing an ally (the
+  hunter Concussive Shot pattern), and elemental/resto keep it on a
+  hostile player target to kite.
+- **Instant fillers while moving** — a moving caster shaman falls
+  through to instant Flame Shock / Frost Shock / Earth Shock instead of
+  repeatedly starting and cancelling Lightning Bolt casts.
+- **PvP totems** — versus player opponents (battlegrounds, world PvP,
+  and duels alike — detected from the actual combatants, not the map),
+  Grounding Totem owns the air slot and Earthbind the earth slot,
+  reverting to the equipped loadout against creatures.
+- **Hex** — shamans take a secondary attacker out of the fight with the
+  same crowd-control targeting mages use for Polymorph.
+- PvE loadout fixes: enhancement drops Searing instead of Magma (which
+  is useless outside melee range), elemental drops Strength of Earth
+  instead of Stoneskin.
+
 ## Initiation readiness
 
 Bots used to start open-world fights at any state of their own bars — a

@@ -118,6 +118,8 @@ void GenericShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("wind shear", { NextAction("wind shear", 23.0f), }));
     triggers.push_back(new TriggerNode("wind shear on enemy healer", { NextAction("wind shear on enemy healer", 23.0f), }));
     triggers.push_back(new TriggerNode("purge", { NextAction("purge", ACTION_DISPEL), }));
+    // CC a secondary attacker (same machinery as mage Polymorph)
+    triggers.push_back(new TriggerNode("hex", { NextAction("hex", 30.0f), }));
     // Snare enemies fleeing from combat or chasing an ally (same pattern as hunter Concussive Shot)
     triggers.push_back(new TriggerNode("frost shock snare", { NextAction("frost shock", ACTION_HIGH), }));
     // PvP totem overrides (outrank the 55.0f slot casts of the equipped totem strategies)
