@@ -124,6 +124,24 @@ bool ShockTrigger::IsActive()
         !botAI->HasAura("frost shock", GetTarget(), false, true);
 }
 
+bool FrostShockKiteTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || !target->IsPlayer() || bot->IsFriendlyTo(target))
+        return false;
+
+    return DebuffTrigger::IsActive();
+}
+
+bool ShamanMovingFillerTrigger::IsActive()
+{
+    if (!bot->isMoving())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->IsAlive();
+}
+
 // Checks if the target's health is above 25%/1500 hp. Returns false if either are true.
 // This logic exists to prevent the use of Earth Shock on bosses as an Elemental Shaman.
 bool EarthShockExecuteTrigger::IsActive()

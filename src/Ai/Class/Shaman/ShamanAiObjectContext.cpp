@@ -154,6 +154,9 @@ public:
         creators["party member cleanse spirit disease"] = &ShamanATriggerFactoryInternal::party_member_cleanse_disease;
         creators["shock"] = &ShamanATriggerFactoryInternal::shock;
         creators["frost shock snare"] = &ShamanATriggerFactoryInternal::frost_shock_snare;
+        creators["frost shock kite"] = &ShamanATriggerFactoryInternal::frost_shock_kite;
+        creators["moving filler"] = &ShamanATriggerFactoryInternal::moving_filler;
+        creators["moving filler and healer should attack"] = &ShamanATriggerFactoryInternal::moving_filler_and_healer_should_attack;
         creators["heroism"] = &ShamanATriggerFactoryInternal::heroism;
         creators["bloodlust"] = &ShamanATriggerFactoryInternal::bloodlust;
         creators["elemental mastery"] = &ShamanATriggerFactoryInternal::elemental_mastery;
@@ -220,6 +223,9 @@ private:
     static Trigger* lightning_shield(PlayerbotAI* botAI) { return new LightningShieldTrigger(botAI); }
     static Trigger* shock(PlayerbotAI* botAI) { return new ShockTrigger(botAI); }
     static Trigger* frost_shock_snare(PlayerbotAI* botAI) { return new FrostShockSnareTrigger(botAI); }
+    static Trigger* frost_shock_kite(PlayerbotAI* botAI) { return new FrostShockKiteTrigger(botAI); }
+    static Trigger* moving_filler(PlayerbotAI* botAI) { return new ShamanMovingFillerTrigger(botAI); }
+    static Trigger* moving_filler_and_healer_should_attack(PlayerbotAI* botAI) { return new MovingFillerAndHealerShouldAttackTrigger(botAI); }
     static Trigger* wind_shear_on_enemy_healer(PlayerbotAI* botAI) { return new WindShearInterruptEnemyHealerSpellTrigger(botAI); }
     static Trigger* earth_shield_on_main_tank(PlayerbotAI* botAI) { return new EarthShieldOnMainTankTrigger(botAI); }
     static Trigger* flame_shock(PlayerbotAI* botAI) { return new FlameShockTrigger(botAI); }
@@ -295,6 +301,7 @@ public:
         creators["flame shock"] = &ShamanAiObjectContextInternal::flame_shock;
         creators["earth shock"] = &ShamanAiObjectContextInternal::earth_shock;
         creators["frost shock"] = &ShamanAiObjectContextInternal::frost_shock;
+        creators["frost shock on target"] = &ShamanAiObjectContextInternal::frost_shock_on_target;
         creators["chain lightning"] = &ShamanAiObjectContextInternal::chain_lightning;
         creators["lightning bolt"] = &ShamanAiObjectContextInternal::lightning_bolt;
         creators["thunderstorm"] = &ShamanAiObjectContextInternal::thunderstorm;
@@ -358,6 +365,7 @@ private:
     static Action* lightning_bolt(PlayerbotAI* botAI) { return new CastLightningBoltAction(botAI); }
     static Action* chain_lightning(PlayerbotAI* botAI) { return new CastChainLightningAction(botAI); }
     static Action* frost_shock(PlayerbotAI* botAI) { return new CastFrostShockAction(botAI); }
+    static Action* frost_shock_on_target(PlayerbotAI* botAI) { return new CastFrostShockOnTargetAction(botAI); }
     static Action* earth_shock(PlayerbotAI* botAI) { return new CastEarthShockAction(botAI); }
     static Action* flame_shock(PlayerbotAI* botAI) { return new CastFlameShockAction(botAI); }
     static Action* cleanse_spirit(PlayerbotAI* botAI) { return new CastCleanseSpiritAction(botAI); }

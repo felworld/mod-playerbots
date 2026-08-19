@@ -118,6 +118,8 @@ void GenericShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("wind shear", { NextAction("wind shear", 23.0f), }));
     triggers.push_back(new TriggerNode("wind shear on enemy healer", { NextAction("wind shear on enemy healer", 23.0f), }));
     triggers.push_back(new TriggerNode("purge", { NextAction("purge", ACTION_DISPEL), }));
+    // Snare enemies fleeing from combat or chasing an ally (same pattern as hunter Concussive Shot)
+    triggers.push_back(new TriggerNode("frost shock snare", { NextAction("frost shock", ACTION_HIGH), }));
     triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 65.0f), }));
     // Keep summoned wolves on the bot's target instead of letting core PetAI pick their own attacker.
     triggers.push_back(new TriggerNode("target changed", { NextAction("pet assist", 15.0f), }));

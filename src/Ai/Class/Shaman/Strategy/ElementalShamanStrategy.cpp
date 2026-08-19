@@ -99,4 +99,26 @@ void ElementalShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+
+    // PvP Kiting Trigger
+    triggers.push_back(
+        new TriggerNode(
+            "frost shock kite",
+            {
+                NextAction("frost shock on target", 18.0f)
+            }
+        )
+    );
+
+    // Instant fillers while moving (cast-time spells get cancelled)
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("flame shock", 5.9f),
+                NextAction("frost shock on target", 5.8f),
+                NextAction("earth shock", 5.7f)
+            }
+        )
+    );
 }

@@ -48,6 +48,9 @@ void RestoShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("party member cleanse spirit disease", { NextAction("cleanse spirit disease on party", ACTION_DISPEL + 2) }));
     triggers.push_back(new TriggerNode("party member cleanse spirit curse",{ NextAction("cleanse spirit curse on party", ACTION_DISPEL + 2) }));
 
+    // Snare a hostile player current target to peel/kite (below all healing triggers)
+    triggers.push_back(new TriggerNode("frost shock kite", { NextAction("frost shock on target", ACTION_NORMAL) }));
+
     // Range/Mana Triggers
     triggers.push_back(new TriggerNode("enemy too close for spell", { NextAction("flee", ACTION_MOVE + 9) }));
     triggers.push_back(new TriggerNode("party member to heal out of spell range", { NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 1) }));
@@ -61,4 +64,8 @@ void ShamanHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
                                                                  NextAction("lightning bolt", ACTION_DEFAULT) }));
 
     triggers.push_back( new TriggerNode("medium aoe and healer should attack", { NextAction("chain lightning", ACTION_DEFAULT + 0.3f) }));
+
+    // Instant fillers while moving (cast-time spells get cancelled)
+    triggers.push_back(new TriggerNode("moving filler and healer should attack", { NextAction("flame shock", ACTION_DEFAULT + 0.9f),
+                                                                                   NextAction("frost shock on target", ACTION_DEFAULT + 0.8f) }));
 }

@@ -217,6 +217,33 @@ public:
     FrostShockSnareTrigger(PlayerbotAI* botAI) : SnareTargetTrigger(botAI, "frost shock") {}
 };
 
+// Keep Frost Shock on a hostile player current target (kiting); no lifetime gate — a
+// player about to die is still worth snaring.
+class FrostShockKiteTrigger : public DebuffTrigger
+{
+public:
+    FrostShockKiteTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "frost shock", 1, false, 0.0f) {}
+
+    bool IsActive() override;
+};
+
+// The bot is moving with a live target: cast-time spells would be cancelled, so fall
+// through to instant fillers instead of auto-attacking.
+class ShamanMovingFillerTrigger : public Trigger
+{
+public:
+    ShamanMovingFillerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "moving filler") {}
+
+    bool IsActive() override;
+};
+
+class MovingFillerAndHealerShouldAttackTrigger : public TwoTriggers
+{
+public:
+    MovingFillerAndHealerShouldAttackTrigger(PlayerbotAI* botAI)
+        : TwoTriggers(botAI, "moving filler", "healer should attack") {}
+};
+
 class MaelstromWeaponTrigger : public HasAuraStackTrigger
 {
 public:

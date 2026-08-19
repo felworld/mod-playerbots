@@ -280,6 +280,15 @@ public:
         CastSnareSpellAction(botAI, "frost shock") {}
 };
 
+// Frost Shock at the current target (CastFrostShockAction is bound to the "snare target"
+// value instead) — used for kiting hostile players and as a while-moving instant filler.
+class CastFrostShockOnTargetAction : public CastSpellAction
+{
+public:
+    CastFrostShockOnTargetAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "frost shock") {}
+};
+
 class CastChainLightningAction : public CastSpellAction
 {
 public:
