@@ -179,6 +179,8 @@ public:
         creators["no fire totem"] = &ShamanATriggerFactoryInternal::no_fire_totem;
         creators["no water totem"] = &ShamanATriggerFactoryInternal::no_water_totem;
         creators["no air totem"] = &ShamanATriggerFactoryInternal::no_air_totem;
+        creators["no earth totem pvp"] = &ShamanATriggerFactoryInternal::no_earth_totem_pvp;
+        creators["no air totem pvp"] = &ShamanATriggerFactoryInternal::no_air_totem_pvp;
         creators["set strength of earth totem"] = &ShamanATriggerFactoryInternal::set_strength_of_earth_totem;
         creators["set stoneskin totem"] = &ShamanATriggerFactoryInternal::set_stoneskin_totem;
         creators["set tremor totem"] = &ShamanATriggerFactoryInternal::set_tremor_totem;
@@ -242,6 +244,8 @@ private:
     static Trigger* no_fire_totem(PlayerbotAI* botAI) { return new NoFireTotemTrigger(botAI); }
     static Trigger* no_water_totem(PlayerbotAI* botAI) { return new NoWaterTotemTrigger(botAI); }
     static Trigger* no_air_totem(PlayerbotAI* botAI) { return new NoAirTotemTrigger(botAI); }
+    static Trigger* no_earth_totem_pvp(PlayerbotAI* botAI) { return new NoEarthTotemPvpTrigger(botAI); }
+    static Trigger* no_air_totem_pvp(PlayerbotAI* botAI) { return new NoAirTotemPvpTrigger(botAI); }
     static Trigger* set_strength_of_earth_totem(PlayerbotAI* botAI) { return new SetStrengthOfEarthTotemTrigger(botAI); }
     static Trigger* set_stoneskin_totem(PlayerbotAI* botAI) { return new SetStoneskinTotemTrigger(botAI); }
     static Trigger* set_tremor_totem(PlayerbotAI* botAI) { return new SetTremorTotemTrigger(botAI); }
@@ -338,6 +342,7 @@ public:
         creators["wrath of air totem"] = &ShamanAiObjectContextInternal::wrath_of_air_totem;
         creators["windfury totem"] = &ShamanAiObjectContextInternal::windfury_totem;
         creators["nature resistance totem"] = &ShamanAiObjectContextInternal::nature_resistance_totem;
+        creators["grounding totem"] = &ShamanAiObjectContextInternal::grounding_totem;
         creators["set strength of earth totem"] = &ShamanAiObjectContextInternal::set_strength_of_earth_totem;
         creators["set stoneskin totem"] = &ShamanAiObjectContextInternal::set_stoneskin_totem;
         creators["set tremor totem"] = &ShamanAiObjectContextInternal::set_tremor_totem;
@@ -430,6 +435,7 @@ private:
     static Action* wrath_of_air_totem(PlayerbotAI* botAI) { return new CastWrathOfAirTotemAction(botAI); }
     static Action* windfury_totem(PlayerbotAI* botAI) { return new CastWindfuryTotemAction(botAI); }
     static Action* nature_resistance_totem(PlayerbotAI* botAI) { return new CastNatureResistanceTotemAction(botAI); }
+    static Action* grounding_totem(PlayerbotAI* botAI) { return new CastGroundingTotemAction(botAI); }
     static Action* set_strength_of_earth_totem(PlayerbotAI* botAI) { return new SetStrengthOfEarthTotemAction(botAI); }
     static Action* set_stoneskin_totem(PlayerbotAI* botAI) { return new SetStoneskinTotemAction(botAI); }
     static Action* set_tremor_totem(PlayerbotAI* botAI) { return new SetTremorTotemAction(botAI); }

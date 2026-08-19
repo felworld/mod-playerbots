@@ -120,6 +120,9 @@ void GenericShamanStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("purge", { NextAction("purge", ACTION_DISPEL), }));
     // Snare enemies fleeing from combat or chasing an ally (same pattern as hunter Concussive Shot)
     triggers.push_back(new TriggerNode("frost shock snare", { NextAction("frost shock", ACTION_HIGH), }));
+    // PvP totem overrides (outrank the 55.0f slot casts of the equipped totem strategies)
+    triggers.push_back(new TriggerNode("no earth totem pvp", { NextAction("earthbind totem", 56.0f), }));
+    triggers.push_back(new TriggerNode("no air totem pvp", { NextAction("grounding totem", 56.0f), }));
     triggers.push_back(new TriggerNode("new pet", { NextAction("set pet stance", 65.0f), }));
     // Keep summoned wolves on the bot's target instead of letting core PetAI pick their own attacker.
     triggers.push_back(new TriggerNode("target changed", { NextAction("pet assist", 15.0f), }));

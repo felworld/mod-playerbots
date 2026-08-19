@@ -348,11 +348,11 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
         case CLASS_SHAMAN:
             if (tab == SHAMAN_TAB_ELEMENTAL)
-                engine->addStrategiesNoInit("ele", "stoneskin", "wrath", "mana spring", "wrath of air", nullptr);
+                engine->addStrategiesNoInit("ele", "strength of earth", "wrath", "mana spring", "wrath of air", nullptr);
             else if (tab == SHAMAN_TAB_RESTORATION)
                 engine->addStrategiesNoInit("resto", "stoneskin", "flametongue", "mana spring", "wrath of air", nullptr);
             else // if (tab == SHAMAN_TAB_ENHANCEMENT)
-                engine->addStrategiesNoInit("enh", "strength of earth", "magma", "healing stream", "windfury", nullptr);
+                engine->addStrategiesNoInit("enh", "strength of earth", "searing", "healing stream", "windfury", nullptr);
 
             engine->addStrategiesNoInit("dps assist", "cure", "aoe", nullptr);
             break;

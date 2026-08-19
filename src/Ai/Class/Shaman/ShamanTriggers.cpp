@@ -358,6 +358,74 @@ bool TotemicRecallTrigger::IsActive()
            !bot->m_SummonSlot[SUMMON_SLOT_TOTEM_AIR].IsEmpty();
 }
 
+// True if the bot is fighting a player opponent (BG, world PvP, duel): the current target
+// or any attacker is a hostile player or player-controlled unit.
+static bool HasPvpOpponent(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+
+    if (Unit* target = context->GetValue<Unit*>("current target")->Get())
+    {
+        Player* player = target->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (player && !bot->IsFriendlyTo(player))
+            return true;
+    }
+
+    GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit)
+            continue;
+
+        Player* player = unit->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (player && !bot->IsFriendlyTo(player))
+            return true;
+    }
+
+    return false;
+}
+
+// True if the slot is empty, its totem is out of range, or the totem is none of spellIds
+static bool TotemSlotNeeds(Player* bot, uint8 slot, uint32 const* spellIds, size_t count)
+{
+    ObjectGuid guid = bot->m_SummonSlot[slot];
+    if (guid.IsEmpty())
+        return true;
+
+    Creature* totem = bot->GetMap()->GetCreature(guid);
+    if (!totem || totem->GetDistance(bot) > 30.0f)
+        return true;
+
+    uint32 currentSpell = totem->GetUInt32Value(UNIT_CREATED_BY_SPELL);
+    for (size_t i = 0; i < count; ++i)
+    {
+        if (currentSpell == spellIds[i])
+            return false;
+    }
+
+    return true;
+}
+
+bool NoEarthTotemPvpTrigger::IsActive()
+{
+    if (!bot->HasSpell(SPELL_EARTHBIND_TOTEM_RANK_1) || !HasPvpOpponent(botAI))
+        return false;
+
+    // Stoneclaw (low-health defensive) also satisfies the slot — don't stomp it
+    return TotemSlotNeeds(bot, SUMMON_SLOT_TOTEM_EARTH, EARTHBIND_TOTEM, EARTHBIND_TOTEM_COUNT) &&
+           TotemSlotNeeds(bot, SUMMON_SLOT_TOTEM_EARTH, STONECLAW_TOTEM, STONECLAW_TOTEM_COUNT);
+}
+
+bool NoAirTotemPvpTrigger::IsActive()
+{
+    if (!bot->HasSpell(SPELL_GROUNDING_TOTEM_RANK_1) || !HasPvpOpponent(botAI))
+        return false;
+
+    return TotemSlotNeeds(bot, SUMMON_SLOT_TOTEM_AIR, GROUNDING_TOTEM, GROUNDING_TOTEM_COUNT);
+}
+
 // Find the active totem strategy for this slot, and return the highest-rank spellId the bot knows for it
 static uint32 GetRequiredTotemSpellId(PlayerbotAI* botAI, const char* strategies[],
     const uint32* spellList[], const size_t spellCounts[], size_t numStrategies)
@@ -385,6 +453,10 @@ bool NoEarthTotemTrigger::IsActive()
 {
     // Check if the bot has Stoneskin Totem (required level 4) and prevents the trigger firing if it doesn't
     if (!bot->HasSpell(SPELL_STONESKIN_TOTEM_RANK_1))
+        return false;
+
+    // Versus player opponents the earth slot is owned by "no earth totem pvp" (Earthbind)
+    if (bot->HasSpell(SPELL_EARTHBIND_TOTEM_RANK_1) && HasPvpOpponent(botAI))
         return false;
 
     ObjectGuid guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
@@ -511,6 +583,10 @@ bool NoAirTotemTrigger::IsActive()
 {
     // Check if the bot has Nature Resistance Totem (required level 30) and prevents the trigger firing if it doesn't
     if (!bot->HasSpell(SPELL_NATURE_RESISTANCE_TOTEM_RANK_1))
+        return false;
+
+    // Versus player opponents the air slot is owned by "no air totem pvp" (Grounding)
+    if (bot->HasSpell(SPELL_GROUNDING_TOTEM_RANK_1) && HasPvpOpponent(botAI))
         return false;
 
     ObjectGuid guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_AIR];

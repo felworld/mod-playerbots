@@ -349,6 +349,23 @@ public:
     bool IsActive() override;
 };
 
+// PvP totem overrides: versus player opponents (BG, world PvP, duels) Earthbind owns
+// the earth slot and Grounding the air slot, regardless of the equipped totem
+// strategies. The base No{Earth,Air}TotemTrigger yields while these apply.
+class NoEarthTotemPvpTrigger : public Trigger
+{
+public:
+    NoEarthTotemPvpTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no earth totem pvp") {}
+    bool IsActive() override;
+};
+
+class NoAirTotemPvpTrigger : public Trigger
+{
+public:
+    NoAirTotemPvpTrigger(PlayerbotAI* botAI) : Trigger(botAI, "no air totem pvp") {}
+    bool IsActive() override;
+};
+
 class CallOfTheElementsAndEnemyWithinMeleeTrigger : public TwoTriggers
 {
 public:
