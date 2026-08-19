@@ -11,8 +11,12 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "Playerbots.h"
+#include "SpellAuraDefines.h"
+#include "SpellAuras.h"
+#include "SpellInfo.h"
 #include "TotemsShamanStrategy.h"
 #include "Unit.h"
+#include <cstring>
 #include <ctime>
 
 bool MainHandWeaponNoImbueTrigger::IsActive()
@@ -36,6 +40,81 @@ bool OffHandWeaponNoImbueTrigger::IsActive()
         return false;
 
     return true;
+}
+
+// A buff is worth a Purge GCD if it's an absorb shield, a HoT, or on the shortlist of
+// major offensive/defensive buffs. Everything else (food buffs, minor self-buffs, ...)
+// is ignored so Purge doesn't outrank the damage kit every tick.
+static bool IsHighValuePurgeAura(SpellInfo const* spellInfo)
+{
+    static char const* highValueBuffs[] = {
+        "Bloodlust",
+        "Heroism",
+        "Earth Shield",
+        "Hand of Freedom",
+        "Blessing of Freedom",
+        "Inner Focus",
+        "Power Infusion",
+    };
+
+    char const* name = spellInfo->SpellName[0];
+    if (name)
+    {
+        for (char const* buffName : highValueBuffs)
+        {
+            if (strcmp(name, buffName) == 0)
+                return true;
+        }
+    }
+
+    for (uint8 i = EFFECT_0; i <= EFFECT_2; ++i)
+    {
+        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
+            (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB ||
+             spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_HEAL))
+            return true;
+    }
+
+    return false;
+}
+
+bool PurgeTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || !target->IsAlive() || !target->IsInWorld() || bot->IsFriendlyTo(target))
+        return false;
+
+    // Purge costs a GCD and mana that the damage kit needs more when running dry
+    uint32 maxMana = bot->GetMaxPower(POWER_MANA);
+    if (!maxMana || bot->GetPower(POWER_MANA) * 100 / maxMana < 40)
+        return false;
+
+    Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
+    if (!visibleAuras)
+        return false;
+
+    for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
+    {
+        if (!itr->second)
+            continue;
+
+        Aura* aura = itr->second->GetBase();
+        if (!aura || aura->IsPassive() || aura->IsRemoved())
+            continue;
+
+        if (sPlayerbotAIConfig.dispelAuraDuration && aura->GetDuration() &&
+            aura->GetDuration() < (int32)sPlayerbotAIConfig.dispelAuraDuration)
+            continue;
+
+        SpellInfo const* spellInfo = aura->GetSpellInfo();
+        if (!spellInfo || spellInfo->Dispel != DISPEL_MAGIC || !spellInfo->IsPositive())
+            continue;
+
+        if (IsHighValuePurgeAura(spellInfo))
+            return true;
+    }
+
+    return false;
 }
 
 bool ShockTrigger::IsActive()

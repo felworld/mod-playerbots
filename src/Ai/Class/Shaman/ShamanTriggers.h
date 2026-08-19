@@ -150,10 +150,16 @@ public:
     WindShearInterruptEnemyHealerSpellTrigger(PlayerbotAI* botAI) : InterruptEnemyHealerTrigger(botAI, "wind shear") {}
 };
 
-class PurgeTrigger : public TargetAuraDispelTrigger
+// Fires only on high-value magic buffs (absorbs, HoTs, and a shortlist of major offensive/defensive
+// buffs) instead of anything dispellable, with a slow check interval and a mana gate, so Purge
+// doesn't starve the shock/damage kit at ACTION_DISPEL priority.
+class PurgeTrigger : public SpellTrigger
 {
 public:
-    PurgeTrigger(PlayerbotAI* botAI) : TargetAuraDispelTrigger(botAI, "purge", DISPEL_MAGIC) {}
+    PurgeTrigger(PlayerbotAI* botAI) : SpellTrigger(botAI, "purge", 5 * 1000) {}
+
+    bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_DISPEL; }
 };
 
 class CleanseSpiritPoisonTrigger : public NeedCureTrigger
