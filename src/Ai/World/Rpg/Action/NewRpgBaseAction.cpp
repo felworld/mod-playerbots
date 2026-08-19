@@ -52,6 +52,19 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         botAI->rpgInfo.SetMoveFarTo(dest);
     }
 
+    // The stuck timestamp below is wall-clock, but this action stops
+    // running entirely while the bot is interrupted (combat, death,
+    // corpse runs, ...). Without a gap check, a bot delayed near its
+    // route for 90s+ used to blink away the moment it resumed walking.
+    // A gap in MoveFarTo ticks means such an interruption: restart the
+    // stuck window so it only measures contiguous travel time.
+    if (botAI->rpgInfo.lastMoveFarTs && GetMSTimeDiffToNow(botAI->rpgInfo.lastMoveFarTs) > 10 * 1000)
+    {
+        botAI->rpgInfo.stuckTs = getMSTime();
+        botAI->rpgInfo.stuckAttempts = 0;
+    }
+    botAI->rpgInfo.lastMoveFarTs = getMSTime();
+
     // performance optimization
     if (IsWaitingForLastMove(MovementPriority::MOVEMENT_NORMAL))
     {
@@ -105,16 +118,22 @@ bool NewRpgBaseAction::MoveFarTo(WorldPosition dest)
         // its RPG objective instead of oscillating indefinitely.
         botAI->rpgInfo.stuckTs = getMSTime();
         botAI->rpgInfo.stuckAttempts = 0;
-        const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
-        std::string zone_name = PlayerbotAI::GetLocalizedAreaName(entry);
-        LOG_DEBUG(
-            "playerbots",
-            "[New RPG] Teleport {} from ({},{},{},{}) to ({},{},{},{}) as it stuck when moving far - Zone: {} ({})",
-            bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
-            dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(),
-            zone_name);
-        bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
-        return bot->TeleportTo(dest);
+        // Never blink in view of a real player (same guard as the wpvp
+        // and duel-spot teleports): keep walking with a fresh stuck
+        // window instead, and recover once nobody is watching.
+        if (!botAI->HasPlayerNearby(150.0f))
+        {
+            const AreaTableEntry* entry = sAreaTableStore.LookupEntry(bot->GetZoneId());
+            std::string zone_name = PlayerbotAI::GetLocalizedAreaName(entry);
+            LOG_DEBUG(
+                "playerbots",
+                "[New RPG] Teleport {} from ({},{},{},{}) to ({},{},{},{}) as it stuck when moving far - Zone: {} ({})",
+                bot->GetName(), bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId(),
+                dest.GetPositionX(), dest.GetPositionY(), dest.GetPositionZ(), dest.GetMapId(), bot->GetZoneId(),
+                zone_name);
+            bot->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_TELEPORTED | AURA_INTERRUPT_FLAG_CHANGE_MAP);
+            return bot->TeleportTo(dest);
+        }
     }
 
     float dis = bot->GetExactDist(dest);

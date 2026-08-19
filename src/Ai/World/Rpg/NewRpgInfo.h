@@ -123,6 +123,7 @@ struct NewRpgInfo
     float nearestMoveFarDis{FLT_MAX};
     uint32 stuckTs{0};
     uint32 stuckAttempts{0};
+    uint32 lastMoveFarTs{0};  // last MoveFarTo tick; a gap means the bot was interrupted (combat, death, ...)
     WorldPosition moveFarPos;
     // END MOVE_FAR
 

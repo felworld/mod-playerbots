@@ -1102,6 +1102,20 @@ server-wide and restore the standard threshold for bots: humans skip the
 debuff, while a bot that opts for an instant spirit-healer rez still pays
 its cost.
 
+## Unseen stuck recovery
+
+When a travelling bot makes no real progress toward its destination for
+90 seconds — usually mmap pathing oscillating around an obstacle — the
+RPG movement system gives up walking and teleports it the rest of the
+way. That recovery blink is now held back while a real player is within
+150 yards (the same guard the world-PvP and duel-spot teleports already
+use): the bot keeps walking on a fresh stuck window and only blinks once
+nobody is watching. The stuck clock also restarts after any interruption
+that pauses travel (combat, dying, the corpse run), so a bot delayed by
+a fight no longer vanishes mid-stride the moment it gets moving again —
+previously the timer kept aging through the whole ordeal and fired the
+teleport in plain view.
+
 ## Class service commands
 
 The class utilities other players provide on a busy server — a mage handing

@@ -188,6 +188,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Resurrection sickness for bots](FEATURES.md#resurrection-sickness-for-bots)**
   — `AiPlayerbot.ResurrectionSicknessLevel` overrides `Death.SicknessLevel`
   for bots, so they keep paying for spirit-healer rezzes when humans don't.
+- **[Unseen stuck recovery](FEATURES.md#unseen-stuck-recovery)** — the
+  stuck-travel rescue teleport waits until no real player is within 150
+  yards, and its timer no longer counts time lost to combat or deaths.
 - **[Observability metrics](FEATURES.md#observability-metrics)** — the bot
   census, chat destinations, and WPvP lifecycle feed the Felworld Grafana
   dashboards when the core's metrics are enabled.
