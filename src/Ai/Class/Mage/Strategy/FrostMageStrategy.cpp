@@ -90,12 +90,16 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // Everything a frost mage casts at a frozen target shatters; Ice Lance is the instant one,
+    // so it picks up the shatter crit whenever Frostbolt is off the table (moving, or on the
+    // way to a Deep Freeze).
     triggers.push_back(
         new TriggerNode(
             "fingers of frost",
             {
                 NextAction("deep freeze", 19.0f),
-                NextAction("frostbolt", 18.0f)
+                NextAction("frostbolt", 18.0f),
+                NextAction("ice lance", 17.5f)
             }
         )
     );
@@ -104,7 +108,8 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "frostbite on target",
             {
                 NextAction("deep freeze", 19.0f),
-                NextAction("frostbolt", 18.0f)
+                NextAction("frostbolt", 18.0f),
+                NextAction("ice lance", 17.5f)
             }
         )
     );
@@ -113,7 +118,31 @@ void FrostMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "frost nova on target",
             {
                 NextAction("deep freeze", 19.0f),
-                NextAction("frostbolt", 18.0f)
+                NextAction("frostbolt", 18.0f),
+                NextAction("ice lance", 17.5f)
+            }
+        )
+    );
+
+    // Presence of Mind is spent on the longest cast in the book, not on whatever filler comes next
+    triggers.push_back(
+        new TriggerNode(
+            "presence of mind active",
+            {
+                NextAction("frostbolt", 26.0f)
+            }
+        )
+    );
+
+    // Instant fillers while moving (the engine refuses cast-time spells, so without these the
+    // bot just auto-attacks)
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("cone of cold", 5.95f),
+                NextAction("ice lance", 5.9f),
+                NextAction("fire blast", 5.85f)
             }
         )
     );

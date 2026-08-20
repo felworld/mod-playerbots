@@ -5,6 +5,7 @@
  */
 
 #include "MageTriggers.h"
+#include "AttackersValue.h"
 #include "DynamicObject.h"
 #include "Player.h"
 #include "Playerbots.h"
@@ -12,6 +13,24 @@
 #include "Spell.h"
 #include "SpellAuraEffects.h"
 #include "Value.h"
+
+namespace
+{
+// Frost Nova's radius.
+constexpr float FROST_NOVA_RANGE = 10.0f;
+
+// Polymorph on a player halves in duration on the second application inside the diminishing
+// window and is ignored on the third. A sheep that lands for a second is not a setup.
+bool IsPolymorphDiminished(Unit* target, uint32 polymorphSpellId)
+{
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(polymorphSpellId);
+    if (!spellInfo)
+        return true;
+
+    DiminishingGroup group = GetDiminishingReturnsGroupForSpell(spellInfo, false);
+    return group != DIMINISHING_NONE && target->GetDiminishing(group) >= DIMINISHING_LEVEL_2;
+}
+}
 
 bool NoManaGemTrigger::IsActive()
 {
@@ -167,4 +186,78 @@ bool BlizzardChannelCheckTrigger::IsActive()
     }
 
     return false;
+}
+
+bool MeleeAttackerInNovaRangeTrigger::IsActive()
+{
+    GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker || !attacker->IsAlive() || attacker->isFrozen())
+            continue;
+
+        // Rooting something the group is holding elsewhere buys nothing and costs threat.
+        if (attacker->GetVictim() != bot)
+            continue;
+
+        if (bot->IsWithinCombatRange(attacker, FROST_NOVA_RANGE))
+            return true;
+    }
+
+    return false;
+}
+
+bool PolymorphOpenerTrigger::IsActive()
+{
+    // A setup, not a panic button: an even 1v1 the bot is starting from full strength. A hurt
+    // bot is served by the shared "cc target" breather instead.
+    if (bot->GetGroup() || static_cast<uint8>(bot->GetHealthPct()) < sPlayerbotAIConfig.almostFullHealth)
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !target->IsControlledByPlayer())
+        return false;
+
+    if (static_cast<uint8>(target->GetHealthPct()) < sPlayerbotAIConfig.almostFullHealth)
+        return false;
+
+    if (AI_VALUE(GuidVector, "attackers").size() > 1)
+        return false;
+
+    // No point sheeping without the payoff, and none at all if the sheep would not stick.
+    if (!botAI->CanCastSpell("pyroblast", target) || !botAI->CanCastSpell("polymorph", target))
+        return false;
+
+    if (AttackersValue::IsCrowdControlled(target))
+        return false;
+
+    return !IsPolymorphDiminished(target, AI_VALUE2(uint32, "spell id", "polymorph"));
+}
+
+bool PolymorphedOpponentTrigger::IsActive()
+{
+    Unit* sheep = AI_VALUE2(Unit*, "current cc target", "polymorph");
+    if (!sheep || !sheep->IsAlive() || !sheep->IsControlledByPlayer())
+        return false;
+
+    if (bot->GetGroup() || !AI_VALUE(GuidVector, "attackers").empty())
+        return false;
+
+    // Never undo the shared breather sheep, which is cast exactly when the bot is hurt or out of
+    // mana and exists to end the fight rather than open one.
+    if (static_cast<uint8>(bot->GetHealthPct()) < sPlayerbotAIConfig.mediumHealth ||
+        AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig.lowMana)
+        return false;
+
+    return botAI->CanCastSpell("pyroblast", sheep);
+}
+
+bool SlowKiteTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || !target->IsControlledByPlayer() || bot->IsFriendlyTo(target))
+        return false;
+
+    return DebuffTrigger::IsActive();
 }

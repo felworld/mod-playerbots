@@ -92,9 +92,11 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     RangedCombatStrategy::InitTriggers(triggers);
 
-    // Threat Triggers
-    triggers.push_back(new TriggerNode("high threat", { NextAction("mirror image", 60.0f) }));
-    triggers.push_back(new TriggerNode("medium threat", { NextAction("invisibility", 30.0f) }));
+    // Threat Triggers - Mirror Image first (it sheds threat while the damage keeps going),
+    // Invisibility as the full reset.
+    triggers.push_back(new TriggerNode("medium threat", {
+                                                    NextAction("mirror image", 31.0f),
+                                                    NextAction("invisibility", 30.0f) }));
 
     // Defensive Triggers
     triggers.push_back(new TriggerNode("critical health", { NextAction("ice block", 90.0f) }));
@@ -102,6 +104,10 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("fire ward", { NextAction("fire ward", 90.0f) }));
     triggers.push_back(new TriggerNode("frost ward", { NextAction("frost ward", 90.0f) }));
     triggers.push_back(new TriggerNode("enemy is close and no firestarter strategy", { NextAction("frost nova", 50.0f) }));
+    // Frost Nova is point-blank: whoever closed to melee on us is in range even when the bot is
+    // casting at somebody else.
+    triggers.push_back(new TriggerNode("melee attacker in nova range and no firestarter strategy",
+                                       { NextAction("frost nova", 50.0f) }));
     triggers.push_back(new TriggerNode("enemy too close for spell and no firestarter strategy", { NextAction("blink back", 35.0f) }));
 
     // Mana Threshold Triggers
@@ -121,9 +127,11 @@ void GenericMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("low mana", { NextAction("evocation", 90.0f) }));
 
-    // Counterspell / Spellsteal Triggers
+    // Counterspell / Spellsteal Triggers - the enemy healer takes precedence, but a mage that
+    // lets the caster in front of it finish every cast is not interrupting at all.
     triggers.push_back(new TriggerNode("spellsteal", { NextAction("spellsteal", 40.0f) }));
     triggers.push_back(new TriggerNode("counterspell on enemy healer", { NextAction("counterspell on enemy healer", 40.0f) }));
+    triggers.push_back(new TriggerNode("counterspell", { NextAction("counterspell", ACTION_INTERRUPT - 1) }));
 }
 
 void MageCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -142,6 +150,7 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode("arcane power", { NextAction("arcane power", 29.0f) }));
         triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 28.5f) }));
         triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 28.0f) }));
+        triggers.push_back(new TriggerNode("presence of mind", { NextAction("presence of mind", 27.5f) }));
     }
     else if (tab == MAGE_TAB_FIRE)
     {
@@ -150,11 +159,13 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             triggers.push_back(new TriggerNode("combustion", { NextAction("combustion", 18.0f) }));
             triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 17.5f) }));
             triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 17.0f) }));
+            triggers.push_back(new TriggerNode("presence of mind", { NextAction("presence of mind", 16.5f) }));
         }
         else
         { // Fire
             triggers.push_back(new TriggerNode("combustion", { NextAction("combustion", 18.0f) }));
             triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 17.5f) }));
+            triggers.push_back(new TriggerNode("presence of mind", { NextAction("presence of mind", 17.0f) }));
         }
     }
     else if (tab == MAGE_TAB_FROST)  // Frost
@@ -162,6 +173,7 @@ void MageBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode("cold snap", { NextAction("cold snap", 28.0f) }));
         triggers.push_back(new TriggerNode("icy veins", { NextAction("icy veins", 27.5f) }));
         triggers.push_back(new TriggerNode("mirror image", { NextAction("mirror image", 26.0f) }));
+        triggers.push_back(new TriggerNode("presence of mind", { NextAction("presence of mind", 25.5f) }));
     }
 }
 

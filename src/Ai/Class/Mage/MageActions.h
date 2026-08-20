@@ -225,6 +225,26 @@ public:
     CastPolymorphAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "polymorph") {}
 };
 
+// Polymorph aimed at the unit we are fighting; CastPolymorphAction is bound to the shared
+// "cc target" value, which deliberately skips the current target.
+class CastPolymorphOnTargetAction : public CastCrowdControlSpellAction
+{
+public:
+    CastPolymorphOnTargetAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "polymorph") {}
+
+    Value<Unit*>* GetTargetValue() override;
+};
+
+// Pyroblast aimed at the sheep. Polymorph drops the bot's current target the moment it lands,
+// so the follow-up has to name the controlled unit itself.
+class CastPyroblastOnCcTargetAction : public CastSpellAction
+{
+public:
+    CastPyroblastOnCcTargetAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "pyroblast") {}
+
+    Value<Unit*>* GetTargetValue() override;
+};
+
 class CastSpellstealAction : public CastSpellAction
 {
 public:
@@ -352,6 +372,14 @@ class CastFrostboltAction : public CastSpellAction
 {
 public:
     CastFrostboltAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "frostbolt") {}
+};
+
+// Slow keeps a hostile player from closing and stretches their casts; no lifetime gate so it
+// also goes on someone about to die.
+class CastSlowAction : public CastDebuffSpellAction
+{
+public:
+    CastSlowAction(PlayerbotAI* botAI) : CastDebuffSpellAction(botAI, "slow", true, 0.0f) {}
 };
 
 class CastFrostfireBoltAction : public CastSpellAction

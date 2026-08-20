@@ -61,4 +61,37 @@ void ArcaneMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+
+    // Presence of Mind is spent on the longest cast in the book, not on whatever filler comes next
+    triggers.push_back(
+        new TriggerNode(
+            "presence of mind active",
+            {
+                NextAction("arcane blast", 26.0f)
+            }
+        )
+    );
+
+    // Keep Slow on a hostile player: they cannot close the gap and their casts stretch out
+    triggers.push_back(
+        new TriggerNode(
+            "slow",
+            {
+                NextAction("slow", 18.0f)
+            }
+        )
+    );
+
+    // Instant fillers while moving (the engine refuses cast-time spells, so without these the
+    // bot just auto-attacks)
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("arcane barrage", 5.95f),
+                NextAction("fire blast", 5.9f),
+                NextAction("cone of cold", 5.85f)
+            }
+        )
+    );
 }

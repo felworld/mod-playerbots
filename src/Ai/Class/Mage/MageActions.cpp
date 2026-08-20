@@ -12,6 +12,20 @@
 #include "UseItemAction.h"
 #include <cmath>
 
+namespace
+{
+// Worth spending the point-blank root on: alive, not already frozen, and not a mob the template
+// says is immune to the freeze mechanic.
+bool IsWorthFreezing(Unit* unit)
+{
+    if (!unit || !unit->IsAlive() || !unit->IsInWorld() || unit->isFrozen())
+        return false;
+
+    Creature* creature = unit->ToCreature();
+    return !creature || !creature->HasMechanicTemplateImmunity(1 << (MECHANIC_FREEZE - 1));
+}
+}
+
 std::vector<NextAction> CastMoltenArmorAction::getAlternatives()
 {
     if (!botAI->HasSpell("molten armor"))
@@ -67,15 +81,23 @@ bool UseManaAgateAction::isUseful()
 bool CastFrostNovaAction::isUseful()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    if (!target || !target->IsInWorld() || target->isFrozen() ||
-        (target->ToCreature() &&
-         target->ToCreature()->HasMechanicTemplateImmunity(1 << (MECHANIC_FREEZE - 1))))
+    if (IsWorthFreezing(target) && bot->IsWithinCombatRange(target, 10.f))
+        return true;
+
+    // Frost Nova is point-blank, so whoever closed to melee on us is in range even while we are
+    // casting at something else - that is the case a mage actually presses it in.
+    GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+    for (ObjectGuid const guid : attackers)
     {
-        return false;
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!IsWorthFreezing(attacker) || attacker->GetVictim() != bot)
+            continue;
+
+        if (bot->IsWithinCombatRange(attacker, 10.f))
+            return true;
     }
 
-    return ServerFacade::instance().IsDistanceLessOrEqualThan(
-        AI_VALUE2(float, "distance", GetTargetName()), 10.f);
+    return false;
 }
 
 bool CastConeOfColdAction::isUseful()
@@ -156,4 +178,11 @@ bool CastBlinkBackAction::Execute(Event event)
 
     bot->SetOrientation(bot->GetAngle(target) + M_PI);
     return CastSpellAction::Execute(event);
+}
+
+Value<Unit*>* CastPolymorphOnTargetAction::GetTargetValue() { return context->GetValue<Unit*>("current target"); }
+
+Value<Unit*>* CastPyroblastOnCcTargetAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("current cc target", "polymorph");
 }

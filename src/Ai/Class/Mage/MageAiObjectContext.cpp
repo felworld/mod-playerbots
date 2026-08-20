@@ -95,6 +95,9 @@ public:
         creators["remove curse on party"] = &MageTriggerFactoryInternal::remove_curse_on_party;
         creators["counterspell"] = &MageTriggerFactoryInternal::counterspell;
         creators["polymorph"] = &MageTriggerFactoryInternal::polymorph;
+        creators["polymorph opener"] = &MageTriggerFactoryInternal::polymorph_opener;
+        creators["polymorphed opponent"] = &MageTriggerFactoryInternal::polymorphed_opponent;
+        creators["slow"] = &MageTriggerFactoryInternal::slow;
         creators["spellsteal"] = &MageTriggerFactoryInternal::spellsteal;
         creators["hot streak"] = &MageTriggerFactoryInternal::hot_streak;
         creators["living bomb"] = &MageTriggerFactoryInternal::living_bomb;
@@ -104,11 +107,13 @@ public:
         creators["counterspell on enemy healer"] = &MageTriggerFactoryInternal::counterspell_enemy_healer;
         creators["arcane power"] = &MageTriggerFactoryInternal::arcane_power;
         creators["presence of mind"] = &MageTriggerFactoryInternal::presence_of_mind;
+        creators["presence of mind active"] = &MageTriggerFactoryInternal::presence_of_mind_active;
         creators["fire ward"] = &MageTriggerFactoryInternal::fire_ward;
         creators["frost ward"] = &MageTriggerFactoryInternal::frost_ward;
         creators["arcane blast stack"] = &MageTriggerFactoryInternal::arcane_blast_stack;
         creators["mirror image"] = &MageTriggerFactoryInternal::mirror_image;
         creators["frost nova on target"] = &MageTriggerFactoryInternal::frost_nova_on_target;
+        creators["melee attacker in nova range"] = &MageTriggerFactoryInternal::melee_attacker_in_nova_range;
         creators["frostbite on target"] = &MageTriggerFactoryInternal::frostbite_on_target;
         creators["no focus magic"] = &MageTriggerFactoryInternal::no_focus_magic;
         creators["frostfire bolt"] = &MageTriggerFactoryInternal::frostfire_bolt;
@@ -126,10 +131,12 @@ public:
         creators["no firestarter strategy"] = &MageTriggerFactoryInternal::no_firestarter_strategy;
         creators["enemy is close and no firestarter strategy"] = &MageTriggerFactoryInternal::enemy_is_close_and_no_firestarter_strategy;
         creators["enemy too close for spell and no firestarter strategy"] = &MageTriggerFactoryInternal::enemy_too_close_for_spell_and_no_firestarter_strategy;
+        creators["melee attacker in nova range and no firestarter strategy"] = &MageTriggerFactoryInternal::melee_attacker_in_nova_range_and_no_firestarter_strategy;
     }
 
 private:
     static Trigger* presence_of_mind(PlayerbotAI* botAI) { return new PresenceOfMindTrigger(botAI); }
+    static Trigger* presence_of_mind_active(PlayerbotAI* botAI) { return new PresenceOfMindActiveTrigger(botAI); }
     static Trigger* frost_ward(PlayerbotAI* botAI) { return new FrostWardTrigger(botAI); }
     static Trigger* fire_ward(PlayerbotAI* botAI) { return new FireWardTrigger(botAI); }
     static Trigger* arcane_power(PlayerbotAI* botAI) { return new ArcanePowerTrigger(botAI); }
@@ -150,6 +157,9 @@ private:
     static Trigger* remove_curse_on_party(PlayerbotAI* botAI) { return new PartyMemberRemoveCurseTrigger(botAI); }
     static Trigger* counterspell(PlayerbotAI* botAI) { return new CounterspellInterruptSpellTrigger(botAI); }
     static Trigger* polymorph(PlayerbotAI* botAI) { return new PolymorphTrigger(botAI); }
+    static Trigger* polymorph_opener(PlayerbotAI* botAI) { return new PolymorphOpenerTrigger(botAI); }
+    static Trigger* polymorphed_opponent(PlayerbotAI* botAI) { return new PolymorphedOpponentTrigger(botAI); }
+    static Trigger* slow(PlayerbotAI* botAI) { return new SlowKiteTrigger(botAI); }
     static Trigger* spellsteal(PlayerbotAI* botAI) { return new SpellstealTrigger(botAI); }
     static Trigger* living_bomb(PlayerbotAI* botAI) { return new LivingBombTrigger(botAI); }
     static Trigger* living_bomb_on_attackers(PlayerbotAI* botAI) { return new LivingBombOnAttackersTrigger(botAI); }
@@ -159,6 +169,7 @@ private:
     static Trigger* arcane_blast_stack(PlayerbotAI* botAI) { return new ArcaneBlastStackTrigger(botAI); }
     static Trigger* mirror_image(PlayerbotAI* botAI) { return new MirrorImageTrigger(botAI); }
     static Trigger* frost_nova_on_target(PlayerbotAI* botAI) { return new FrostNovaOnTargetTrigger(botAI); }
+    static Trigger* melee_attacker_in_nova_range(PlayerbotAI* botAI) { return new MeleeAttackerInNovaRangeTrigger(botAI); }
     static Trigger* frostbite_on_target(PlayerbotAI* botAI) { return new FrostbiteOnTargetTrigger(botAI); }
     static Trigger* no_focus_magic(PlayerbotAI* botAI) { return new NoFocusMagicTrigger(botAI); }
     static Trigger* frostfire_bolt(PlayerbotAI* botAI) { return new FrostfireBoltTrigger(botAI); }
@@ -176,6 +187,7 @@ private:
     static Trigger* no_firestarter_strategy(PlayerbotAI* botAI) { return new NoFirestarterStrategyTrigger(botAI); }
     static Trigger* enemy_is_close_and_no_firestarter_strategy(PlayerbotAI* botAI) { return new EnemyIsCloseAndNoFirestarterStrategyTrigger(botAI); }
     static Trigger* enemy_too_close_for_spell_and_no_firestarter_strategy(PlayerbotAI* botAI) { return new EnemyTooCloseForSpellAndNoFirestarterStrategyTrigger(botAI); }
+    static Trigger* melee_attacker_in_nova_range_and_no_firestarter_strategy(PlayerbotAI* botAI) { return new MeleeAttackerInNovaRangeAndNoFirestarterStrategyTrigger(botAI); }
 };
 
 class MageAiObjectContextInternal : public NamedObjectContext<Action>
@@ -218,6 +230,9 @@ public:
         creators["combustion"] = &MageAiObjectContextInternal::combustion;
         creators["ice block"] = &MageAiObjectContextInternal::ice_block;
         creators["polymorph"] = &MageAiObjectContextInternal::polymorph;
+        creators["polymorph on target"] = &MageAiObjectContextInternal::polymorph_on_target;
+        creators["pyroblast on cc target"] = &MageAiObjectContextInternal::pyroblast_on_cc_target;
+        creators["slow"] = &MageAiObjectContextInternal::slow;
         creators["spellsteal"] = &MageAiObjectContextInternal::spellsteal;
         creators["living bomb"] = &MageAiObjectContextInternal::living_bomb;
         creators["living bomb on attackers"] = &MageAiObjectContextInternal::living_bomb_on_attackers;
@@ -284,6 +299,9 @@ private:
     static Action* combustion(PlayerbotAI* botAI) { return new CastCombustionAction(botAI); }
     static Action* ice_block(PlayerbotAI* botAI) { return new CastIceBlockAction(botAI); }
     static Action* polymorph(PlayerbotAI* botAI) { return new CastPolymorphAction(botAI); }
+    static Action* polymorph_on_target(PlayerbotAI* botAI) { return new CastPolymorphOnTargetAction(botAI); }
+    static Action* pyroblast_on_cc_target(PlayerbotAI* botAI) { return new CastPyroblastOnCcTargetAction(botAI); }
+    static Action* slow(PlayerbotAI* botAI) { return new CastSlowAction(botAI); }
     static Action* spellsteal(PlayerbotAI* botAI) { return new CastSpellstealAction(botAI); }
     static Action* living_bomb(PlayerbotAI* botAI) { return new CastLivingBombAction(botAI); }
     static Action* living_bomb_on_attackers(PlayerbotAI* botAI) { return new CastLivingBombOnAttackersAction(botAI); }

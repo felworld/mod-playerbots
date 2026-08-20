@@ -164,12 +164,56 @@ public:
     PresenceOfMindTrigger(PlayerbotAI* botAI) : BoostTrigger(botAI, "presence of mind") {}
 };
 
+// Presence of Mind is up and waiting to be spent. The next spell with a cast time consumes it,
+// so the spec's biggest nuke has to outrank the rotation for exactly this window. The charge has
+// no timer, which rules out HasAuraTrigger (it discards auras of unlimited duration).
+class PresenceOfMindActiveTrigger : public Trigger
+{
+public:
+    PresenceOfMindActiveTrigger(PlayerbotAI* botAI) : Trigger(botAI, "presence of mind active") {}
+
+    bool IsActive() override { return botAI->HasAura("presence of mind", bot); }
+};
+
 // CC, Interrupt, and Dispel Triggers
 
 class PolymorphTrigger : public HasCcTargetTrigger
 {
 public:
     PolymorphTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "polymorph") {}
+};
+
+// The setup a human mage opens a duel or a world-PvP fight with: sheep the player we just
+// engaged, then land a full Pyroblast on them. Only an even 1v1 from full health qualifies -
+// with an ally or a second attacker around, Polymorph belongs on an add instead (the shared
+// "cc target" machinery already handles that case).
+class PolymorphOpenerTrigger : public Trigger
+{
+public:
+    PolymorphOpenerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "polymorph opener", 1000) {}
+
+    bool IsActive() override;
+};
+
+// Our Polymorph is on the one player we are fighting: the Pyroblast that breaks it is the whole
+// point of the opener. Anyone else still swinging at us means the sheep is an add we put away
+// deliberately, and breaking it would be a mistake.
+class PolymorphedOpponentTrigger : public Trigger
+{
+public:
+    PolymorphedOpponentTrigger(PlayerbotAI* botAI) : Trigger(botAI, "polymorphed opponent") {}
+
+    bool IsActive() override;
+};
+
+// Slow keeps a hostile player at arm's length and stretches their casts; no lifetime gate, a
+// player about to die is still worth slowing.
+class SlowKiteTrigger : public DebuffTrigger
+{
+public:
+    SlowKiteTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "slow", 1, true, 0.0f) {}
+
+    bool IsActive() override;
 };
 
 class RemoveCurseTrigger : public NeedCureTrigger
@@ -270,6 +314,17 @@ public:
     bool IsActive() override;
 };
 
+// Frost Nova is a point-blank root, so what matters is whether anything actually hitting us is
+// inside its radius - the current target can be a caster thirty yards away while a rogue is on
+// our back.
+class MeleeAttackerInNovaRangeTrigger : public Trigger
+{
+public:
+    MeleeAttackerInNovaRangeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "melee attacker in nova range") {}
+
+    bool IsActive() override;
+};
+
 class FlamestrikeNearbyTrigger : public Trigger
 {
 public:
@@ -339,6 +394,13 @@ class EnemyTooCloseForSpellAndNoFirestarterStrategyTrigger : public TwoTriggers
 public:
     EnemyTooCloseForSpellAndNoFirestarterStrategyTrigger(PlayerbotAI* botAI)
         : TwoTriggers(botAI, "enemy too close for spell", "no firestarter strategy") {}
+};
+
+class MeleeAttackerInNovaRangeAndNoFirestarterStrategyTrigger : public TwoTriggers
+{
+public:
+    MeleeAttackerInNovaRangeAndNoFirestarterStrategyTrigger(PlayerbotAI* botAI)
+        : TwoTriggers(botAI, "melee attacker in nova range", "no firestarter strategy") {}
 };
 
 #endif

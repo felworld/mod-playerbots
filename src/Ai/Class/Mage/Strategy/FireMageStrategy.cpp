@@ -56,6 +56,50 @@ void FireMageStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+
+    // Presence of Mind belongs on a Pyroblast, but a free Hot Streak one comes first - an
+    // instant cast does not consume the charge
+    triggers.push_back(
+        new TriggerNode(
+            "presence of mind active",
+            {
+                NextAction("pyroblast", 24.5f),
+                NextAction("fireball", 24.0f)
+            }
+        )
+    );
+
+    // Sheep the player we just engaged, then break it with a full Pyroblast
+    triggers.push_back(
+        new TriggerNode(
+            "polymorph opener",
+            {
+                NextAction("polymorph on target", 30.0f)
+            }
+        )
+    );
+    // Polymorph invalidates the current target the instant it lands, so the payoff has to
+    // outrank the "drop target" reaction at 99 or the bot walks away from its own setup
+    triggers.push_back(
+        new TriggerNode(
+            "polymorphed opponent",
+            {
+                NextAction("pyroblast on cc target", 99.5f)
+            }
+        )
+    );
+
+    // Instant fillers while moving (the engine refuses cast-time spells, so without these the
+    // bot just auto-attacks)
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("fire blast", 5.9f),
+                NextAction("cone of cold", 5.85f)
+            }
+        )
+    );
 }
 
 // Combat strategy to run to melee for Dragon's Breath and Blast Wave
