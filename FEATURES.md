@@ -831,9 +831,10 @@ never wired into a strategy), Hex didn't exist, and the totem loadouts
 were hardcoded per spec with no Grounding or Earthbind ever. Now:
 
 - **Purge discipline** — Purge only fires on buffs worth the global
-  cooldown (absorb shields, HoTs, and majors like Bloodlust/Heroism,
-  Earth Shield, Hand of Freedom, Inner Focus, Power Infusion), checks
-  every 5 seconds instead of every second, and is skipped below 40% mana.
+  cooldown, checks every 5 seconds instead of every second, and is
+  skipped below 40% mana. This became the shared offensive-dispel rule
+  for every class, see [PvP fundamentals across
+  classes](#pvp-fundamentals-across-classes).
 - **Frost Shock** — snares enemies fleeing or chasing an ally (the
   hunter Concussive Shot pattern), and elemental/resto keep it on a
   hostile player target to kite.
@@ -849,6 +850,48 @@ were hardcoded per spec with no Grounding or Earthbind ever. Now:
 - PvE loadout fixes: enhancement drops Searing instead of Magma (which
   is useless outside melee range), elemental drops Strength of Earth
   instead of Stoneskin.
+
+## PvP fundamentals across classes
+
+An audit of the other classes found the shaman's problems were the rule,
+not the exception, and that most of them sat in machinery every class
+shares rather than in any one rotation. The shared fixes:
+
+- **Dispel policy** — `HasAuraToDispel`, behind every dispel trigger,
+  now decides whether an aura is worth a cast. Offensive dispels
+  (Purge, Spellsteal, Devour Magic, Tranquilizing Shot) only fire on
+  enrages, absorb shields, HoTs, and a shortlist of major cooldowns
+  (Bloodlust/Heroism, Earth Shield, Hand of Freedom/Protection/Sacrifice,
+  Inner Focus, Power Infusion, Pain Suppression, Icy Veins, Arcane Power,
+  Avenging Wrath, Nature's Swiftness), check every 5 seconds, and are
+  skipped below 40% mana. Defensive dispels stay unfiltered for healers;
+  a non-healer facing a player opponent only cleanses what takes a
+  teammate out of the fight (CC, roots, snares, silences, disarms) and
+  leaves DoTs and stat debuffs to the healer. Druid, paladin, and priest
+  cleanses also move below critical heals in priority, so a dying tank
+  outranks a cure.
+- **Crowd control without a raid icon** — druid Cyclone / Hibernate /
+  Entangling Roots and warlock Fear / Banish used to wait for a
+  moon-marked target, which the auto-marker never sets on players or in
+  battlegrounds. With no icon they now use the same secondary-attacker
+  selection Polymorph and Hex use (a set icon still wins). Solo use is
+  still gated on the group requirement tracked in
+  [#72](https://github.com/felworld/mod-playerbots/issues/72).
+- **Snares see players** — the shared snare targeting only understood
+  NPC chase/flee movement, so Concussive Shot, Hamstring, Piercing Howl,
+  Thunder Clap, Shockwave, Intercept, Hammer of Justice, and Frost Shock
+  never snared a real player. A hostile player that is moving and not
+  already rooted or slowed now qualifies, the bot's current target
+  first.
+- **Escapes fire against player melee** — the "enemy too close" triggers
+  behind mage Blink / Dragon's Breath, hunter Disengage, and caster flee
+  were suppressed whenever the enemy was attacking the bot (sensible
+  against a mob that will follow anyway). A player or player pet in
+  melee on the bot now counts, so casters actually use their escape
+  tools.
+- **No more silent dead code** — a strategy that references a trigger or
+  action name with no registered factory now logs a warning the first
+  time it is seen, instead of silently skipping the node.
 
 ## Initiation readiness
 

@@ -134,6 +134,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   shamans stop Purge-spamming and actually fight: high-value-only Purge,
   Frost Shock kiting, instant shocks while moving, Hex, and Grounding /
   Earthbind totems against player opponents.
+- **[PvP fundamentals across classes](FEATURES.md#pvp-fundamentals-across-classes)**
+  — shared fixes every class inherits: dispels only when worth a cast
+  and below critical heals, crowd control without a raid icon, snares
+  and escape tools that work against real players, and a warning for
+  strategies wired to unregistered triggers or actions.
 - **[Initiation readiness](FEATURES.md#initiation-readiness)** — a bot
   below its health/mana comfort bars passes on starting an open-world
   fight and drinks up first, unless the target's state makes striking
