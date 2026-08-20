@@ -165,6 +165,10 @@ class CastShatteringThrowAction : public CastSpellAction
 public:
     CastShatteringThrowAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shattering throw") {}
 
+    // Divine Shield, Ice Block or Hand of Protection: the damage immunities Shattering Throw
+    // exists to strip. Shared with ShatteringThrowTrigger so both agree on what is worth it.
+    static bool HasShatterableImmunity(Unit const* target);
+
     bool Execute(Event event) override;
     bool isUseful() override;
     bool isPossible() override;

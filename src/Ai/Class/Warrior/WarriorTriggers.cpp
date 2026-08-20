@@ -6,14 +6,12 @@
 
 #include "WarriorTriggers.h"
 #include "Playerbots.h"
+#include "WarriorActions.h"
 
 namespace
 {
 constexpr uint32 SPELL_VIGILANCE = 50720;
 constexpr uint32 SPELL_SHATTERING_THROW = 64382;
-constexpr uint32 SPELL_DIVINE_SHIELD = 642;
-constexpr uint32 SPELL_ICE_BLOCK = 45438;
-constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
 constexpr uint32 SPELL_COMMANDING_PRESENCE_RANKS[] = { 12318, 12857, 12858, 12860, 12861 };
 }
 
@@ -87,9 +85,7 @@ bool ShatteringThrowTrigger::IsActive()
             continue;
 
         if (bot->IsWithinDistInMap(enemy, 25.0f) &&
-            (enemy->HasAura(SPELL_DIVINE_SHIELD) ||
-             enemy->HasAura(SPELL_ICE_BLOCK) ||
-             enemy->HasAura(SPELL_BLESSING_OF_PROTECTION)))
+            CastShatteringThrowAction::HasShatterableImmunity(enemy))
         {
             return true;
         }

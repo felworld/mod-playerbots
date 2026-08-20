@@ -11,10 +11,25 @@
 namespace
 {
 constexpr uint32 SPELL_RETALIATION = 20230;
-constexpr uint32 SPELL_DIVINE_SHIELD = 642;
-constexpr uint32 SPELL_ICE_BLOCK = 45438;
-constexpr uint32 SPELL_BLESSING_OF_PROTECTION = 41450;
 constexpr uint32 SPELL_SHATTERING_THROW = 64382;
+}
+
+bool CastShatteringThrowAction::HasShatterableImmunity(Unit const* target)
+{
+    constexpr uint32 SPELL_DIVINE_SHIELD = 642;
+    constexpr uint32 SPELL_ICE_BLOCK = 45438;
+    // Hand of Protection, all three ranks - the pre-3.0 "Blessing of Protection" id never
+    // matched what a 3.3.5 paladin actually casts.
+    constexpr uint32 SPELL_HAND_OF_PROTECTION_RANKS[] = { 1022, 5599, 10278 };
+
+    if (target->HasAura(SPELL_DIVINE_SHIELD) || target->HasAura(SPELL_ICE_BLOCK))
+        return true;
+
+    for (uint32 spellId : SPELL_HAND_OF_PROTECTION_RANKS)
+        if (target->HasAura(spellId))
+            return true;
+
+    return false;
 }
 
 bool CastBerserkerRageAction::isPossible()
@@ -46,11 +61,14 @@ bool CastBerserkerRageAction::isUseful()
 
 bool CastSunderArmorAction::isUseful()
 {
-    Group* group = bot->GetGroup();
-    if (!group)
+    Unit* target = GetTarget();
+    if (!target)
         return false;
 
-    if (!botAI->IsTank(bot, false))
+    // Leave the stack to the warrior tank when there is one; solo, or as the only warrior in the
+    // group, the armour debuff is the bot's own damage to gain, so it still applies it.
+    Group* group = bot->GetGroup();
+    if (group && !botAI->IsTank(bot, false))
     {
         for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
         {
@@ -67,7 +85,7 @@ bool CastSunderArmorAction::isUseful()
         }
     }
 
-    Aura* aura = botAI->GetAura("sunder armor", GetTarget(), false, true);
+    Aura* aura = botAI->GetAura("sunder armor", target, false, true);
     return !aura || aura->GetStackAmount() < 5 || aura->GetDuration() <= 6000;
 }
 
@@ -216,13 +234,8 @@ Unit* CastShatteringThrowAction::GetTarget()
         if (!enemy || !enemy->IsAlive() || enemy->IsFriendlyTo(bot))
             continue;
 
-        if (bot->IsWithinDistInMap(enemy, 25.0f) &&
-            (enemy->HasAura(SPELL_DIVINE_SHIELD) ||
-             enemy->HasAura(SPELL_ICE_BLOCK) ||
-             enemy->HasAura(SPELL_BLESSING_OF_PROTECTION)))
-        {
+        if (bot->IsWithinDistInMap(enemy, 25.0f) && HasShatterableImmunity(enemy))
             return enemy;
-        }
     }
 
     return nullptr;
@@ -250,13 +263,8 @@ bool CastShatteringThrowAction::isUseful()
         if (!enemy || !enemy->IsAlive() || enemy->IsFriendlyTo(bot))
             continue;
 
-        if (bot->IsWithinDistInMap(enemy, 25.0f) &&
-            (enemy->HasAura(SPELL_DIVINE_SHIELD) ||
-             enemy->HasAura(SPELL_ICE_BLOCK) ||
-             enemy->HasAura(SPELL_BLESSING_OF_PROTECTION)))
-        {
+        if (bot->IsWithinDistInMap(enemy, 25.0f) && HasShatterableImmunity(enemy))
             return true;
-        }
     }
 
     return false;

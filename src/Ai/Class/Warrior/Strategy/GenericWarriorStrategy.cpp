@@ -7,26 +7,9 @@
 #include "GenericWarriorStrategy.h"
 #include "Playerbots.h"
 
-class GenericWarriorStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>
-{
-public:
-    GenericWarriorStrategyActionNodeFactory() { creators["berserker rage"] = &berserker_rage; }
-
-private:
-    static ActionNode* berserker_rage([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "berserker rage",
-            /*P*/ { NextAction("berserker stance") },
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-};
-
 GenericWarriorStrategy::GenericWarriorStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
 {
-    actionNodeFactories.Add(new GenericWarriorStrategyActionNodeFactory());
+    actionNodeFactories.Add(new WarriorStanceRequirementActionNodeFactory());
 }
 
 void GenericWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -36,6 +19,10 @@ void GenericWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "enemy out of melee", { NextAction("reach melee", ACTION_HIGH + 1) }));
     triggers.push_back(new TriggerNode(
         "fear sleep sap", { NextAction("berserker rage", ACTION_EMERGENCY + 1) }));
+    // A paladin bubble, an Ice Block or a Hand of Protection ends the fight unless someone
+    // strips it; every spec carries Shattering Throw and it is worth the stance dance.
+    triggers.push_back(new TriggerNode(
+        "shattering throw trigger", { NextAction("shattering throw", ACTION_INTERRUPT + 1) }));
 }
 
 class WarrirorAoeStrategyActionNodeFactory : public NamedObjectFactory<ActionNode>

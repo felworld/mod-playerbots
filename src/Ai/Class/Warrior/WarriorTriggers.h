@@ -58,6 +58,7 @@ INTERRUPT_HEALER_TRIGGER(ShieldBashInterruptEnemyHealerSpellTrigger, "shield bas
 INTERRUPT_TRIGGER(ShieldBashInterruptSpellTrigger, "shield bash");
 INTERRUPT_HEALER_TRIGGER(PummelInterruptEnemyHealerSpellTrigger, "pummel");
 INTERRUPT_TRIGGER(PummelInterruptSpellTrigger, "pummel");
+CD_TRIGGER(PummelCanCastTrigger, "pummel");
 INTERRUPT_HEALER_TRIGGER(InterceptInterruptEnemyHealerSpellTrigger, "intercept");
 INTERRUPT_TRIGGER(InterceptInterruptSpellTrigger, "intercept");
 DEFLECT_TRIGGER(SpellReflectionTrigger, "spell reflection");

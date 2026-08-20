@@ -82,6 +82,10 @@ public:
         creators["berserker rage"] = &WarriorTriggerFactoryInternal::berserker_rage;
         creators["pummel on enemy healer"] = &WarriorTriggerFactoryInternal::pummel_on_enemy_healer;
         creators["pummel"] = &WarriorTriggerFactoryInternal::pummel;
+        creators["pummel can cast"] = &WarriorTriggerFactoryInternal::pummel_can_cast;
+        creators["pummel and can cast"] = &WarriorTriggerFactoryInternal::pummel_and_can_cast;
+        creators["pummel on enemy healer and can cast"] =
+            &WarriorTriggerFactoryInternal::pummel_on_enemy_healer_and_can_cast;
         creators["intercept on enemy healer"] = &WarriorTriggerFactoryInternal::intercept_on_enemy_healer;
         creators["intercept"] = &WarriorTriggerFactoryInternal::intercept;
         creators["taunt on snare target"] = &WarriorTriggerFactoryInternal::taunt_on_snare_target;
@@ -133,7 +137,7 @@ private:
     static Trigger* intercept_can_cast(PlayerbotAI* botAI) { return new InterceptCanCastTrigger(botAI); }
     static Trigger* intercept_and_far_enemy(PlayerbotAI* botAI)
     {
-        return new TwoTriggers(botAI, "enemy is out of melee", "intercept can cast");
+        return new TwoTriggers(botAI, "enemy out of melee", "intercept can cast");
     }
     static Trigger* intercept_and_rage(PlayerbotAI* botAI)
     {
@@ -158,6 +162,17 @@ private:
     static Trigger* pummel_on_enemy_healer(PlayerbotAI* botAI)
     {
         return new PummelInterruptEnemyHealerSpellTrigger(botAI);
+    }
+    static Trigger* pummel_can_cast(PlayerbotAI* botAI) { return new PummelCanCastTrigger(botAI); }
+    // Pummel needs Berserker Stance: a spec that lives in another stance must know the interrupt
+    // is actually off cooldown before it pays for the stance dance.
+    static Trigger* pummel_and_can_cast(PlayerbotAI* botAI)
+    {
+        return new TwoTriggers(botAI, "pummel", "pummel can cast");
+    }
+    static Trigger* pummel_on_enemy_healer_and_can_cast(PlayerbotAI* botAI)
+    {
+        return new TwoTriggers(botAI, "pummel on enemy healer", "pummel can cast");
     }
     static Trigger* berserker_rage(PlayerbotAI* botAI) { return new BerserkerRageBuffTrigger(botAI); }
     static Trigger* bloodthirst(PlayerbotAI* botAI) { return new BloodthirstBuffTrigger(botAI); }

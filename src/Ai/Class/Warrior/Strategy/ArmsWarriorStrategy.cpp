@@ -13,8 +13,6 @@ public:
     {
         creators["charge"] = &charge;
         creators["death wish"] = &death_wish;
-        creators["piercing howl"] = &piercing_howl;
-        creators["mocking blow"] = &mocking_blow;
         creators["heroic strike"] = &heroic_strike;
     }
 
@@ -35,26 +33,6 @@ private:
             "death wish",
             /*P*/ {},
             /*A*/ { NextAction("bloodrage") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* piercing_howl(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "piercing howl",
-            /*P*/ {},
-            /*A*/ { NextAction("mocking blow") },
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* mocking_blow(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "mocking blow",
-            /*P*/ {},
-            /*A*/ { NextAction("hamstring") },
             /*C*/ {}
         );
     }
@@ -88,11 +66,26 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericWarriorStrategy::InitTriggers(triggers);
 
+    // Heroic Throw opens (or finishes a runner) from 30 yards; Charge covers the out-of-combat
+    // gap, Intercept the in-combat one.
     triggers.push_back(
         new TriggerNode(
             "enemy out of melee",
             {
+                NextAction("heroic throw", ACTION_MOVE + 11),
                 NextAction("charge", ACTION_MOVE + 10)
+            }
+        )
+    );
+
+    // Arms lives in Battle Stance, so its only in-combat gap closer is a stance dance into
+    // Intercept - gated on the cooldown and on having the rage for it, and ranked above the
+    // Charge chain so the run-in fallback does not swallow it.
+    triggers.push_back(
+        new TriggerNode(
+            "intercept and rage",
+            {
+                NextAction("intercept", ACTION_MOVE + 12)
             }
         )
     );
@@ -160,11 +153,13 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Hamstring whoever we are actually fighting the moment they try to walk away - the core
+    // warrior PvP habit. "snare target" prefers the current target and now sees players.
     triggers.push_back(
         new TriggerNode(
             "hamstring",
             {
-                NextAction("piercing howl", ACTION_HIGH)
+                NextAction("hamstring", ACTION_HIGH)
             }
         )
     );
@@ -196,6 +191,27 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Arms had no interrupt at all. Pummel is Berserker Stance only, so both nodes are gated on
+    // the Pummel cooldown - otherwise the bot would dance out of Battle Stance for nothing every
+    // time an enemy started casting.
+    triggers.push_back(
+        new TriggerNode(
+            "pummel and can cast",
+            {
+                NextAction("pummel", ACTION_INTERRUPT)
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
+            "pummel on enemy healer and can cast",
+            {
+                NextAction("pummel on enemy healer", ACTION_INTERRUPT)
+            }
+        )
+    );
+
     triggers.push_back(
         new TriggerNode(
             "high rage available",
@@ -223,38 +239,34 @@ void ArmsWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Intimidating Shout is a cone fear: as a PvE opener it drags whole packs around, so it is
+    // reserved for a PvP fight the bot is losing (two enemy players on it, or one while hurt).
     triggers.push_back(
         new TriggerNode(
-            "critical health",
+            "pvp escape",
             {
                 NextAction("intimidating shout", ACTION_EMERGENCY)
             }
         )
     );
 
+    // A three-minute heal over time belongs at low health, not at the first scratch.
     triggers.push_back(
         new TriggerNode(
-            "medium health",
+            "low health",
             {
                 NextAction("enraged regeneration", ACTION_EMERGENCY)
             }
         )
     );
 
+    // Retaliation answers a melee train, not a health threshold; the action itself requires two
+    // melee attackers actually swinging at the bot.
     triggers.push_back(
         new TriggerNode(
-            "almost full health",
+            "being attacked",
             {
-                NextAction("retaliation", ACTION_EMERGENCY + 1)
-            }
-        )
-    );
-
-    triggers.push_back(
-        new TriggerNode(
-            "shattering throw trigger",
-            {
-                NextAction("shattering throw", ACTION_INTERRUPT + 1)
+                NextAction("retaliation", ACTION_HIGH + 5)
             }
         )
     );

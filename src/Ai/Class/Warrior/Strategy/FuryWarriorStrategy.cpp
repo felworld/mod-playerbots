@@ -12,7 +12,6 @@ public:
     FuryWarriorStrategyActionNodeFactory()
     {
         creators["charge"] = &charge;
-        creators["intercept"] = &intercept;
         creators["piercing howl"] = &piercing_howl;
         creators["pummel"] = &pummel;
     }
@@ -28,16 +27,6 @@ private:
         );
     }
 
-    static ActionNode* intercept(PlayerbotAI* /*botAI*/)
-    {
-        return new ActionNode(
-            "intercept",
-            /*P*/ {},
-            /*A*/ { NextAction("reach melee" )},
-            /*C*/ {}
-        );
-    }
-
     static ActionNode* piercing_howl(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
@@ -48,12 +37,13 @@ private:
         );
     }
 
+    // If Pummel is unavailable the Intercept stun interrupts just as well.
     static ActionNode* pummel(PlayerbotAI* /*botAI*/)
     {
         return new ActionNode(
             "pummel",
             /*P*/ {},
-            /*A*/ { NextAction("intercept" )},
+            /*A*/ { NextAction("berserker stance"), NextAction("intercept") },
             /*C*/ {}
         );
     }
@@ -79,10 +69,12 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     GenericWarriorStrategy::InitTriggers(triggers);
 
+    // Heroic Throw reaches 30 yards; Charge falls through to Intercept in combat.
     triggers.push_back(
         new TriggerNode(
             "enemy out of melee",
             {
+                NextAction("heroic throw", ACTION_MOVE + 11),
                 NextAction("charge", ACTION_MOVE + 9)
             }
         )
@@ -188,6 +180,17 @@ void FuryWarriorStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "critical health",
             {
                 NextAction("enraged regeneration", ACTION_EMERGENCY)
+            }
+        )
+    );
+
+    // Piercing Howl (falling through to Hamstring when untalented) keeps a fleeing player in
+    // reach; "snare target" prefers the current target and now sees players.
+    triggers.push_back(
+        new TriggerNode(
+            "hamstring",
+            {
+                NextAction("piercing howl", ACTION_HIGH)
             }
         )
     );

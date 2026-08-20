@@ -12,27 +12,29 @@
 
 class PlayerbotAI;
 
-// Stance requirements
+// Stance requirements (3.3.5). The engine only pushes an action node's prerequisites once the
+// action itself is castable, and a wrong-stance ability fails that check, so the stance switch
+// has to be the node's *alternative*: the bot flips stance on the tick the ability is wanted and
+// casts it on the next one, exactly the stance dance a warrior does by hand. Charge is
+// deliberately not listed - it is unusable in combat, so its fallback stays each spec's own gap
+// closer rather than a stance flip that would fight the spec's own stance trigger.
 class WarriorStanceRequirementActionNodeFactory : public NamedObjectFactory<ActionNode>
 {
 public:
     WarriorStanceRequirementActionNodeFactory()
     {
         // battle only
-        creators["charge"] = &charge;
         creators["mocking blow"] = &mocking_blow;
         creators["overpower"] = &overpower;
         creators["retaliation"] = &retaliation;
         creators["shattering throw"] = &shattering_throw;
-
-        // temp
-        creators["mortal strike"] = &mortal_strike;
 
         // berserker only
         creators["berserker rage"] = &berserker_rage;
         creators["recklessness"] = &recklessness;
         creators["whirlwind"] = &whirlwind;
         creators["pummel"] = &pummel;
+        creators["pummel on enemy healer"] = &pummel_on_enemy_healer;
         creators["intercept"] = &intercept;
 
         // defensive only
@@ -46,22 +48,12 @@ public:
 
 private:
 
-    static ActionNode* charge([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "charge",
-            /*P*/ { NextAction("battle stance") },
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
     static ActionNode* mocking_blow([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
             "mocking blow",
-            /*P*/ { NextAction("battle stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("battle stance") },
             /*C*/ {}
         );
     }
@@ -70,8 +62,8 @@ private:
     {
         return new ActionNode(
             "overpower",
-            /*P*/ { NextAction("battle stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("battle stance") },
             /*C*/ {}
         );
     }
@@ -80,8 +72,8 @@ private:
     {
         return new ActionNode(
             "berserker rage",
-            /*P*/ { NextAction("berserker stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("berserker stance") },
             /*C*/ {}
         );
     }
@@ -90,8 +82,8 @@ private:
     {
         return new ActionNode(
             "recklessness",
-            /*P*/ { NextAction("berserker stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("berserker stance") },
             /*C*/ {}
         );
     }
@@ -100,8 +92,8 @@ private:
     {
         return new ActionNode(
             "whirlwind",
-            /*P*/ { NextAction("berserker stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("berserker stance") },
             /*C*/ {}
         );
     }
@@ -110,8 +102,18 @@ private:
     {
         return new ActionNode(
             "pummel",
-            /*P*/ { NextAction("berserker stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("berserker stance") },
+            /*C*/ {}
+        );
+    }
+
+    static ActionNode* pummel_on_enemy_healer([[maybe_unused]] PlayerbotAI* botAI)
+    {
+        return new ActionNode(
+            "pummel on enemy healer",
+            /*P*/ {},
+            /*A*/ { NextAction("berserker stance") },
             /*C*/ {}
         );
     }
@@ -120,8 +122,8 @@ private:
     {
         return new ActionNode(
             "intercept",
-            /*P*/ { NextAction("berserker stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("berserker stance"), NextAction("reach melee") },
             /*C*/ {}
         );
     }
@@ -130,8 +132,8 @@ private:
     {
         return new ActionNode(
             "taunt",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("defensive stance") },
             /*C*/ {}
         );
     }
@@ -140,8 +142,8 @@ private:
     {
         return new ActionNode(
             "revenge",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("defensive stance") },
             /*C*/ {}
         );
     }
@@ -150,8 +152,8 @@ private:
     {
         return new ActionNode(
             "shield block",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("defensive stance") },
             /*C*/ {}
         );
     }
@@ -160,8 +162,8 @@ private:
     {
         return new ActionNode(
             "disarm",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("defensive stance") },
             /*C*/ {}
         );
     }
@@ -170,8 +172,8 @@ private:
     {
         return new ActionNode(
             "shield wall",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("defensive stance") },
             /*C*/ {}
         );
     }
@@ -180,18 +182,8 @@ private:
     {
         return new ActionNode(
             "intervene",
-            /*P*/ { NextAction("defensive stance") },
-            /*A*/ {},
-            /*C*/ {}
-        );
-    }
-
-    static ActionNode* mortal_strike([[maybe_unused]] PlayerbotAI* botAI)
-    {
-        return new ActionNode(
-            "mortal strike",
-            /*P*/ { NextAction("battle stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("defensive stance") },
             /*C*/ {}
         );
     }
@@ -200,8 +192,8 @@ private:
     {
         return new ActionNode(
             "retaliation",
-            /*P*/ { NextAction("battle stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("battle stance") },
             /*C*/ {}
         );
     }
@@ -210,8 +202,8 @@ private:
     {
         return new ActionNode(
             "shattering throw",
-            /*P*/ { NextAction("battle stance") },
-            /*A*/ {},
+            /*P*/ {},
+            /*A*/ { NextAction("battle stance") },
             /*C*/ {}
         );
     }
