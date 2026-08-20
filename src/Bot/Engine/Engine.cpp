@@ -12,6 +12,20 @@
 #include "Queue.h"
 #include "Strategy.h"
 #include "Timer.h"
+#include <unordered_set>
+
+// Strategies reference triggers and actions by name. A name with no creator in the
+// AiObjectContext used to be skipped silently, so a typo or an unregistered factory
+// turned a whole branch of a rotation into dead code with no trace in the logs.
+static void WarnUnresolvedNode(char const* kind, std::string const& name, Player* bot)
+{
+    static std::unordered_set<std::string> warned;
+    if (!warned.insert(std::string(kind) + ':' + name).second)
+        return;
+
+    LOG_WARN("playerbots", "Strategy references unknown {} '{}' (first seen on {}, class {})", kind, name,
+             bot->GetName(), bot->getClass());
+}
 
 Engine::Engine(PlayerbotAI* botAI, AiObjectContext* factory) : PlayerbotAIAware(botAI), aiObjectContext(factory)
 {
@@ -451,6 +465,8 @@ void Engine::ProcessTriggers(bool minimal)
         {
             trigger = aiObjectContext->GetTrigger(node->getName());
             node->setTrigger(trigger);
+            if (!trigger)
+                WarnUnresolvedNode("trigger", node->getName(), botAI->GetBot());
         }
 
         if (!trigger)
@@ -559,6 +575,8 @@ Action* Engine::InitializeAction(ActionNode* actionNode)
     {
         action = aiObjectContext->GetAction(actionNode->getName());
         actionNode->setAction(action);
+        if (!action)
+            WarnUnresolvedNode("action", actionNode->getName(), botAI->GetBot());
     }
 
     return action;
