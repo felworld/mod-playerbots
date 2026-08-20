@@ -132,4 +132,19 @@ void SurvivalHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+
+    // Instant fillers while moving: the engine refuses Steady Shot (cast time) and Auto Shot
+    // (auto-repeat) outright, so without these a moving hunter contributes nothing. Arcane Shot
+    // is left out on purpose - it shares its cooldown with Explosive Shot.
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("kill shot", 6.4f),
+                NextAction("explosive shot", 6.3f),
+                NextAction("black arrow", 6.2f),
+                NextAction("serpent sting", 6.0f)
+            }
+        )
+    );
 }

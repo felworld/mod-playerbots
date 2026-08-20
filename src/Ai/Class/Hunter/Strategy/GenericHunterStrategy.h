@@ -8,11 +8,14 @@
 #define PLAYERBOTS_GENERICHUNTERSTRATEGY_H
 
 #include "CombatStrategy.h"
+#include "RangedCombatStrategy.h"
 #include "Strategy.h"
 
 class PlayerbotAI;
 
-class GenericHunterStrategy : public CombatStrategy
+// A hunter is a ranged strategy: RangedCombatStrategy adds the "back out of contact" node, which
+// matters more here than for a caster because ranged attacks have a five-yard dead zone.
+class GenericHunterStrategy : public RangedCombatStrategy
 {
 public:
     GenericHunterStrategy(PlayerbotAI* botAI);

@@ -137,10 +137,35 @@ public:
     ScareBeastTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "scare beast") {}
 };
 
+class WyvernStingTrigger : public HasCcTargetTrigger
+{
+public:
+    WyvernStingTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "wyvern sting") {}
+};
+
 class SilencingShotTrigger : public InterruptSpellTrigger
 {
 public:
     SilencingShotTrigger(PlayerbotAI* botAI) : InterruptSpellTrigger(botAI, "silencing shot") {}
+};
+
+class SilencingShotOnEnemyHealerTrigger : public InterruptEnemyHealerTrigger
+{
+public:
+    SilencingShotOnEnemyHealerTrigger(PlayerbotAI* botAI)
+        : InterruptEnemyHealerTrigger(botAI, "silencing shot") {}
+};
+
+// A player-controlled enemy is swinging at the bot in melee - the one place a hunter cannot
+// work from, since ranged attacks have a five-yard dead zone. This is when a human drops a trap
+// on the ground they are about to leave, Scatter Shots and breaks contact. Anyone already held
+// is ignored so the bot does not undo its own trap.
+class PlayerMeleeOnBotTrigger : public Trigger
+{
+public:
+    PlayerMeleeOnBotTrigger(PlayerbotAI* botAI) : Trigger(botAI, "player melee on bot") {}
+
+    bool IsActive() override;
 };
 
 // DoT/Debuff Triggers

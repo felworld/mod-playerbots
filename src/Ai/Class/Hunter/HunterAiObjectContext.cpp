@@ -81,6 +81,8 @@ public:
         creators["pet not happy"] = &HunterTriggerFactoryInternal::pet_not_happy;
         creators["concussive shot on snare target"] = &HunterTriggerFactoryInternal::concussive_shot_on_snare_target;
         creators["scare beast"] = &HunterTriggerFactoryInternal::scare_beast;
+        creators["wyvern sting"] = &HunterTriggerFactoryInternal::wyvern_sting;
+        creators["player melee on bot"] = &HunterTriggerFactoryInternal::player_melee_on_bot;
         creators["low ammo"] = &HunterTriggerFactoryInternal::low_ammo;
         creators["no ammo"] = &HunterTriggerFactoryInternal::no_ammo;
         creators["has ammo"] = &HunterTriggerFactoryInternal::has_ammo;
@@ -94,6 +96,7 @@ public:
         creators["explosive shot"] = &HunterTriggerFactoryInternal::explosive_shot;
         creators["lock and load"] = &HunterTriggerFactoryInternal::lock_and_load;
         creators["silencing shot"] = &HunterTriggerFactoryInternal::silencing_shot;
+        creators["silencing shot on enemy healer"] = &HunterTriggerFactoryInternal::silencing_shot_on_enemy_healer;
         creators["intimidation"] = &HunterTriggerFactoryInternal::intimidation;
         creators["volley channel check"] = &HunterTriggerFactoryInternal::volley_channel_check;
     }
@@ -101,6 +104,8 @@ public:
 private:
     static Trigger* auto_shot(PlayerbotAI* botAI) { return new AutoShotTrigger(botAI); }
     static Trigger* scare_beast(PlayerbotAI* botAI) { return new ScareBeastTrigger(botAI); }
+    static Trigger* wyvern_sting(PlayerbotAI* botAI) { return new WyvernStingTrigger(botAI); }
+    static Trigger* player_melee_on_bot(PlayerbotAI* botAI) { return new PlayerMeleeOnBotTrigger(botAI); }
     static Trigger* concussive_shot_on_snare_target(PlayerbotAI* botAI) {
         return new ConcussiveShotOnSnareTargetTrigger(botAI); }
     static Trigger* pet_not_happy(PlayerbotAI* botAI) { return new HunterPetNotHappy(botAI); }
@@ -132,6 +137,10 @@ private:
     static Trigger* explosive_shot(PlayerbotAI* botAI) { return new ExplosiveShotTrigger(botAI); }
     static Trigger* lock_and_load(PlayerbotAI* botAI) { return new LockAndLoadTrigger(botAI); }
     static Trigger* silencing_shot(PlayerbotAI* botAI) { return new SilencingShotTrigger(botAI); }
+    static Trigger* silencing_shot_on_enemy_healer(PlayerbotAI* botAI)
+    {
+        return new SilencingShotOnEnemyHealerTrigger(botAI);
+    }
     static Trigger* intimidation(PlayerbotAI* botAI) { return new IntimidationTrigger(botAI); }
     static Trigger* volley_channel_check(PlayerbotAI* botAI) { return new VolleyChannelCheckTrigger(botAI); }
 };
@@ -152,6 +161,7 @@ public:
         creators["serpent sting"] = &HunterAiObjectContextInternal::serpent_sting;
         creators["serpent sting on attacker"] = &HunterAiObjectContextInternal::serpent_sting_on_attacker;
         creators["wyvern sting"] = &HunterAiObjectContextInternal::wyvern_sting;
+        creators["wyvern sting on cc"] = &HunterAiObjectContextInternal::wyvern_sting_on_cc;
         creators["viper sting"] = &HunterAiObjectContextInternal::viper_sting;
         creators["scorpid sting"] = &HunterAiObjectContextInternal::scorpid_sting;
         creators["hunter's mark"] = &HunterAiObjectContextInternal::hunters_mark;
@@ -161,6 +171,8 @@ public:
         creators["call pet"] = &HunterAiObjectContextInternal::call_pet;
         creators["black arrow"] = &HunterAiObjectContextInternal::black_arrow;
         creators["freezing trap"] = &HunterAiObjectContextInternal::freezing_trap;
+        creators["freezing trap at feet"] = &HunterAiObjectContextInternal::freezing_trap_at_feet;
+        creators["frost trap at feet"] = &HunterAiObjectContextInternal::frost_trap_at_feet;
         creators["rapid fire"] = &HunterAiObjectContextInternal::rapid_fire;
         creators["boost"] = &HunterAiObjectContextInternal::rapid_fire;
         creators["deterrence"] = &HunterAiObjectContextInternal::deterrence;
@@ -187,10 +199,16 @@ public:
         creators["kill shot"] = &HunterAiObjectContextInternal::kill_shot;
         creators["misdirection on main tank"] = &HunterAiObjectContextInternal::misdirection_on_main_tank;
         creators["silencing shot"] = &HunterAiObjectContextInternal::silencing_shot;
+        creators["silencing shot on enemy healer"] = &HunterAiObjectContextInternal::silencing_shot_on_enemy_healer;
+        creators["scatter shot"] = &HunterAiObjectContextInternal::scatter_shot;
+        creators["master's call"] = &HunterAiObjectContextInternal::masters_call;
         creators["disengage"] = &HunterAiObjectContextInternal::disengage;
         creators["immolation trap"] = &HunterAiObjectContextInternal::immolation_trap;
         creators["explosive trap"] = &HunterAiObjectContextInternal::explosive_trap;
         creators["explosive shot base"] = &HunterAiObjectContextInternal::explosive_shot_base;
+        // Highest known rank with the bot's own damage-over-time as the guard; the ranked
+        // actions below exist for the Lock and Load chain, where a second, lower rank stacks.
+        creators["explosive shot"] = &HunterAiObjectContextInternal::explosive_shot_base;
         creators["explosive shot rank 4"] = &HunterAiObjectContextInternal::explosive_shot_rank_4;
         creators["explosive shot rank 3"] = &HunterAiObjectContextInternal::explosive_shot_rank_3;
         creators["explosive shot rank 2"] = &HunterAiObjectContextInternal::explosive_shot_rank_2;
@@ -217,6 +235,7 @@ private:
     static Action* serpent_sting(PlayerbotAI* botAI) { return new CastSerpentStingAction(botAI); }
     static Action* serpent_sting_on_attacker(PlayerbotAI* botAI) { return new CastSerpentStingOnAttackerAction(botAI); }
     static Action* wyvern_sting(PlayerbotAI* botAI) { return new CastWyvernStingAction(botAI); }
+    static Action* wyvern_sting_on_cc(PlayerbotAI* botAI) { return new CastWyvernStingCcAction(botAI); }
     static Action* viper_sting(PlayerbotAI* botAI) { return new CastViperStingAction(botAI); }
     static Action* scorpid_sting(PlayerbotAI* botAI) { return new CastScorpidStingAction(botAI); }
     static Action* hunters_mark(PlayerbotAI* botAI) { return new CastHuntersMarkAction(botAI); }
@@ -226,6 +245,8 @@ private:
     static Action* call_pet(PlayerbotAI* botAI) { return new CastCallPetAction(botAI); }
     static Action* black_arrow(PlayerbotAI* botAI) { return new CastBlackArrowAction(botAI); }
     static Action* freezing_trap(PlayerbotAI* botAI) { return new CastFreezingTrap(botAI); }
+    static Action* freezing_trap_at_feet(PlayerbotAI* botAI) { return new CastFreezingTrapAtFeetAction(botAI); }
+    static Action* frost_trap_at_feet(PlayerbotAI* botAI) { return new CastFrostTrapAtFeetAction(botAI); }
     static Action* rapid_fire(PlayerbotAI* botAI) { return new CastRapidFireAction(botAI); }
     static Action* deterrence(PlayerbotAI* botAI) { return new CastDeterrenceAction(botAI); }
     static Action* readiness(PlayerbotAI* botAI) { return new CastReadinessAction(botAI); }
@@ -244,6 +265,12 @@ private:
     static Action* kill_shot(PlayerbotAI* botAI) { return new CastKillShotAction(botAI); }
     static Action* misdirection_on_main_tank(PlayerbotAI* botAI) { return new CastMisdirectionOnMainTankAction(botAI); }
     static Action* silencing_shot(PlayerbotAI* botAI) { return new CastSilencingShotAction(botAI); }
+    static Action* silencing_shot_on_enemy_healer(PlayerbotAI* botAI)
+    {
+        return new CastSilencingShotOnEnemyHealerAction(botAI);
+    }
+    static Action* scatter_shot(PlayerbotAI* botAI) { return new CastScatterShotAction(botAI); }
+    static Action* masters_call(PlayerbotAI* botAI) { return new CastMastersCallAction(botAI); }
     static Action* disengage(PlayerbotAI* botAI) { return new CastDisengageAction(botAI); }
     static Action* immolation_trap(PlayerbotAI* botAI) { return new CastImmolationTrapAction(botAI); }
     static Action* explosive_trap(PlayerbotAI* botAI) { return new CastExplosiveTrapAction(botAI); }

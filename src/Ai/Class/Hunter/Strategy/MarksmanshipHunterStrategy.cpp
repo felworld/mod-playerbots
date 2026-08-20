@@ -40,6 +40,17 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             }
         )
     );
+
+    // A hunter is the only silence in a lot of groups: shutting the enemy healer up is worth
+    // more than another shot on the current target.
+    triggers.push_back(
+        new TriggerNode(
+            "silencing shot on enemy healer",
+            {
+                NextAction("silencing shot on enemy healer", 40.0f)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "kill command",
@@ -77,6 +88,22 @@ void MarksmanshipHunterStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             "serpent sting on attacker",
             {
                 NextAction("serpent sting on attacker", 16.5f)
+            }
+        )
+    );
+
+    // Instant fillers while moving: the engine refuses Steady Shot (cast time) and Auto Shot
+    // (auto-repeat) outright, so without these a moving hunter contributes nothing. Aimed Shot
+    // and Chimera Shot are both instant in 3.3.5.
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("kill shot", 6.4f),
+                NextAction("chimera shot", 6.3f),
+                NextAction("aimed shot", 6.2f),
+                NextAction("arcane shot", 6.1f),
+                NextAction("serpent sting", 6.0f)
             }
         )
     );

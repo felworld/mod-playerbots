@@ -48,14 +48,14 @@ private:
     }
 };
 
-GenericHunterStrategy::GenericHunterStrategy(PlayerbotAI* botAI) : CombatStrategy(botAI)
+GenericHunterStrategy::GenericHunterStrategy(PlayerbotAI* botAI) : RangedCombatStrategy(botAI)
 {
     actionNodeFactories.Add(new GenericHunterStrategyActionNodeFactory());
 }
 
 void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
-    CombatStrategy::InitTriggers(triggers);
+    RangedCombatStrategy::InitTriggers(triggers);
 
     // Pet Triggers
     // Keep the pet on the bot's target instead of letting core PetAI pick its own attacker.
@@ -90,6 +90,21 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("enemy too close for auto shot", { NextAction("disengage", 35.0f),
                                                                           NextAction("flee", 34.0f) }));
+
+    // PvP Kiting Triggers
+    // A player who has closed to melee is the hunter's worst position, and traps land at the
+    // hunter's feet: drop the trap on the ground we are about to leave, buy the global cooldown
+    // with Scatter Shot, then break contact. Freezing Trap outranks the Explosive Trap above
+    // because taking a player out of the fight beats damaging them, and Frost Trap covers the
+    // case where Freezing Trap is on cooldown. Disengage sits just above the "flee" node so the
+    // bot leaps out instead of walking, but below Deterrence and Feign Death at 35.
+    triggers.push_back(new TriggerNode("player melee on bot", { NextAction("freezing trap at feet", 39.0f),
+                                                                NextAction("scatter shot", 38.0f),
+                                                                NextAction("frost trap at feet", 34.8f),
+                                                                NextAction("disengage", 34.6f) }));
+
+    // Rooted or snared is how a hunter dies; the pet shakes it off for its master.
+    triggers.push_back(new TriggerNode("movement impaired", { NextAction("master's call", 36.0f) }));
 }
 
 // ===== AoE Strategy, 2/3+ enemies =====
@@ -105,7 +120,8 @@ void AoEHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 void HunterCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(new TriggerNode("scare beast", { NextAction("scare beast on cc", 23.0f) }));
-    triggers.push_back(new TriggerNode("freezing trap", { NextAction("freezing trap on cc", 23.0f) }));
+    triggers.push_back(new TriggerNode("freezing trap", { NextAction("freezing trap", 23.0f) }));
+    triggers.push_back(new TriggerNode("wyvern sting", { NextAction("wyvern sting on cc", 23.0f) }));
 }
 
 void HunterTrapWeaveStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

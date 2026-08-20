@@ -5,6 +5,7 @@
  */
 
 #include "HunterTriggers.h"
+#include "AttackersValue.h"
 #include "GenericSpellActions.h"
 #include "GenericTriggers.h"
 #include "HunterActions.h"
@@ -89,8 +90,37 @@ bool HunterAspectOfTheViperTrigger::IsActive()
         botAI->HasStrategy("bspeed", BotState::BOT_STATE_NON_COMBAT))
         return false;
 
-    return BuffTrigger::IsActive() &&
-           AI_VALUE2(uint8, "mana", "self target") < (sPlayerbotAIConfig.lowMana / 2);
+    // Half of AiPlayerbot.LowMana was around 7%, i.e. dry - by then the shot rotation has been
+    // silent for a while. Swap at LowMana instead; the Dragonhawk trigger swaps back at 60%.
+    if (AI_VALUE2(uint8, "mana", "self target") >= sPlayerbotAIConfig.lowMana)
+        return false;
+
+    // Viper halves ranged damage, so never trade the kill for mana with the target already in
+    // Kill Shot range.
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (target && static_cast<uint8>(target->GetHealthPct()) < sPlayerbotAIConfig.criticalHealth)
+        return false;
+
+    return BuffTrigger::IsActive();
+}
+
+bool PlayerMeleeOnBotTrigger::IsActive()
+{
+    for (Unit* attacker : bot->getAttackers())
+    {
+        if (!attacker->IsAlive() || !attacker->IsControlledByPlayer())
+            continue;
+
+        // Someone already held is not a threat, and the answers to this trigger would only
+        // break our own control.
+        if (AttackersValue::IsCrowdControlled(attacker))
+            continue;
+
+        if (bot->IsWithinMeleeRange(attacker))
+            return true;
+    }
+
+    return false;
 }
 
 bool HunterAspectOfThePackTrigger::IsActive()

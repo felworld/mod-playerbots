@@ -5,6 +5,7 @@
  */
 
 #include "HunterActions.h"
+#include "AttackersValue.h"
 #include "Event.h"
 #include "GenericSpellActions.h"
 #include "PlayerbotAI.h"
@@ -25,7 +26,9 @@ bool CastAspectOfTheHawkAction::isUseful()
 bool CastArcaneShotAction::isUseful()
 {
     Unit* target = GetTarget();
-    if (!target || !botAI->HasSpell("explosive shot"))
+    // Explosive Shot shares its cooldown with Arcane Shot, so a survival hunter who has the
+    // talent always spends that cooldown on the stronger shot.
+    if (!target || botAI->HasSpell("explosive shot"))
         return false;
 
     // Armor Penetration rating check - will not cast Arcane Shot above 435 ArP
@@ -43,9 +46,25 @@ bool CastImmolationTrapAction::isUseful()
     return target && !botAI->HasSpell("explosive trap");
 }
 
-Value<Unit*>* CastFreezingTrap::GetTargetValue()
+bool CastFreezingTrap::isUseful()
 {
-    return context->GetValue<Unit*>("cc target", "freezing trap");
+    // The trap lands under the hunter, not under the target: a unit across the room never walks
+    // into it, so only spend the cooldown on someone already standing on us.
+    Unit* target = GetTarget();
+    return target && bot->IsWithinMeleeRange(target);
+}
+
+bool CastScatterShotAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target || target->GetVictim() != bot || !bot->IsWithinMeleeRange(target))
+        return false;
+
+    // Never spend it on someone already controlled - the shot would only break the control.
+    if (AttackersValue::IsCrowdControlled(target))
+        return false;
+
+    return CastSpellAction::isUseful();
 }
 
 bool FeedPetAction::Execute(Event /*event*/)
@@ -88,16 +107,6 @@ bool CastDisengageAction::Execute(Event event)
 bool CastDisengageAction::isUseful()
 {
     return !botAI->HasStrategy("trap weave", BOT_STATE_COMBAT);
-}
-
-Value<Unit*>* CastScareBeastCcAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("cc target", "scare beast");
-}
-
-bool CastScareBeastCcAction::Execute(Event /*event*/)
-{
-    return botAI->CastSpell("scare beast", GetTarget());
 }
 
 bool CastWingClipAction::isUseful()

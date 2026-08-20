@@ -114,21 +114,40 @@ public:
         CastSpellAction(botAI, "scare beast") {}
 };
 
-class CastScareBeastCcAction : public CastSpellAction
+class CastScareBeastCcAction : public CastCrowdControlSpellAction
 {
 public:
     CastScareBeastCcAction(PlayerbotAI* botAI) :
-        CastSpellAction(botAI, "scare beast on cc") {}
-    Value<Unit*>* GetTargetValue() override;
-    bool Execute(Event event) override;
+        CastCrowdControlSpellAction(botAI, "scare beast") {}
 };
 
-class CastFreezingTrap : public CastDebuffSpellAction
+class CastFreezingTrap : public CastCrowdControlSpellAction
 {
 public:
     CastFreezingTrap(PlayerbotAI* botAI) :
-        CastDebuffSpellAction(botAI, "freezing trap") {}
-    Value<Unit*>* GetTargetValue() override;
+        CastCrowdControlSpellAction(botAI, "freezing trap") {}
+    bool isUseful() override;
+};
+
+// Every hunter trap lands at the caster's feet, so dropping one is only worth a global cooldown
+// while the unit we want out of the fight is standing on us - which is exactly the moment a
+// melee has closed the distance. The trap arms behind our back as we break contact.
+class CastFreezingTrapAtFeetAction : public CastSpellAction
+{
+public:
+    CastFreezingTrapAtFeetAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "freezing trap") {}
+    std::string const GetTargetName() override { return "self target"; }
+    ActionThreatType getThreatType() override { return ActionThreatType::None; }
+};
+
+class CastFrostTrapAtFeetAction : public CastSpellAction
+{
+public:
+    CastFrostTrapAtFeetAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "frost trap") {}
+    std::string const GetTargetName() override { return "self target"; }
+    ActionThreatType getThreatType() override { return ActionThreatType::None; }
 };
 
 class CastWyvernStingAction : public CastDebuffSpellAction
@@ -138,11 +157,45 @@ public:
         CastDebuffSpellAction(botAI, "wyvern sting", true) {}
 };
 
+class CastWyvernStingCcAction : public CastCrowdControlSpellAction
+{
+public:
+    CastWyvernStingCcAction(PlayerbotAI* botAI) :
+        CastCrowdControlSpellAction(botAI, "wyvern sting") {}
+};
+
+// Scatter Shot buys the four seconds needed to lay a trap or Disengage, but only against the
+// unit actually swinging at us: spent on anyone else it is a wasted thirty-second cooldown.
+class CastScatterShotAction : public CastSpellAction
+{
+public:
+    CastScatterShotAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "scatter shot") {}
+    bool isUseful() override;
+};
+
+// The pet shakes the roots and snares off its master - what keeps a kited hunter at range.
+class CastMastersCallAction : public CastSpellAction
+{
+public:
+    CastMastersCallAction(PlayerbotAI* botAI) :
+        CastSpellAction(botAI, "master's call") {}
+    std::string const GetTargetName() override { return "self target"; }
+    ActionThreatType getThreatType() override { return ActionThreatType::None; }
+};
+
 class CastSilencingShotAction : public CastSpellAction
 {
 public:
     CastSilencingShotAction(PlayerbotAI* botAI) :
         CastSpellAction(botAI, "silencing shot") {}
+};
+
+class CastSilencingShotOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
+{
+public:
+    CastSilencingShotOnEnemyHealerAction(PlayerbotAI* botAI) :
+        CastSpellOnEnemyHealerAction(botAI, "silencing shot") {}
 };
 
 class CastConcussiveShotAction : public CastSnareSpellAction
