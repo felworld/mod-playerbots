@@ -11,10 +11,19 @@
 #include "ServerFacade.h"
 #include "SharedDefines.h"
 
+// A mob that has picked the bot as its victim will follow it wherever it goes, so backing off
+// from it is pointless unless it's frozen or rooted. A player (or a player's pet) on the bot is
+// exactly when a caster should Blink, Disengage, or run: those are the PvP escape tools.
+static bool CanBreakAwayFrom(Unit* target, Player* bot)
+{
+    return target->IsControlledByPlayer() || target->GetVictim() != bot || target->isFrozen() ||
+           target->HasRootAura();
+}
+
 bool EnemyTooCloseForSpellTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
-    return target && (target->GetVictim() != bot || target->isFrozen() || target->HasRootAura()) &&
+    return target && CanBreakAwayFrom(target, bot) &&
            target->GetObjectSize() <= 10.0f && target->IsWithinCombatRange(bot, MIN_MELEE_REACH);
     //     Unit* target = AI_VALUE(Unit*, "current target");
     //     if (!target)
@@ -65,8 +74,7 @@ bool EnemyTooCloseForAutoShotTrigger::IsActive()
     if (spellId && bot->HasSpellCooldown(spellId))
         trapToCast = false;
 
-    return !trapToCast && (target->GetVictim() != bot || target->isFrozen() || target->HasRootAura()) &&
-           bot->IsWithinMeleeRange(target);
+    return !trapToCast && CanBreakAwayFrom(target, bot) && bot->IsWithinMeleeRange(target);
 
     // if (target->GetTarget() == bot->GetGUID() && !bot->GetGroup() && !target->HasUnitState(UNIT_STATE_ROOT) &&
     // GetSpeedInMotion(target) > GetSpeedInMotion(bot) * 0.65f)
@@ -96,8 +104,7 @@ bool EnemyTooCloseForShootTrigger::IsActive()
     Unit* target = AI_VALUE(Unit*, "current target");
     // target->IsWithinCombatRange()
 
-    return target && (target->GetVictim() != bot || target->isFrozen() || target->HasRootAura()) &&
-           target->IsWithinCombatRange(bot, MIN_MELEE_REACH);
+    return target && CanBreakAwayFrom(target, bot) && target->IsWithinCombatRange(bot, MIN_MELEE_REACH);
 
     //     Unit* target = AI_VALUE(Unit*, "current target");
     //     if (!target)
