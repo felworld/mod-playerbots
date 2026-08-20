@@ -151,9 +151,11 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
             }
         )
     );
+    // "blessing of might" is an action name, not a trigger; the registered trigger that asks
+    // whether the paladin is missing a blessing on itself is "blessing".
     triggers.push_back(
         new TriggerNode(
-            "blessing of might",
+            "blessing",
             {
                 NextAction("blessing of might", ACTION_NORMAL + 1)
             }
@@ -215,6 +217,27 @@ void OffhealRetPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
             "beacon of light on main tank",
             {
                 NextAction("beacon of light on main tank", ACTION_CRITICAL_HEAL + 7)
+            }
+        )
+    );
+
+    // Repentance was fully dead code: triggers, actions and action nodes all existed and nothing
+    // ever pushed them. It is a six-second incapacitate on a one-minute cooldown, so it is the
+    // backup interrupt for when Hammer of Justice is down (each node falls back to Hammer of
+    // Justice by itself).
+    triggers.push_back(
+        new TriggerNode(
+            "repentance interrupt",
+            {
+                NextAction("repentance", ACTION_INTERRUPT - 1)
+            }
+        )
+    );
+    triggers.push_back(
+        new TriggerNode(
+            "repentance on enemy healer",
+            {
+                NextAction("repentance on enemy healer", ACTION_INTERRUPT - 1)
             }
         )
     );

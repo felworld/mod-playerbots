@@ -45,6 +45,7 @@ MELEE_ACTION(CastConsecrationAction, "consecration");
 SNARE_ACTION(CastRepentanceSnareAction, "repentance");
 DEBUFF_ACTION(CastRepentanceAction, "repentance");
 ENEMY_HEALER_ACTION(CastRepentanceOnHealerAction, "repentance");
+CC_ACTION(CastRepentanceCcAction, "repentance");
 
 // hamme of wrath
 SPELL_ACTION(CastHammerOfWrathAction, "hammer of wrath");
@@ -214,6 +215,16 @@ public:
     CastDivineShieldAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "divine shield") {}
 };
 
+// Hand of Sacrifice moves 30% of an ally's incoming damage onto the paladin: a save for someone
+// about to die, and not something to spend while the paladin is the one in trouble.
+class CastHandOfSacrificeOnPartyAction : public HealPartyMemberAction
+{
+public:
+    CastHandOfSacrificeOnPartyAction(PlayerbotAI* botAI) : HealPartyMemberAction(botAI, "hand of sacrifice") {}
+
+    bool isUseful() override;
+};
+
 class CastHolyWrathAction : public CastMeleeSpellAction
 {
 public:
@@ -373,12 +384,16 @@ public:
     bool isUseful() override;
 };
 
-PROTECT_ACTION(CastBlessingOfProtectionProtectAction, "blessing of protection");
+PROTECT_ACTION(CastHandOfProtectionProtectAction, "hand of protection");
 
+// Divine Plea halves the paladin's healing for the whole fifteen seconds it runs, so for a holy
+// paladin it is a refill between pulls - not something to pop while a party member is hurt.
 class CastDivinePleaAction : public CastBuffSpellAction
 {
 public:
     CastDivinePleaAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "divine plea") {}
+
+    bool isUseful() override;
 };
 
 class ShieldOfRighteousnessAction : public CastMeleeSpellAction

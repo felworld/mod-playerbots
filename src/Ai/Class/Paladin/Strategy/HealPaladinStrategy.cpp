@@ -69,6 +69,9 @@ void HealPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             {
                 NextAction("holy shock on party", ACTION_CRITICAL_HEAL + 6),
                 NextAction("divine sacrifice", ACTION_CRITICAL_HEAL + 5),
+                // Half of the next hit lands on the paladin instead: a save for the ally, and the
+                // action refuses when the paladin is the one below LowHealth.
+                NextAction("hand of sacrifice on party", ACTION_CRITICAL_HEAL + 4.5f),
                 NextAction("holy light on party", ACTION_CRITICAL_HEAL + 4)
             }
         )

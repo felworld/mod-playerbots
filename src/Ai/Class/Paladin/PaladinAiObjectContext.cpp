@@ -145,6 +145,8 @@ public:
         creators["repentance on enemy healer"] = &PaladinTriggerFactoryInternal::repentance_on_enemy_healer;
         creators["repentance on snare target"] = &PaladinTriggerFactoryInternal::repentance_on_snare_target;
         creators["repentance interrupt"] = &PaladinTriggerFactoryInternal::repentance_interrupt;
+        creators["repentance on cc"] = &PaladinTriggerFactoryInternal::repentance_on_cc;
+        creators["judgement of justice kite"] = &PaladinTriggerFactoryInternal::judgement_of_justice_kite;
         creators["beacon of light on main tank"] = &PaladinTriggerFactoryInternal::beacon_of_light_on_main_tank;
         creators["sacred shield on main tank"] = &PaladinTriggerFactoryInternal::sacred_shield_on_main_tank;
         creators["hand of freedom on party"] = &PaladinTriggerFactoryInternal::hand_of_freedom_on_party;
@@ -213,6 +215,11 @@ private:
     static Trigger* repentance_on_enemy_healer(PlayerbotAI* botAI) { return new RepentanceOnHealerTrigger(botAI); }
     static Trigger* repentance_on_snare_target(PlayerbotAI* botAI) { return new RepentanceSnareTrigger(botAI); }
     static Trigger* repentance_interrupt(PlayerbotAI* botAI) { return new RepentanceInterruptTrigger(botAI); }
+    static Trigger* repentance_on_cc(PlayerbotAI* botAI) { return new RepentanceCcTrigger(botAI); }
+    static Trigger* judgement_of_justice_kite(PlayerbotAI* botAI)
+    {
+        return new JudgementOfJusticeKiteTrigger(botAI);
+    }
     static Trigger* beacon_of_light_on_main_tank(PlayerbotAI* botAI) { return new BeaconOfLightOnMainTankTrigger(botAI); }
     static Trigger* sacred_shield_on_main_tank(PlayerbotAI* botAI) { return new SacredShieldOnMainTankTrigger(botAI); }
     static Trigger* hand_of_freedom_on_party(PlayerbotAI* botAI) { return new HandOfFreedomOnPartyTrigger(botAI); }
@@ -305,11 +312,13 @@ public:
         creators["divine favor"] = &PaladinAiObjectContextInternal::divine_favor;
         creators["sense undead"] = &PaladinAiObjectContextInternal::sense_undead;
         creators["turn evil"] = &PaladinAiObjectContextInternal::turn_evil;
-        creators["blessing of protection on party"] = &PaladinAiObjectContextInternal::blessing_of_protection_on_party;
+        creators["hand of protection on party"] = &PaladinAiObjectContextInternal::hand_of_protection_on_party;
         creators["righteous defense"] = &PaladinAiObjectContextInternal::righteous_defense;
         creators["repentance"] = &PaladinAiObjectContextInternal::repentance;
         creators["repentance on snare target"] = &PaladinAiObjectContextInternal::repentance_on_snare_target;
         creators["repentance on enemy healer"] = &PaladinAiObjectContextInternal::repentance_on_enemy_healer;
+        creators["repentance on cc"] = &PaladinAiObjectContextInternal::repentance_on_cc;
+        creators["hand of sacrifice on party"] = &PaladinAiObjectContextInternal::hand_of_sacrifice_on_party;
         creators["sanctity aura"] = &PaladinAiObjectContextInternal::sanctity_aura;
         creators["holy shock"] = &PaladinAiObjectContextInternal::holy_shock;
         creators["holy shock on party"] = &PaladinAiObjectContextInternal::holy_shock_on_party;
@@ -327,9 +336,9 @@ public:
     }
 
 private:
-    static Action* blessing_of_protection_on_party(PlayerbotAI* botAI)
+    static Action* hand_of_protection_on_party(PlayerbotAI* botAI)
     {
-        return new CastBlessingOfProtectionProtectAction(botAI);
+        return new CastHandOfProtectionProtectAction(botAI);
     }
     static Action* sense_undead(PlayerbotAI* botAI) { return new CastSenseUndeadAction(botAI); }
     static Action* turn_evil(PlayerbotAI* botAI) { return new CastTurnEvilAction(botAI); }
@@ -419,6 +428,11 @@ private:
     static Action* repentance(PlayerbotAI* botAI) { return new CastRepentanceAction(botAI); }
     static Action* repentance_on_snare_target(PlayerbotAI* botAI) { return new CastRepentanceSnareAction(botAI); }
     static Action* repentance_on_enemy_healer(PlayerbotAI* botAI) { return new CastRepentanceOnHealerAction(botAI); }
+    static Action* repentance_on_cc(PlayerbotAI* botAI) { return new CastRepentanceCcAction(botAI); }
+    static Action* hand_of_sacrifice_on_party(PlayerbotAI* botAI)
+    {
+        return new CastHandOfSacrificeOnPartyAction(botAI);
+    }
     static Action* sanctity_aura(PlayerbotAI* botAI) { return new CastSanctityAuraAction(botAI); }
     static Action* holy_shock(PlayerbotAI* botAI) { return new CastHolyShockAction(botAI); }
     static Action* holy_shock_on_party(PlayerbotAI* botAI) { return new CastHolyShockOnPartyAction(botAI); }

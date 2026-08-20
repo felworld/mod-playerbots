@@ -29,10 +29,14 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("divine shield low health",
         { NextAction("flash of light", ACTION_EMERGENCY + 3), NextAction("holy light", ACTION_EMERGENCY + 2)}));
     triggers.push_back(new TriggerNode("protect party member",
-        { NextAction("blessing of protection on party", ACTION_EMERGENCY + 3) }));
+        { NextAction("hand of protection on party", ACTION_EMERGENCY + 3) }));
     triggers.push_back(new TriggerNode("high mana", { NextAction("divine plea", ACTION_HIGH) }));
     triggers.push_back(new TriggerNode("hand of freedom on party",
         { NextAction("hand of freedom on party", ACTION_HIGH + 4) }));
+    // A player target that has walked out of melee is kiting: Judgement of Justice caps its run
+    // speed, which is the only judgement that answers that.
+    triggers.push_back(new TriggerNode("judgement of justice kite",
+        { NextAction("judgement of justice", ACTION_HIGH + 3) }));
 }
 
 void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -57,14 +61,18 @@ void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 {
-    // triggers.push_back(new TriggerNode("divine favor", { NextAction("divine favor",
-    // ACTION_HIGH + 1) }));
+    // Nothing to add: the paladin's burst cooldowns (Avenging Wrath, Divine Favor, Divine
+    // Illumination) are wired in the spec strategies, where the spec knows what they cost.
 }
 
 void PaladinCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("turn evil", { NextAction("turn evil", ACTION_HIGH + 1) }));
+    // Repentance as real crowd control: the shared "cc target" picks the second attacker, or the
+    // player the bot is fighting when it is alone and losing, so it works without a raid marker.
+    triggers.push_back(
+        new TriggerNode("repentance on cc", { NextAction("repentance on cc", ACTION_HIGH + 2) }));
 }
 
 void PaladinHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

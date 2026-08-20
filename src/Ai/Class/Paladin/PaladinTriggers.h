@@ -43,10 +43,11 @@ DEBUFF_TRIGGER(JudgementOfWisdomTrigger, "judgement of wisdom");
 
 DEBUFF_TRIGGER(ConsecrationTrigger, "consecration");
 
-// repentance triggers
-INTERRUPT_HEALER_TRIGGER(RepentanceOnHealerTrigger, "repentance on enemy healer");
-SNARE_TRIGGER(RepentanceSnareTrigger, "repentance on snare target");
+// repentance triggers (the spell name is what the trigger looks up - not the registration key)
+INTERRUPT_HEALER_TRIGGER(RepentanceOnHealerTrigger, "repentance");
+SNARE_TRIGGER(RepentanceSnareTrigger, "repentance");
 INTERRUPT_TRIGGER(RepentanceInterruptTrigger, "repentance");
+CC_TRIGGER(RepentanceCcTrigger, "repentance");
 
 class BlessingOnPartyTrigger : public BuffOnPartyTrigger
 {
@@ -74,6 +75,18 @@ class HammerOfJusticeSnareTrigger : public SnareTargetTrigger
 {
 public:
     HammerOfJusticeSnareTrigger(PlayerbotAI* botAI) : SnareTargetTrigger(botAI, "hammer of justice") {}
+};
+
+// A hostile player target that has left melee range is running or kiting: Judgement of Justice
+// caps its speed at 100% for ten seconds, which is what lets a paladin catch it at all. The other
+// judgements are worth more damage but are no answer to a kite. No lifetime gate - the target
+// closest to death is the one most likely to run.
+class JudgementOfJusticeKiteTrigger : public DebuffTrigger
+{
+public:
+    JudgementOfJusticeKiteTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "judgement of justice", 1, false, 0.0f) {}
+
+    bool IsActive() override;
 };
 
 class ArtOfWarTrigger : public HasAuraTrigger

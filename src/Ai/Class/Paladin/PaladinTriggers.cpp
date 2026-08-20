@@ -20,6 +20,15 @@ bool SealTrigger::IsActive()
            (!botAI->HasAura("seal of wisdom", target) || AI_VALUE2(uint8, "mana", "self target") > 70);
 }
 
+bool JudgementOfJusticeKiteTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || !target->IsPlayer() || bot->IsFriendlyTo(target) || bot->IsWithinMeleeRange(target))
+        return false;
+
+    return DebuffTrigger::IsActive();
+}
+
 bool CrusaderAuraTrigger::IsActive()
 {
     Unit* target = GetTarget();

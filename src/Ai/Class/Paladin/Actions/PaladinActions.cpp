@@ -538,6 +538,36 @@ bool CastSealSpellAction::isUseful()
     return AI_VALUE2(bool, "combat", "self target");
 }
 
+bool CastDivinePleaAction::isUseful()
+{
+    if (!CastBuffSpellAction::isUseful())
+        return false;
+
+    if (!botAI->IsHeal(bot))
+        return true;
+
+    // Out of mana the refill is worth more than the penalty; otherwise never halve the paladin's
+    // healing while someone still needs it.
+    if (AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig.lowMana)
+        return true;
+
+    Unit* healTarget = AI_VALUE(Unit*, "party member to heal");
+    return !healTarget || healTarget->GetHealthPct() >= sPlayerbotAIConfig.mediumHealth;
+}
+
+bool CastHandOfSacrificeOnPartyAction::isUseful()
+{
+    Unit* target = GetTarget();
+    if (!target || target == bot)
+        return false;
+
+    // The paladin takes a share of the damage: not while it is the one about to die.
+    if (bot->GetHealthPct() < sPlayerbotAIConfig.lowHealth)
+        return false;
+
+    return CastHealingSpellAction::isUseful() && !ai::paladin::HasAnyPaladinHandFromCaster(target, bot);
+}
+
 Value<Unit*>* CastTurnEvilAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("cc target", getName());
