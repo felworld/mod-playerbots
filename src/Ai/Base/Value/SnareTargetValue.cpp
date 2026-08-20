@@ -10,9 +10,25 @@
 #include "ServerFacade.h"
 #include "TargetValue.h"
 
+// A hostile player worth a snare: up and moving, not already rooted or slowed by anyone.
+// Players have no chase/flee motion generators to read, so the mob heuristics below never
+// see them; a human snares the player they're fighting as soon as it starts moving.
+static bool IsPlayerSnareTarget(Player* bot, Unit* unit)
+{
+    return unit->IsPlayer() && unit->IsAlive() && !bot->IsFriendlyTo(unit) && unit->isMoving() &&
+           !unit->HasUnitState(UNIT_STATE_STUNNED) && !unit->HasAuraType(SPELL_AURA_MOD_ROOT) &&
+           !unit->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED);
+}
+
 Unit* SnareTargetValue::Calculate()
 {
     std::string const spell = qualifier;
+    float range = botAI->GetRange("spell");
+
+    // The player the bot is actually fighting comes first
+    Unit* current = botAI->GetAiObjectContext()->GetValue<Unit*>("current target")->Get();
+    if (current && IsPlayerSnareTarget(bot, current) && bot->GetDistance(current) <= range)
+        return current;
 
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
     for (ObjectGuid const guid : attackers)
@@ -21,8 +37,15 @@ Unit* SnareTargetValue::Calculate()
         if (!unit)
             continue;
 
-        if (bot->GetDistance(unit) > botAI->GetRange("spell"))
+        if (bot->GetDistance(unit) > range)
             continue;
+
+        if (unit->IsPlayer())
+        {
+            if (IsPlayerSnareTarget(bot, unit))
+                return unit;
+            continue;
+        }
 
         // Covers fear as well as the two flee-for-assistance movements, so a low-health runner heading
         // for its friends gets snared just like a feared mob.
