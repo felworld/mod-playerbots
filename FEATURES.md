@@ -874,9 +874,29 @@ shares rather than in any one rotation. The shared fixes:
   Entangling Roots and warlock Fear / Banish used to wait for a
   moon-marked target, which the auto-marker never sets on players or in
   battlegrounds. With no icon they now use the same secondary-attacker
-  selection Polymorph and Hex use (a set icon still wins). Solo use is
-  still gated on the group requirement tracked in
-  [#72](https://github.com/felworld/mod-playerbots/issues/72).
+  selection Polymorph and Hex use (a set icon still wins).
+- **Crowd control works solo** — the shared CC target selection required
+  a group (its ranking measured distance from the group's tanks), so an
+  ungrouped bot never used any of the above. Solo with several attackers
+  it now controls the most dangerous one that isn't the current target:
+  a player over a mob, a mana user (healer or caster) over a melee, the
+  farther one when tied. Alone against a single player and losing
+  (health below `AiPlayerbot.MediumHealth` or mana below
+  `AiPlayerbot.LowMana`), the opponent themself is controlled to reset
+  the fight — the CC drops the target, PvP combat lapses, and the bot
+  heals, bandages or drinks. A healthy bot does not open with CC from
+  this path; setups like Polymorph into Pyroblast belong to the class
+  strategy that knows the follow-up. Every candidate is skipped if it is
+  already controlled, below `MediumHealth` (the regenerating time-out
+  would be a gift), inside the bot's own AoE, or — for players — at
+  diminishing-returns level 3 or immune for that spell's DR group.
+- **Bots don't break crowd control** — a unit under a damage-breakable
+  control effect (Polymorph, Hex, Sap, Gouge, Repentance, Freezing Trap,
+  Hibernate, fears; roots excluded so kiting keeps working) leaves the
+  bot's attacker list, invalidates its current target even when that is
+  the enemy player it is fighting, and is never re-acquired by the PvP
+  targeting until the effect ends. Previously only Polymorph was
+  handled, so a shaman Hexed and went on casting at the frog.
 - **Snares see players** — the shared snare targeting only understood
   NPC chase/flee movement, so Concussive Shot, Hamstring, Piercing Howl,
   Thunder Clap, Shockwave, Intercept, Hammer of Justice, and Frost Shock
