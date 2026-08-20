@@ -274,10 +274,14 @@ public:
     CastEmpowerRuneWeaponAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "empower rune weapon") {}
 };
 
+// Army of the Dead is a 4.5 s channel. Against players it only pays off when someone else keeps
+// the enemy off the bot for the duration - a group, or a gank by several enemies where eight ghouls
+// are the best answer left. Solo against one player it would open (or end) every fight.
 class CastArmyOfTheDeadAction : public CastBuffSpellAction
 {
 public:
     CastArmyOfTheDeadAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "army of the dead") {}
+    bool isUseful() override;
 };
 
 class CastRaiseDeadAction : public CastBuffSpellAction

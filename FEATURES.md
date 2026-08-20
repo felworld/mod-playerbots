@@ -932,6 +932,15 @@ shares rather than in any one rotation. The shared fixes:
   resolves to no spell; it is Turn Evil now. Sap remains inert in
   practice (it needs stealth and an out-of-combat target, and the CC
   target selection only scans attackers) until a stealth opener exists.
+- **Burst cooldowns on a dying player are not burst** — the shared
+  "boost" trigger treated any player target as a reason to pop every
+  major cooldown (Avenging Wrath, Icy Veins, Metamorphosis, Adrenaline
+  Rush, racials, trinkets, …). A player already below
+  `AiPlayerbot.LowHealth` no longer qualifies on their own: the rotation
+  finishes them and the cooldown stays up for the next opponent. DK
+  Army of the Dead, a 4.5-second channel that used to open every PvP
+  fight, is additionally held back against players unless the bot is
+  grouped or has two or more attackers on it.
 - **No more silent dead code** — a strategy that references a trigger or
   action name with no registered factory now logs a warning the first
   time it is seen, instead of silently skipping the node.

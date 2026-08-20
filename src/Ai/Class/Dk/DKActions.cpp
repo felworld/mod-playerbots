@@ -11,6 +11,18 @@
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 
+bool CastArmyOfTheDeadAction::isUseful()
+{
+    if (!CastBuffSpellAction::isUseful())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsControlledByPlayer())
+        return true;
+
+    return bot->GetGroup() || AI_VALUE(uint8, "my attacker count") >= 2;
+}
+
 std::vector<NextAction> CastDeathchillAction::getPrerequisites()
 {
     return NextAction::merge({ NextAction("frost presence") },

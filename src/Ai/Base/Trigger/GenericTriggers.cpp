@@ -435,13 +435,23 @@ std::string const TwoTriggers::getName()
     return name;
 }
 
+namespace
+{
+// A player opponent justifies burst cooldowns on their own - unless they are already below
+// AiPlayerbot.LowHealth, where the rotation finishes them and a long cooldown would be spent on a
+// kill the bot gets anyway.
+bool IsPlayerWorthBoost(Unit* target)
+{
+    return target && target->IsPlayer() && target->GetHealthPct() >= sPlayerbotAIConfig.lowHealth;
+}
+}  // namespace
+
 bool BoostTrigger::IsActive()
 {
     if (!BuffTrigger::IsActive())
         return false;
 
-    Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && target->ToPlayer())
+    if (IsPlayerWorthBoost(AI_VALUE(Unit*, "current target")))
         return true;
 
     return AI_VALUE(uint8, "balance") <= balance;
@@ -449,8 +459,7 @@ bool BoostTrigger::IsActive()
 
 bool GenericBoostTrigger::IsActive()
 {
-    Unit* target = AI_VALUE(Unit*, "current target");
-    if (target && target->ToPlayer())
+    if (IsPlayerWorthBoost(AI_VALUE(Unit*, "current target")))
         return true;
 
     return AI_VALUE(uint8, "balance") <= balance;

@@ -449,6 +449,8 @@ public:
     std::string const getName() override { return spell + " on attacker"; }
 };
 
+// Burst cooldown is worth using: the fight is hard (the "balance" value at or below the threshold)
+// or the target is a player who is not already dying.
 class BoostTrigger : public BuffTrigger
 {
 public:
