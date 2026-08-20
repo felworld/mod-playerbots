@@ -36,6 +36,22 @@ bool ShadowformTrigger::IsActive() { return !botAI->HasAura("shadowform", bot); 
 
 bool ShadowfiendTrigger::IsActive() { return BoostTrigger::IsActive() && !bot->HasSpellCooldown(34433); }
 
+bool PsychicScreamTrigger::IsActive()
+{
+    if (!bot->IsInCombat())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->IsAlive() && target->IsControlledByPlayer() && bot->IsWithinMeleeRange(target);
+}
+
+bool InnerFireCombatTrigger::IsActive()
+{
+    return !botAI->HasAura("shadowform", bot) && InnerFireTrigger::IsActive();
+}
+
+bool FearWardPvpTrigger::IsActive() { return botAI->HasPvpOpponent() && BuffTrigger::IsActive(); }
+
 BindingHealTrigger::BindingHealTrigger(PlayerbotAI* botAI)
     : PartyMemberLowHealthTrigger(botAI, "binding heal", sPlayerbotAIConfig.lowHealth, 0)
 {

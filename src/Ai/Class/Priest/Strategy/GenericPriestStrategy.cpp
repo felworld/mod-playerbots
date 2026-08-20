@@ -38,6 +38,17 @@ void GenericPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("enemy too close for spell",
                                        { NextAction("flee", ACTION_MOVE + 9) }));
+    // A player who has closed to melee is what Psychic Scream is for: it buys back the casting
+    // distance every priest spell needs, so it outranks simply running away.
+    triggers.push_back(new TriggerNode("psychic scream",
+                                       { NextAction("psychic scream", ACTION_MOVE + 10) }));
+    // Inner Fire is a half-hour buff, so nothing but the non-combat engine ever put it back on;
+    // a priest stripped of it by a dispel used to fight the rest of the fight without it.
+    triggers.push_back(new TriggerNode("inner fire combat",
+                                       { NextAction("inner fire", ACTION_NORMAL + 2) }));
+    // Re-ward against players once the first fear has eaten the ward.
+    triggers.push_back(new TriggerNode("fear ward pvp",
+                                       { NextAction("fear ward", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
     triggers.push_back(new TriggerNode("being attacked",
         { NextAction("power word: shield", ACTION_HIGH + 1) }));
@@ -66,7 +77,7 @@ void PriestBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
         new TriggerNode("power infusion", { NextAction("power infusion", 41.0f) }));
-    triggers.push_back(new TriggerNode("boost", { NextAction("shadowfiend", 20.0f) }));
+    triggers.push_back(new TriggerNode("shadowfiend", { NextAction("shadowfiend", 20.0f) }));
 }
 
 void PriestCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
@@ -90,4 +101,12 @@ void PriestHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("medium aoe and healer should attack",
                         {
                             NextAction("mind sear", ACTION_DEFAULT + 0.5f) }));
+
+    // Instant fillers while moving (cast-time spells get refused): Holy Fire, Smite and Mind
+    // Blast all have a cast bar, so a repositioning healer only has its dots to contribute.
+    triggers.push_back(
+        new TriggerNode("moving filler and healer should attack",
+                        {
+                            NextAction("shadow word: pain", ACTION_DEFAULT + 0.9f),
+                            NextAction("devouring plague", ACTION_DEFAULT + 0.8f) }));
 }

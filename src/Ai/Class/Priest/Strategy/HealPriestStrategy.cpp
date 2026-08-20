@@ -102,6 +102,17 @@ void HealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Both health bars are down: Binding Heal fixes the party member and the priest in one cast,
+    // which beats the single-target heals of the same tier (a dying member still outranks it).
+    triggers.push_back(
+        new TriggerNode(
+            "binding heal",
+            {
+                NextAction("binding heal", ACTION_MEDIUM_HEAL + 6)
+            }
+        )
+    );
+
     triggers.push_back(
         new TriggerNode(
             "critical health", {

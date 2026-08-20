@@ -104,6 +104,9 @@ public:
         creators["silence on enemy healer"] = &PriestTriggerFactoryInternal::silence_on_enemy_healer;
         creators["shadowfiend"] = &PriestTriggerFactoryInternal::shadowfiend;
         creators["mind sear channel check"] = &PriestTriggerFactoryInternal::mind_sear_channel_check;
+        creators["psychic scream"] = &PriestTriggerFactoryInternal::psychic_scream;
+        creators["inner fire combat"] = &PriestTriggerFactoryInternal::inner_fire_combat;
+        creators["fear ward pvp"] = &PriestTriggerFactoryInternal::fear_ward_pvp;
     }
 
 private:
@@ -146,6 +149,9 @@ private:
     static Trigger* chastise(PlayerbotAI* botAI) { return new ChastiseTrigger(botAI); }
     static Trigger* binding_heal(PlayerbotAI* botAI) { return new BindingHealTrigger(botAI); }
     static Trigger* mind_sear_channel_check(PlayerbotAI* botAI) { return new MindSearChannelCheckTrigger(botAI); }
+    static Trigger* psychic_scream(PlayerbotAI* botAI) { return new PsychicScreamTrigger(botAI); }
+    static Trigger* inner_fire_combat(PlayerbotAI* botAI) { return new InnerFireCombatTrigger(botAI); }
+    static Trigger* fear_ward_pvp(PlayerbotAI* botAI) { return new FearWardPvpTrigger(botAI); }
 };
 
 class PriestAiObjectContextInternal : public NamedObjectContext<Action>
@@ -196,6 +202,7 @@ public:
         creators["resurrection"] = &PriestAiObjectContextInternal::resurrection;
         creators["circle of healing on party"] = &PriestAiObjectContextInternal::circle_of_healing;
         creators["psychic scream"] = &PriestAiObjectContextInternal::psychic_scream;
+        creators["psychic horror"] = &PriestAiObjectContextInternal::psychic_horror;
         creators["vampiric touch"] = &PriestAiObjectContextInternal::vampiric_touch;
         creators["vampiric touch on attacker"] = &PriestAiObjectContextInternal::vampiric_touch_on_attacker;
         creators["vampiric embrace"] = &PriestAiObjectContextInternal::vampiric_embrace;
@@ -253,6 +260,7 @@ private:
         return new CastVampiricTouchOnAttackerAction(botAI);
     }
     static Action* psychic_scream(PlayerbotAI* botAI) { return new CastPsychicScreamAction(botAI); }
+    static Action* psychic_horror(PlayerbotAI* botAI) { return new CastPsychicHorrorAction(botAI); }
     static Action* circle_of_healing(PlayerbotAI* botAI) { return new CastCircleOfHealingAction(botAI); }
     static Action* resurrection(PlayerbotAI* botAI) { return new CastResurrectionAction(botAI); }
     static Action* shadow_word_pain(PlayerbotAI* botAI) { return new CastShadowWordPainAction(botAI); }

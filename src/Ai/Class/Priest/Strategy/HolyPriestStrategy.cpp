@@ -32,9 +32,10 @@ HolyPriestStrategy::HolyPriestStrategy(PlayerbotAI* botAI) : HealPriestStrategy(
 std::vector<NextAction> HolyPriestStrategy::getDefaultActions()
 {
     return {
+        NextAction("shadow word: pain", ACTION_DEFAULT + 0.3f),
         NextAction("smite", ACTION_DEFAULT + 0.2f),
         NextAction("mana burn", ACTION_DEFAULT + 0.1f),
-        NextAction("starshards", ACTION_DEFAULT)
+        NextAction("shoot", ACTION_DEFAULT)
     };
 }
 
@@ -71,6 +72,17 @@ void HolyPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "low mana",
             {
                 NextAction("mana burn", ACTION_HIGH)
+            }
+        )
+    );
+    // Instant fillers while moving: Smite and Holy Fire have cast bars and Mana Burn is
+    // channelled, so a repositioning holy priest only has its dots to contribute.
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("shadow word: pain", ACTION_DEFAULT + 0.9f),
+                NextAction("devouring plague", ACTION_DEFAULT + 0.8f)
             }
         )
     );
@@ -164,6 +176,17 @@ void HolyHealPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "party member to heal out of spell range",
             {
                 NextAction("reach party member to heal", ACTION_CRITICAL_HEAL + 10)
+            }
+        )
+    );
+
+    // Both health bars are down: Binding Heal fixes the party member and the priest in one cast,
+    // which beats the single-target heals of the same tier (a dying member still outranks it).
+    triggers.push_back(
+        new TriggerNode(
+            "binding heal",
+            {
+                NextAction("binding heal", ACTION_MEDIUM_HEAL + 6)
             }
         )
     );

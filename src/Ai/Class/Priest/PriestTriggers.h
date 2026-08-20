@@ -43,6 +43,40 @@ SNARE_TRIGGER(ChastiseTrigger, "chastise");
 
 BOOST_TRIGGER_A(ShadowfiendTrigger, "shadowfiend");
 
+// Psychic Scream is the priest's answer to a melee opponent, but it breaks on damage and would
+// scatter a mob pack across the party, so it is held for a player-controlled target that has
+// closed to melee - exactly when a human priest screams to get their casting distance back.
+class PsychicScreamTrigger : public Trigger
+{
+public:
+    PsychicScreamTrigger(PlayerbotAI* botAI) : Trigger(botAI, "psychic scream", 2) {}
+
+    bool IsActive() override;
+};
+
+// Inner Fire lasts half an hour, so only the non-combat engine ever refreshed it and a priest
+// who lost it to a dispel fought the rest of the fight without it. Shadowform is excluded: the
+// combat action node drops the form first, which costs the rotation more than the armour is worth.
+class InnerFireCombatTrigger : public InnerFireTrigger
+{
+public:
+    InnerFireCombatTrigger(PlayerbotAI* botAI) : InnerFireTrigger(botAI) {}
+
+    bool IsActive() override;
+};
+
+// Fear Ward counters the fear that opens most fights a priest loses (warlock Fear and Howl of
+// Terror, another priest's Psychic Scream, a warrior's Intimidating Shout). The non-combat
+// engine keeps it up; in combat it is only worth a global against players, and only once the
+// ward has actually been eaten.
+class FearWardPvpTrigger : public BuffTrigger
+{
+public:
+    FearWardPvpTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "fear ward", 5) {}
+
+    bool IsActive() override;
+};
+
 class ShadowProtectionTrigger : public BuffTrigger
 {
 public:

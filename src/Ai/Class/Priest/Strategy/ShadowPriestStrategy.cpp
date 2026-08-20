@@ -67,6 +67,28 @@ void ShadowPriestStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // Psychic Horror disarms the melee that closed on the priest for ten seconds; it is the
+    // shadow answer alongside the fear, one tier below it and above simply running.
+    triggers.push_back(
+        new TriggerNode(
+            "psychic scream",
+            {
+                NextAction("psychic horror", ACTION_MOVE + 9.5f)
+            }
+        )
+    );
+    // Instant fillers while moving: Mind Blast has a cast bar and Mind Flay is channelled, so a
+    // kiting shadow priest keeps its dots rolling and finishes with Shadow Word: Death instead.
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("shadow word: pain", ACTION_DEFAULT + 0.9f),
+                NextAction("devouring plague", ACTION_DEFAULT + 0.8f),
+                NextAction("shadow word: death", ACTION_DEFAULT + 0.7f)
+            }
+        )
+    );
 }
 
 void ShadowPriestAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
