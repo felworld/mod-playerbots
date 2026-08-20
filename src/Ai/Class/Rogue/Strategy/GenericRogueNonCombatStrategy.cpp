@@ -42,6 +42,14 @@ void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode("main hand weapon no enchant",
                         { NextAction("use instant poison on main hand", 20.0f) }));
 
+    // Against players the off-hand carries Crippling instead: the snare is what keeps a caster
+    // or a healer in melee range, and it outweighs the Deadly Poison stack. Outranks the PvE
+    // node so a bot poisoning up in a battleground picks it; a bot carrying no Crippling falls
+    // through to the node below.
+    triggers.push_back(
+        new TriggerNode("off hand weapon no enchant pvp",
+                        { NextAction("use crippling poison on off hand", 21.0f) }));
+
     triggers.push_back(
         new TriggerNode("off hand weapon no enchant",
                         { NextAction("use deadly poison on off hand", 19.0f) }));

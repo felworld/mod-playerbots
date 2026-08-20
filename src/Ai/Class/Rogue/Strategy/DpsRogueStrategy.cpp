@@ -29,13 +29,16 @@ private:
             /*C*/ {}
         );
     }
+    // With Kick on cooldown the interrupt falls to the stun, then to Gouge - which also buys
+    // the bot a few seconds to regain energy.
     static ActionNode* kick([[maybe_unused]] PlayerbotAI* botAI)
     {
         return new ActionNode(
             "kick",
             /*P*/ {},
             /*A*/ {
-                NextAction("kidney shot") },
+                NextAction("kidney shot"),
+                NextAction("gouge") },
             /*C*/ {}
         );
     }
@@ -134,11 +137,15 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Losing a player fight: Vanish resets it outright, Cloak sheds the magic and the DoTs that
+    // would break the stealth, Blind buys the ten seconds to walk away.
     triggers.push_back(
         new TriggerNode(
             "pvp escape",
             {
-                NextAction("vanish", ACTION_HIGH)
+                NextAction("vanish", ACTION_HIGH),
+                NextAction("cloak of shadows", ACTION_HIGH - 1),
+                NextAction("blind", ACTION_HIGH - 2)
             }
         )
     );
@@ -202,7 +209,8 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode(
             "enemy out of melee",
             {
-                NextAction("stealth", ACTION_HIGH + 3),
+                NextAction("stealth", ACTION_HIGH + 4),
+                NextAction("shadowstep", ACTION_HIGH + 3),
                 NextAction("sprint", ACTION_HIGH + 2),
                 NextAction("reach melee", ACTION_HIGH + 1)
             }
@@ -235,6 +243,37 @@ void DpsRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "low tank threat",
             {
                 NextAction("tricks of the trade on main tank", ACTION_HIGH + 7)
+            }
+        )
+    );
+
+    // Kidney Shot is the stun that wins a duel, not a spare Eviscerate: only on a
+    // player-controlled target that is not already locked down or diminished.
+    triggers.push_back(
+        new TriggerNode(
+            "kidney shot",
+            {
+                NextAction("kidney shot", ACTION_HIGH + 4)
+            }
+        )
+    );
+
+    // Ten seconds without weapons ends a warrior's or another rogue's burst.
+    triggers.push_back(
+        new TriggerNode(
+            "dismantle",
+            {
+                NextAction("dismantle", ACTION_HIGH + 3)
+            }
+        )
+    );
+
+    // The only thing a rogue can throw at someone running away.
+    triggers.push_back(
+        new TriggerNode(
+            "deadly throw on snare target",
+            {
+                NextAction("deadly throw", ACTION_NORMAL + 4)
             }
         )
     );
@@ -311,6 +350,19 @@ void StealthedRogueStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             "distract",
             {
                 NextAction("distract", ACTION_MOVE + 9)
+            }
+        )
+    );
+
+    // Stealthed, out of combat, and a second enemy player standing next to the mark: Sap them
+    // first so the opener lands one-on-one. Lives here rather than in the "cc" strategy because
+    // that one only runs in the combat engine; outranks Distract and the flank so the cast
+    // happens before the bot closes the last few yards.
+    triggers.push_back(
+        new TriggerNode(
+            "sap opener",
+            {
+                NextAction("sap opener", ACTION_MOVE + 10)
             }
         )
     );

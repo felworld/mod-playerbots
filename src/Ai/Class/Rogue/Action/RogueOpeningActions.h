@@ -21,6 +21,20 @@ public:
     bool isUseful() override { return true; }
 };
 
+// Sap the hostile player standing next to the mark rather than the mark itself: the shared "cc
+// target" value only offers units already attacking the bot, which Sap can never take. Casting
+// Sap does not break stealth, so the bot walks on and opens on the mark one-on-one.
+class CastSapOpenerAction : public CastSpellAction
+{
+public:
+    CastSapOpenerAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "sap") {}
+
+    static Unit* FindSapTarget(PlayerbotAI* botAI);
+
+    std::string const getName() override { return "sap opener"; }
+    Unit* GetTarget() override { return FindSapTarget(botAI); }
+};
+
 class CastGarroteAction : public CastDebuffSpellAction
 {
 public:

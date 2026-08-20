@@ -77,13 +77,26 @@ public:
         creators["off hand weapon no enchant"] = &RogueTriggerFactoryInternal::off_hand_weapon_no_enchant;
         creators["tricks of the trade on main tank"] = &RogueTriggerFactoryInternal::tricks_of_the_trade_on_main_tank;
         creators["adrenaline rush"] = &RogueTriggerFactoryInternal::adrenaline_rush;
-        creators["blade fury"] = &RogueTriggerFactoryInternal::blade_fury;
+        creators["blade flurry"] = &RogueTriggerFactoryInternal::blade_flurry;
         creators["distract"] = &RogueTriggerFactoryInternal::distract;
+        creators["kidney shot"] = &RogueTriggerFactoryInternal::kidney_shot;
+        creators["dismantle"] = &RogueTriggerFactoryInternal::dismantle;
+        creators["sap opener"] = &RogueTriggerFactoryInternal::sap_opener;
+        creators["deadly throw on snare target"] = &RogueTriggerFactoryInternal::deadly_throw_on_snare_target;
+        creators["off hand weapon no enchant pvp"] = &RogueTriggerFactoryInternal::off_hand_weapon_no_enchant_pvp;
     }
 
 private:
     static Trigger* adrenaline_rush(PlayerbotAI* botAI) { return new AdrenalineRushTrigger(botAI); }
-    static Trigger* blade_fury(PlayerbotAI* botAI) { return new BladeFuryTrigger(botAI); }
+    static Trigger* blade_flurry(PlayerbotAI* botAI) { return new BladeFlurryTrigger(botAI); }
+    static Trigger* kidney_shot(PlayerbotAI* botAI) { return new KidneyShotTrigger(botAI); }
+    static Trigger* dismantle(PlayerbotAI* botAI) { return new DismantleTrigger(botAI); }
+    static Trigger* sap_opener(PlayerbotAI* botAI) { return new SapOpenerTrigger(botAI); }
+    static Trigger* deadly_throw_on_snare_target(PlayerbotAI* botAI) { return new DeadlyThrowSnareTrigger(botAI); }
+    static Trigger* off_hand_weapon_no_enchant_pvp(PlayerbotAI* ai)
+    {
+        return new OffHandWeaponNoEnchantPvpTrigger(ai);
+    }
     static Trigger* kick(PlayerbotAI* botAI) { return new KickInterruptSpellTrigger(botAI); }
     static Trigger* rupture(PlayerbotAI* botAI) { return new RuptureTrigger(botAI); }
     static Trigger* slice_and_dice(PlayerbotAI* botAI) { return new SliceAndDiceTrigger(botAI); }
@@ -147,6 +160,11 @@ public:
         creators["killing spree"] = &RogueAiObjectContextInternal::killing_spree;
         creators["cold blood"] = &RogueAiObjectContextInternal::cold_blood;
         creators["distract"] = &RogueAiObjectContextInternal::distract;
+        creators["dismantle"] = &RogueAiObjectContextInternal::dismantle;
+        creators["shadowstep"] = &RogueAiObjectContextInternal::shadowstep;
+        creators["deadly throw"] = &RogueAiObjectContextInternal::deadly_throw;
+        creators["sap opener"] = &RogueAiObjectContextInternal::sap_opener;
+        creators["use crippling poison on off hand"] = &RogueAiObjectContextInternal::use_crippling_poison_off_hand;
     }
 
 private:
@@ -190,6 +208,14 @@ private:
     static Action* killing_spree(PlayerbotAI* ai) { return new CastKillingSpreeAction(ai); }
     static Action* cold_blood(PlayerbotAI* ai) { return new CastColdBloodAction(ai); }
     static Action* distract(PlayerbotAI* botAI) { return new CastDistractAction(botAI); }
+    static Action* dismantle(PlayerbotAI* botAI) { return new CastDismantleAction(botAI); }
+    static Action* shadowstep(PlayerbotAI* botAI) { return new CastShadowstepAction(botAI); }
+    static Action* deadly_throw(PlayerbotAI* botAI) { return new CastDeadlyThrowAction(botAI); }
+    static Action* sap_opener(PlayerbotAI* botAI) { return new CastSapOpenerAction(botAI); }
+    static Action* use_crippling_poison_off_hand(PlayerbotAI* ai)
+    {
+        return new UseCripplingPoisonOffHandAction(ai);
+    }
 };
 
 SharedNamedObjectContextList<Strategy> RogueAiObjectContext::sharedStrategyContexts;

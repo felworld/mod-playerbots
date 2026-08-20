@@ -5,10 +5,12 @@
  */
 
 #include "RogueTriggers.h"
+#include "AttackersValue.h"
 #include "Formulas.h"
 #include "GenericTriggers.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
+#include "RogueOpeningActions.h"
 #include "ServerFacade.h"
 #include "SpellMgr.h"
 
@@ -16,6 +18,25 @@ namespace
 {
 constexpr uint32 SPELL_STEALTH = 1784;
 constexpr uint32 SPELL_SPRINT_RANK_1 = 2983;
+
+// Combo points below this are worth more as an Eviscerate than as a stun.
+constexpr uint8 KIDNEY_SHOT_MIN_COMBO_POINTS = 3;
+
+// A control effect the target would shrug off: third application inside the diminishing-returns
+// window, where the stun lasts a quarter of its duration. Only players and their pets diminish.
+bool IsDiminished(PlayerbotAI* botAI, std::string const& spell, Unit* target)
+{
+    uint32 spellId = botAI->GetAiObjectContext()->GetValue<uint32>("spell id", spell)->Get();
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return false;
+
+    DiminishingGroup group = GetDiminishingReturnsGroupForSpell(spellInfo, false);
+    if (group == DIMINISHING_NONE)
+        return false;
+
+    return target->GetDiminishing(group) >= DIMINISHING_LEVEL_3;
+}
 
 // The Distract cast window: close enough that the dest point (5yd past
 // the target) stays inside the spell's 30yd range, far enough that the
@@ -157,8 +178,10 @@ bool SprintTrigger::IsActive()
 bool ExposeArmorTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, "current target");
+    // Expose Armor is a finisher: applied at full combo points, and only when no warrior has
+    // already stacked Sunder Armor on the target.
     return DebuffTrigger::IsActive() && !botAI->HasAura("sunder armor", target, false, false, -1, true) &&
-           AI_VALUE2(uint8, "combo", "current target") <= 3;
+           AI_VALUE2(uint8, "combo", "current target") >= 5;
 }
 
 bool DistractTrigger::IsActive()
@@ -221,4 +244,44 @@ bool OffHandWeaponNoEnchantTrigger::IsActive()
     if (!itemForSpell || itemForSpell->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
         return false;
     return true;
+}
+
+bool KidneyShotTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !target->IsControlledByPlayer())
+        return false;
+
+    if (AI_VALUE2(uint8, "combo", "current target") < KIDNEY_SHOT_MIN_COMBO_POINTS)
+        return false;
+
+    if (AttackersValue::IsCrowdControlled(target) || IsDiminished(botAI, "kidney shot", target))
+        return false;
+
+    return botAI->CanCastSpell("kidney shot", target);
+}
+
+bool DismantleTrigger::IsActive()
+{
+    if (!AI_VALUE2(uint32, "spell id", "dismantle"))
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !target->IsPlayer())
+        return false;
+
+    if (PlayerbotAI::IsRanged(target->ToPlayer()))
+        return false;
+
+    return !botAI->HasAura("dismantle", target) && botAI->CanCastSpell("dismantle", target);
+}
+
+bool SapOpenerTrigger::IsActive() { return CastSapOpenerAction::FindSapTarget(botAI) != nullptr; }
+
+bool OffHandWeaponNoEnchantPvpTrigger::IsActive()
+{
+    if (!bot->InBattleground() && !bot->InArena() && !botAI->HasPvpOpponent())
+        return false;
+
+    return OffHandWeaponNoEnchantTrigger::IsActive();
 }

@@ -92,6 +92,24 @@ public:
     CastDismantleAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "dismantle") {}
 };
 
+// Subtlety's gap closer: lands behind the target, which is also where Ambush and Backstab want
+// the bot to be.
+class CastShadowstepAction : public CastSpellAction
+{
+public:
+    CastShadowstepAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "shadowstep") {}
+};
+
+// The rogue's only ranged snare, and a finisher: spent on a player walking out of melee range
+// rather than on a mob, and only with enough combo points to be worth spending.
+class CastDeadlyThrowAction : public CastSnareSpellAction
+{
+public:
+    CastDeadlyThrowAction(PlayerbotAI* botAI) : CastSnareSpellAction(botAI, "deadly throw") {}
+
+    bool isUseful() override;
+};
+
 // Distract is destination-targeted: the point goes past the target on
 // the bot-to-target line, so facing it turns the target's back squarely
 // to the bot for the straight walk-in (StealthFlankAction's behind-the-arc
@@ -183,6 +201,15 @@ class UseInstantPoisonOffHandAction : public UseItemAction
 {
 public:
     UseInstantPoisonOffHandAction(PlayerbotAI* ai) : UseItemAction(ai, "Instant Poison Off Hand") {}
+
+    bool Execute(Event event) override;
+    bool isPossible() override;
+};
+
+class UseCripplingPoisonOffHandAction : public UseItemAction
+{
+public:
+    UseCripplingPoisonOffHandAction(PlayerbotAI* ai) : UseItemAction(ai, "Crippling Poison Off Hand") {}
 
     bool Execute(Event event) override;
     bool isPossible() override;

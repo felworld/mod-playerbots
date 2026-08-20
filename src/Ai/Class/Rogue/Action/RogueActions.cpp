@@ -23,6 +23,9 @@ constexpr uint32 BG_WS_SPELL_SILVERWING_FLAG = 23335;
 constexpr uint32 BG_EY_NETHERSTORM_FLAG_SPELL = 34976;
 constexpr uint32 SPELL_MASTER_POISONER_RANK_3 = 58410;
 
+// Below this a Deadly Throw is worth less than saving the points for an Eviscerate.
+constexpr uint8 DEADLY_THROW_MIN_COMBO_POINTS = 3;
+
 // How far past the target the Distract point lands - deep enough that the
 // forced turn puts the target's back squarely to the bot.
 constexpr float DISTRACT_OVERSHOOT = 5.0f;
@@ -98,6 +101,19 @@ bool CastVanishAction::isUseful()
     // do not use with WSG flag or EYE flag
     return !bot->HasAura(BG_WS_SPELL_WARSONG_FLAG) && !bot->HasAura(BG_WS_SPELL_SILVERWING_FLAG) &&
            !bot->HasAura(BG_EY_NETHERSTORM_FLAG_SPELL);
+}
+
+bool CastDeadlyThrowAction::isUseful()
+{
+    // Combo points live on the unit the bot is fighting, so the throw is only a finisher when
+    // the runner and the current target are the same player.
+    if (!GetTarget() || GetTarget() != AI_VALUE(Unit*, "current target"))
+        return false;
+
+    if (AI_VALUE2(uint8, "combo", "current target") < DEADLY_THROW_MIN_COMBO_POINTS)
+        return false;
+
+    return CastSnareSpellAction::isUseful();
 }
 
 bool CastEnvenomAction::isUseful()
@@ -258,6 +274,45 @@ bool UseInstantPoisonOffHandAction::isPossible()
     for (std::string& suffix : poison_suffixs)
     {
         poison_name = "Instant Poison" + suffix;
+        items = AI_VALUE2(std::vector<Item*>, "inventory items", poison_name);
+        if (!items.empty())
+        {
+            break;
+        }
+    }
+    return !items.empty();
+}
+
+bool UseCripplingPoisonOffHandAction::Execute(Event /*event*/)
+{
+    std::vector<std::string> poison_suffixs = {" II", ""};
+    std::vector<Item*> items;
+    std::string poison_name;
+    for (std::string& suffix : poison_suffixs)
+    {
+        poison_name = "Crippling Poison" + suffix;
+        items = AI_VALUE2(std::vector<Item*>, "inventory items", poison_name);
+        if (!items.empty())
+        {
+            break;
+        }
+    }
+    if (items.empty())
+    {
+        return false;
+    }
+    Item* const itemForSpell = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+    return UseItem(*items.begin(), ObjectGuid::Empty, itemForSpell);
+}
+
+bool UseCripplingPoisonOffHandAction::isPossible()
+{
+    std::vector<std::string> poison_suffixs = {" II", ""};
+    std::vector<Item*> items;
+    std::string poison_name;
+    for (std::string& suffix : poison_suffixs)
+    {
+        poison_name = "Crippling Poison" + suffix;
         items = AI_VALUE2(std::vector<Item*>, "inventory items", poison_name);
         if (!items.empty())
         {
