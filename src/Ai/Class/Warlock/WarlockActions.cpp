@@ -27,10 +27,7 @@ bool CastDrainSoulAction::isUseful() { return AI_VALUE2(uint32, "item count", "s
 // Checks if the bot's health is above a certain threshold, and if so, allows casting Life Tap
 bool CastLifeTapAction::isUseful() { return AI_VALUE2(uint8, "health", "self target") > sPlayerbotAIConfig.lowHealth; }
 
-Value<Unit*>* CastBanishOnCcAction::GetTargetValue() { return context->GetValue<Unit*>("rti cc target"); }
-Value<Unit*>* CastFearOnCcAction::GetTargetValue() { return context->GetValue<Unit*>("rti cc target"); }
-
-// Checks if the target marked with the moon icon can be banished
+// Checks if the CC target can be banished
 bool CastBanishOnCcAction::isPossible()
 {
     Unit* target = GetTarget();
@@ -46,7 +43,7 @@ bool CastBanishOnCcAction::isPossible()
     return CastCrowdControlSpellAction::isPossible();
 }
 
-// Checks if the target marked with the moon icon can be feared
+// Checks if the CC target can be feared
 bool CastFearOnCcAction::isPossible()
 {
     Unit* target = GetTarget();

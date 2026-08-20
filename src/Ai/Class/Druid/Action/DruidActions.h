@@ -203,7 +203,6 @@ class CastEntanglingRootsCcAction : public CastCrowdControlSpellAction
 {
 public:
     CastEntanglingRootsCcAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "entangling roots") {}
-    Value<Unit*>* GetTargetValue() override;
 };
 
 class CastHibernateAction : public CastSpellAction
@@ -216,14 +215,12 @@ class CastHibernateCcAction : public CastCrowdControlSpellAction
 {
 public:
     CastHibernateCcAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "hibernate") {}
-    Value<Unit*>* GetTargetValue() override;
 };
 
 class CastCycloneCcAction : public CastCrowdControlSpellAction
 {
 public:
     CastCycloneCcAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "cyclone") {}
-    Value<Unit*>* GetTargetValue() override;
 };
 
 class CastNaturesGraspAction : public CastBuffSpellAction

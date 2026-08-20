@@ -149,15 +149,6 @@ bool CastStarfireAction::isUseful()
     return CastSpellAction::isUseful();
 }
 
-Value<Unit*>* CastEntanglingRootsCcAction::GetTargetValue()
-{
-    return context->GetValue<Unit*>("rti cc target");
-}
-
-Value<Unit*>* CastHibernateCcAction::GetTargetValue() { return context->GetValue<Unit*>("rti cc target"); }
-
-Value<Unit*>* CastCycloneCcAction::GetTargetValue() { return context->GetValue<Unit*>("rti cc target"); }
-
 bool CastTyphoonAction::isUseful()
 {
     bool facingTarget = AI_VALUE2(bool, "facing", "current target");

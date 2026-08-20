@@ -22,11 +22,13 @@ bool NoRtiTrigger::IsActive()
 // Fires when the RTI CC target should be crowd controlled by this spell.
 // Standard path: the target is already in the attackers list and "cc target" matches the RTI
 // mark — delegates to HasCcTargetTrigger to confirm no one else is already CCing it.
+// Without a raid icon (solo, PvP, unmarked pulls) it falls back to the generic "cc target"
+// selection, the same path Polymorph and Hex use, instead of never firing at all.
 bool RtiCcTrigger::IsActive()
 {
     Unit* rtiCcTarget = AI_VALUE(Unit*, "rti cc target");
     if (!rtiCcTarget)
-        return false;
+        return HasCcTargetTrigger::IsActive();
 
     Unit* ccTarget = AI_VALUE2(Unit*, "cc target", getName());
     if (ccTarget && ccTarget == rtiCcTarget)

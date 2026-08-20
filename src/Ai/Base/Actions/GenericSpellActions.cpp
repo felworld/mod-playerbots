@@ -477,7 +477,15 @@ Value<Unit*>* CastSpellOnEnemyHealerAction::GetTargetValue()
 
 Value<Unit*>* CastSnareSpellAction::GetTargetValue() { return context->GetValue<Unit*>("snare target", spell); }
 
-Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue() { return context->GetValue<Unit*>("cc target", getName()); }
+// A raid icon set for CC always wins; otherwise the generic per-spell "cc target" selection.
+Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue()
+{
+    Value<Unit*>* rtiCcTarget = context->GetValue<Unit*>("rti cc target");
+    if (rtiCcTarget->Get())
+        return rtiCcTarget;
+
+    return context->GetValue<Unit*>("cc target", getName());
+}
 
 bool CastCrowdControlSpellAction::Execute(Event /*event*/) { return botAI->CastSpell(getName(), GetTarget()); }
 
