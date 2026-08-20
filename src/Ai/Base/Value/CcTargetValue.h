@@ -19,6 +19,9 @@ public:
     CcTargetValue(PlayerbotAI* botAI, std::string const name = "cc target") : TargetValue(botAI, name) {}
 
     Unit* Calculate() override;
+
+private:
+    Unit* FindBreatherTarget();
 };
 
 #endif

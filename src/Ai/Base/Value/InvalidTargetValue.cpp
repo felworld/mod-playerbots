@@ -20,6 +20,12 @@ bool InvalidTargetValue::Calculate()
     if (target && qualifier == "current target" && WpvpChaseBroken(bot, target))
         return true;
 
+    // A target under damage-breakable CC is dropped even when it is the enemy player we are in
+    // PvP combat with - otherwise the enemy-player short-circuit below keeps the bot swinging
+    // at its own Polymorph/Hex/Sap.
+    if (target && qualifier == "current target" && AttackersValue::IsCrowdControlled(target))
+        return true;
+
     Unit* enemy = AI_VALUE(Unit*, "enemy player target");
     if (target && enemy && target == enemy && target->IsAlive())
         return false;

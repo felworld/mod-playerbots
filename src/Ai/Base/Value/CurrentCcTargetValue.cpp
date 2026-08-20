@@ -5,6 +5,7 @@
  */
 
 #include "CurrentCcTargetValue.h"
+#include "AiObjectContext.h"
 #include "PlayerbotAI.h"
 
 class FindCurrentCcTargetStrategy : public FindTargetStrategy
@@ -27,5 +28,20 @@ private:
 Unit* CurrentCcTargetValue::Calculate()
 {
     FindCurrentCcTargetStrategy strategy(botAI, qualifier);
-    return FindTarget(&strategy);
+    if (Unit* target = FindTarget(&strategy))
+        return target;
+
+    // A unit under damage-breakable CC leaves "attackers" (AttackersValue::IsCrowdControlled), so
+    // the unit we just controlled has to be found among everything hostile nearby - otherwise the
+    // CC trigger sees "no current cc target" and casts again on someone else, which for
+    // single-target CC like Polymorph would release the first one.
+    GuidVector possible = botAI->GetAiObjectContext()->GetValue<GuidVector>("possible targets")->Get();
+    for (ObjectGuid const guid : possible)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && botAI->HasAura(qualifier, unit))
+            return unit;
+    }
+
+    return nullptr;
 }

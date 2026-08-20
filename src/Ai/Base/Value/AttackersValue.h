@@ -23,6 +23,12 @@ public:
     GuidVector Calculate();
     static bool IsPossibleTarget(Unit* attacker, Player* bot, float range = sPlayerbotAIConfig.sightDistance);
     static bool IsValidTarget(Unit* attacker, Player* bot);
+    // True while the unit is under crowd control that damage would break (Polymorph, Hex, Sap,
+    // Gouge, Repentance, Freezing Trap, Hibernate, fears, ...). Roots are deliberately excluded:
+    // a rooted target is what kiting classes want to keep shooting. Units in this state are kept
+    // out of "attackers" and invalidate "current target", so no bot breaks its own (or a
+    // groupmate's) CC by continuing to attack.
+    static bool IsCrowdControlled(Unit* unit);
 
 private:
     void AddAttackersOf(Group* group, std::unordered_set<Unit*>& targets);

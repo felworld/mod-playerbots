@@ -140,9 +140,17 @@ void AttackersValue::RemoveNonThreating(std::unordered_set<Unit*>& targets)
 
 bool AttackersValue::hasRealThreat(Unit* attacker)
 {
-    return attacker && attacker->IsInWorld() && attacker->IsAlive() && !attacker->IsPolymorphed() &&
+    return attacker && attacker->IsInWorld() && attacker->IsAlive() && !IsCrowdControlled(attacker) &&
            // !attacker->isInRoots() &&
            !attacker->IsFriendlyTo(bot);
+}
+
+bool AttackersValue::IsCrowdControlled(Unit* unit)
+{
+    return unit->IsPolymorphed() || unit->HasBreakableByDamageAuraType(SPELL_AURA_MOD_CONFUSE) ||
+           unit->HasBreakableByDamageAuraType(SPELL_AURA_MOD_FEAR) ||
+           unit->HasBreakableByDamageAuraType(SPELL_AURA_MOD_STUN) ||
+           unit->HasBreakableByDamageAuraType(SPELL_AURA_TRANSFORM);
 }
 
 bool AttackersValue::IsPossibleTarget(Unit* attacker, Player* bot, float /*range*/)

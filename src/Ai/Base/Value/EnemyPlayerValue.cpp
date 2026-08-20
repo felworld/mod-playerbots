@@ -5,6 +5,7 @@
  */
 
 #include "EnemyPlayerValue.h"
+#include "AttackersValue.h"
 #include "CombatManager.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
@@ -52,6 +53,10 @@ bool NearestEnemyPlayersValue::AcceptUnit(Unit* unit)
         if (WpvpChaseBanned(bot, enemy))
             return false;
 
+        // Never re-acquire a crowd-controlled player: the attack would break the CC
+        if (AttackersValue::IsCrowdControlled(enemy))
+            return false;
+
         return true;
     }
 
@@ -94,6 +99,10 @@ Unit* EnemyPlayerValue::Calculate()
         // Chase leash (Felworld): same for a chase this bot rolled to
         // abandon - the lingering combat ref must not rekindle it.
         if (WpvpChaseBanned(bot, pTarget))
+            continue;
+
+        // Our own (or anyone's) Polymorph/Hex/Sap on them must not be broken by re-engaging
+        if (AttackersValue::IsCrowdControlled(pTarget))
             continue;
 
         if ((bot->GetTeamId() == TEAM_HORDE && pTarget->HasAura(23333)) ||
