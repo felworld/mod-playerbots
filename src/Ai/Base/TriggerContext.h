@@ -117,6 +117,8 @@ public:
 
         creators["healer should attack"] = &TriggerContext::healer_should_attack;
         creators["medium aoe and healer should attack"] = &TriggerContext::medium_aoe_and_healer_should_attack;
+        creators["moving filler"] = &TriggerContext::moving_filler;
+        creators["moving filler and healer should attack"] = &TriggerContext::moving_filler_and_healer_should_attack;
 
         creators["has area debuff"] = &TriggerContext::HasAreaDebuff;
 
@@ -370,6 +372,11 @@ private:
     static Trigger* HighAoe(PlayerbotAI* botAI) { return new HighAoeTrigger(botAI); }
     static Trigger* healer_should_attack(PlayerbotAI* botAI) { return new HealerShouldAttackTrigger(botAI); }
     static Trigger* medium_aoe_and_healer_should_attack(PlayerbotAI* botAI) { return new TwoTriggers(botAI, "medium aoe", "healer should attack"); }
+    static Trigger* moving_filler(PlayerbotAI* botAI) { return new MovingFillerTrigger(botAI); }
+    static Trigger* moving_filler_and_healer_should_attack(PlayerbotAI* botAI)
+    {
+        return new TwoTriggers(botAI, "moving filler", "healer should attack");
+    }
     static Trigger* HasAreaDebuff(PlayerbotAI* botAI) { return new HasAreaDebuffTrigger(botAI); }
     static Trigger* LoseAggro(PlayerbotAI* botAI) { return new LoseAggroTrigger(botAI); }
     static Trigger* HasAggro(PlayerbotAI* botAI) { return new HasAggroTrigger(botAI); }

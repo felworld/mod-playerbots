@@ -230,23 +230,6 @@ public:
     bool IsActive() override;
 };
 
-// The bot is moving with a live target: cast-time spells would be cancelled, so fall
-// through to instant fillers instead of auto-attacking.
-class ShamanMovingFillerTrigger : public Trigger
-{
-public:
-    ShamanMovingFillerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "moving filler") {}
-
-    bool IsActive() override;
-};
-
-class MovingFillerAndHealerShouldAttackTrigger : public TwoTriggers
-{
-public:
-    MovingFillerAndHealerShouldAttackTrigger(PlayerbotAI* botAI)
-        : TwoTriggers(botAI, "moving filler", "healer should attack") {}
-};
-
 class MaelstromWeaponTrigger : public HasAuraStackTrigger
 {
 public:

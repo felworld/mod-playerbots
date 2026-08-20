@@ -612,6 +612,15 @@ bool HasCcTargetTrigger::IsActive()
     return AI_VALUE2(Unit*, "cc target", getName()) && !AI_VALUE2(Unit*, "current cc target", getName());
 }
 
+bool MovingFillerTrigger::IsActive()
+{
+    if (!bot->isMoving())
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->IsAlive();
+}
+
 bool NoMovementTrigger::IsActive() { return !AI_VALUE2(bool, "moving", "self target"); }
 
 bool NoPossibleTargetsTrigger::IsActive()

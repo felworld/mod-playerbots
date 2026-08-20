@@ -702,6 +702,18 @@ public:
     bool IsActive() override;
 };
 
+// The bot is moving with a live target. PlayerbotAI::CanCastSpell already refuses cast-time,
+// channelled and auto-repeat spells while moving, so a moving caster only auto-attacks when
+// nothing instant is queued - class strategies hang their instant fillers off this trigger
+// (which instant is worth the GCD is class knowledge, hence no generic handler).
+class MovingFillerTrigger : public Trigger
+{
+public:
+    MovingFillerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "moving filler") {}
+
+    bool IsActive() override;
+};
+
 class NoMovementTrigger : public Trigger
 {
 public:

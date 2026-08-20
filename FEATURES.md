@@ -840,7 +840,10 @@ were hardcoded per spec with no Grounding or Earthbind ever. Now:
   hostile player target to kite.
 - **Instant fillers while moving** — a moving caster shaman falls
   through to instant Flame Shock / Frost Shock / Earth Shock instead of
-  repeatedly starting and cancelling Lightning Bolt casts.
+  auto-attacking (the engine already refuses cast-time spells while
+  moving; the gap was that nothing instant was queued). The `moving
+  filler` trigger behind it is generic, so any class can hang its
+  instants off it.
 - **PvP totems** — versus player opponents (battlegrounds, world PvP,
   and duels alike — detected from the actual combatants, not the map),
   Grounding Totem owns the air slot and Earthbind the earth slot,

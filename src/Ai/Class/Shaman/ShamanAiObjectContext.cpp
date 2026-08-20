@@ -156,8 +156,6 @@ public:
         creators["shock"] = &ShamanATriggerFactoryInternal::shock;
         creators["frost shock snare"] = &ShamanATriggerFactoryInternal::frost_shock_snare;
         creators["frost shock kite"] = &ShamanATriggerFactoryInternal::frost_shock_kite;
-        creators["moving filler"] = &ShamanATriggerFactoryInternal::moving_filler;
-        creators["moving filler and healer should attack"] = &ShamanATriggerFactoryInternal::moving_filler_and_healer_should_attack;
         creators["heroism"] = &ShamanATriggerFactoryInternal::heroism;
         creators["bloodlust"] = &ShamanATriggerFactoryInternal::bloodlust;
         creators["elemental mastery"] = &ShamanATriggerFactoryInternal::elemental_mastery;
@@ -228,8 +226,6 @@ private:
     static Trigger* shock(PlayerbotAI* botAI) { return new ShockTrigger(botAI); }
     static Trigger* frost_shock_snare(PlayerbotAI* botAI) { return new FrostShockSnareTrigger(botAI); }
     static Trigger* frost_shock_kite(PlayerbotAI* botAI) { return new FrostShockKiteTrigger(botAI); }
-    static Trigger* moving_filler(PlayerbotAI* botAI) { return new ShamanMovingFillerTrigger(botAI); }
-    static Trigger* moving_filler_and_healer_should_attack(PlayerbotAI* botAI) { return new MovingFillerAndHealerShouldAttackTrigger(botAI); }
     static Trigger* wind_shear_on_enemy_healer(PlayerbotAI* botAI) { return new WindShearInterruptEnemyHealerSpellTrigger(botAI); }
     static Trigger* earth_shield_on_main_tank(PlayerbotAI* botAI) { return new EarthShieldOnMainTankTrigger(botAI); }
     static Trigger* flame_shock(PlayerbotAI* botAI) { return new FlameShockTrigger(botAI); }
