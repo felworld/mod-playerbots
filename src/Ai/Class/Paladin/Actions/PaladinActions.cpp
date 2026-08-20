@@ -538,7 +538,7 @@ bool CastSealSpellAction::isUseful()
     return AI_VALUE2(bool, "combat", "self target");
 }
 
-Value<Unit*>* CastTurnUndeadAction::GetTargetValue()
+Value<Unit*>* CastTurnEvilAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("cc target", getName());
 }

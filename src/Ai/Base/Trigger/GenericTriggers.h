@@ -248,10 +248,24 @@ public:
     std::string const getName() override { return "being attacked"; }
 };
 
+// PvE threat management: at least two creatures are on the bot and each has someone else on its
+// threat list to fall back to (a tank, any other party member, the bot's pet) - no designated
+// main tank required. Threat drops do nothing against players, so player-controlled attackers
+// are not counted; see PvpEscapeTrigger for those.
 class MediumThreatTrigger : public MyAttackerCountTrigger
 {
 public:
     MediumThreatTrigger(PlayerbotAI* botAI) : MyAttackerCountTrigger(botAI, 2) {}
+    bool IsActive() override;
+};
+
+// A PvP fight worth leaving: two or more enemy players (or their pets) are on the bot, or one is
+// while the bot is below AiPlayerbot.LowHealth and its opponent is not lower still. Escapes that
+// reset a fight (Vanish, Feign Death) hang off this.
+class PvpEscapeTrigger : public Trigger
+{
+public:
+    PvpEscapeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "pvp escape") {}
     bool IsActive() override;
 };
 

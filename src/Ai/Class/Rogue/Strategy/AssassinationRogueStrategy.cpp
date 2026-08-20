@@ -149,6 +149,15 @@ void AssassinationRogueStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
 
     triggers.push_back(
         new TriggerNode(
+            "pvp escape",
+            {
+                NextAction("vanish", ACTION_HIGH),
+            }
+        )
+    );
+
+    triggers.push_back(
+        new TriggerNode(
             "low health",
             {
                 NextAction("evasion", ACTION_HIGH + 9),

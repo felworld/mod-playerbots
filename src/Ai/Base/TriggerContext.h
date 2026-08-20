@@ -141,6 +141,7 @@ public:
 
         creators["being attacked"] = &TriggerContext::BeingAttacked;
         creators["medium threat"] = &TriggerContext::MediumThreat;
+        creators["pvp escape"] = &TriggerContext::pvp_escape;
         creators["low tank threat"] = &TriggerContext::low_tank_threat;
 
         creators["dead"] = &TriggerContext::Dead;
@@ -443,6 +444,7 @@ private:
     static Trigger* ComboPointsNotFullAndHighEnergy(PlayerbotAI* botAI) { return new TwoTriggers(botAI, "combo points not full", "high energy available"); }
     static Trigger* BeingAttacked(PlayerbotAI* botAI) { return new BeingAttackedTrigger(botAI); }
     static Trigger* MediumThreat(PlayerbotAI* botAI) { return new MediumThreatTrigger(botAI); }
+    static Trigger* pvp_escape(PlayerbotAI* botAI) { return new PvpEscapeTrigger(botAI); }
     static Trigger* low_tank_threat(PlayerbotAI* botAI) { return new LowTankThreatTrigger(botAI); }
     // static Trigger* MediumThreat(PlayerbotAI* botAI) { return new MediumThreatTrigger(botAI); }
     static Trigger* Dead(PlayerbotAI* botAI) { return new DeadTrigger(botAI); }

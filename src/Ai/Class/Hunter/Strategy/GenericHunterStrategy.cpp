@@ -73,6 +73,7 @@ void GenericHunterStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode("low health", { NextAction("deterrence", 35.0f) }));
     triggers.push_back(new TriggerNode("concussive shot on snare target", { NextAction("concussive shot", 20.0f) }));
     triggers.push_back(new TriggerNode("medium threat", { NextAction("feign death", 35.0f) }));
+    triggers.push_back(new TriggerNode("pvp escape", { NextAction("feign death", 35.0f) }));
     triggers.push_back(new TriggerNode("hunters pet medium health", { NextAction("mend pet", 22.0f) }));
     triggers.push_back(new TriggerNode("hunters pet low health", { NextAction("mend pet", 21.0f) }));
 

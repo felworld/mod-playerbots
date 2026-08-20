@@ -352,10 +352,10 @@ public:
     CastSenseUndeadAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "sense undead") {}
 };
 
-class CastTurnUndeadAction : public CastBuffSpellAction
+class CastTurnEvilAction : public CastBuffSpellAction
 {
 public:
-    CastTurnUndeadAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "turn undead") {}
+    CastTurnEvilAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "turn evil") {}
 
     Value<Unit*>* GetTargetValue() override;
 };

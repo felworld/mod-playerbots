@@ -139,7 +139,7 @@ public:
         creators["not sensing undead"] = &PaladinTriggerFactoryInternal::not_sensing_undead;
         creators["divine favor"] = &PaladinTriggerFactoryInternal::divine_favor;
         creators["divine shield low health"] = &PaladinTriggerFactoryInternal::divine_shield_low_health;
-        creators["turn undead"] = &PaladinTriggerFactoryInternal::turn_undead;
+        creators["turn evil"] = &PaladinTriggerFactoryInternal::turn_evil;
         creators["avenger's shield"] = &PaladinTriggerFactoryInternal::avenger_shield;
         creators["consecration"] = &PaladinTriggerFactoryInternal::consecration;
         creators["repentance on enemy healer"] = &PaladinTriggerFactoryInternal::repentance_on_enemy_healer;
@@ -160,7 +160,7 @@ public:
 
 private:
     static Trigger* not_sensing_undead(PlayerbotAI* botAI) { return new NotSensingUndeadTrigger(botAI); }
-    static Trigger* turn_undead(PlayerbotAI* botAI) { return new TurnUndeadTrigger(botAI); }
+    static Trigger* turn_evil(PlayerbotAI* botAI) { return new TurnEvilTrigger(botAI); }
     static Trigger* divine_favor(PlayerbotAI* botAI) { return new DivineFavorTrigger(botAI); }
     static Trigger* divine_shield_low_health(PlayerbotAI* botAI) { return new DivineShieldLowHealthTrigger(botAI); }
     static Trigger* holy_shield(PlayerbotAI* botAI) { return new HolyShieldTrigger(botAI); }
@@ -304,7 +304,7 @@ public:
             &PaladinAiObjectContextInternal::hammer_of_justice_on_snare_target;
         creators["divine favor"] = &PaladinAiObjectContextInternal::divine_favor;
         creators["sense undead"] = &PaladinAiObjectContextInternal::sense_undead;
-        creators["turn undead"] = &PaladinAiObjectContextInternal::turn_undead;
+        creators["turn evil"] = &PaladinAiObjectContextInternal::turn_evil;
         creators["blessing of protection on party"] = &PaladinAiObjectContextInternal::blessing_of_protection_on_party;
         creators["righteous defense"] = &PaladinAiObjectContextInternal::righteous_defense;
         creators["repentance"] = &PaladinAiObjectContextInternal::repentance;
@@ -332,7 +332,7 @@ private:
         return new CastBlessingOfProtectionProtectAction(botAI);
     }
     static Action* sense_undead(PlayerbotAI* botAI) { return new CastSenseUndeadAction(botAI); }
-    static Action* turn_undead(PlayerbotAI* botAI) { return new CastTurnUndeadAction(botAI); }
+    static Action* turn_evil(PlayerbotAI* botAI) { return new CastTurnEvilAction(botAI); }
     static Action* divine_favor(PlayerbotAI* botAI) { return new CastDivineFavorAction(botAI); }
     static Action* righteous_fury(PlayerbotAI* botAI) { return new CastRighteousFuryAction(botAI); }
     static Action* seal_of_command(PlayerbotAI* botAI) { return new CastSealOfCommandAction(botAI); }

@@ -64,7 +64,7 @@ void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)
 void PaladinCcStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     triggers.push_back(
-        new TriggerNode("turn undead", { NextAction("turn undead", ACTION_HIGH + 1) }));
+        new TriggerNode("turn evil", { NextAction("turn evil", ACTION_HIGH + 1) }));
 }
 
 void PaladinHealerDpsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

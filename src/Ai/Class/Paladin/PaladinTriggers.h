@@ -176,10 +176,10 @@ public:
     bool IsActive() override;
 };
 
-class TurnUndeadTrigger : public HasCcTargetTrigger
+class TurnEvilTrigger : public HasCcTargetTrigger
 {
 public:
-    TurnUndeadTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "turn undead") {}
+    TurnEvilTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "turn evil") {}
 };
 
 DEBUFF_TRIGGER(AvengerShieldTrigger, "avenger's shield");

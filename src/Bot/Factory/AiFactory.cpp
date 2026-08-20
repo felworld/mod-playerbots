@@ -321,7 +321,7 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             else // if (tab == PRIEST_TAB_HOLY)
                 engine->addStrategy("holy heal", false);
 
-            engine->addStrategiesNoInit("dps assist", "cure", nullptr);
+            engine->addStrategiesNoInit("dps assist", "cure", "cc", nullptr);
             break;
         case CLASS_MAGE:
             if (tab == MAGE_TAB_ARCANE)
@@ -363,6 +363,8 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
                 engine->addStrategiesNoInit("heal", "dps assist", "cure", "bcast", nullptr);
             else // if (tab == PALADIN_TAB_RETRIBUTION)
                 engine->addStrategiesNoInit("dps", "dps assist", "cure", "baoe", nullptr);
+
+            engine->addStrategy("cc", false);
             break;
         case CLASS_DRUID:
             if (tab == DRUID_TAB_BALANCE)
@@ -391,9 +393,9 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
             break;
         case CLASS_ROGUE:
             if (tab == ROGUE_TAB_ASSASSINATION || tab == ROGUE_TAB_SUBTLETY)
-                engine->addStrategiesNoInit("melee", "dps assist", "aoe", nullptr);
+                engine->addStrategiesNoInit("melee", "dps assist", "aoe", "cc", nullptr);
             else // if (tab == ROGUE_TAB_COMBAT)
-                engine->addStrategiesNoInit("dps", "dps assist", "aoe", nullptr);
+                engine->addStrategiesNoInit("dps", "dps assist", "aoe", "cc", nullptr);
             break;
         case CLASS_WARLOCK:
             if (tab == WARLOCK_TAB_AFFLICTION)

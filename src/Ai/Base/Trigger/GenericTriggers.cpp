@@ -229,10 +229,47 @@ bool MyAttackerCountTrigger::IsActive()
 
 bool MediumThreatTrigger::IsActive()
 {
-    if (!AI_VALUE(Unit*, "main tank"))
+    if (!AI_VALUE2(bool, "combat", "self target"))
         return false;
 
-    return MyAttackerCountTrigger::IsActive();
+    int32 count = 0;
+    for (Unit* attacker : bot->getAttackers())
+    {
+        if (attacker->IsControlledByPlayer())
+            continue;
+
+        // Dropping threat only helps if the creature has someone else to turn to
+        if (attacker->GetThreatMgr().GetThreatListSize() < 2)
+            continue;
+
+        ++count;
+    }
+
+    return count >= amount;
+}
+
+bool PvpEscapeTrigger::IsActive()
+{
+    if (!bot->IsInCombat())
+        return false;
+
+    uint32 players = 0;
+    for (Unit* attacker : bot->getAttackers())
+        if (attacker->IsControlledByPlayer())
+            ++players;
+
+    if (!players)
+        return false;
+
+    if (players >= 2)
+        return true;
+
+    if (bot->GetHealthPct() >= sPlayerbotAIConfig.lowHealth)
+        return false;
+
+    // Behind on health, but the one opponent is closer to dropping: finish them instead
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return !target || target->GetHealthPct() >= bot->GetHealthPct();
 }
 
 bool LowTankThreatTrigger::IsActive()

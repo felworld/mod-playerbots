@@ -912,6 +912,26 @@ shares rather than in any one rotation. The shared fixes:
   against a mob that will follow anyway). A player or player pet in
   melee on the bot now counts, so casters actually use their escape
   tools.
+- **Threat drops without a main tank** — the "medium threat" trigger
+  behind priest Fade, warlock Soulshatter, cat Cower, hunter Feign
+  Death, rogue Vanish and mage Invisibility required a designated main
+  tank, which never exists solo, in a tankless party, or in an arena.
+  It now fires when two or more creatures are on the bot and each has
+  someone else on its threat list to fall back to (a tank, any party
+  member, the bot's pet). Player-controlled attackers are not counted:
+  a threat drop does nothing against a player.
+- **Escapes in PvP** — a new "pvp escape" trigger fires when two or
+  more enemy players (or their pets) are on the bot, or one is while
+  the bot is below `AiPlayerbot.LowHealth` and its opponent is not
+  lower still. Rogue Vanish and hunter Feign Death hang off it; mage
+  Invisibility does not, since the bot's next cast would break it.
+- **Priest, paladin and rogue get their CC strategy** — the combat
+  engine never enabled `cc` for these three classes, so Shackle Undead,
+  Turn Evil and Sap were unreachable however they were wired. Paladin
+  Turn Undead was also still addressed by its pre-3.0 name, which
+  resolves to no spell; it is Turn Evil now. Sap remains inert in
+  practice (it needs stealth and an out-of-combat target, and the CC
+  target selection only scans attackers) until a stealth opener exists.
 - **No more silent dead code** — a strategy that references a trigger or
   action name with no registered factory now logs a warning the first
   time it is seen, instead of silently skipping the node.
