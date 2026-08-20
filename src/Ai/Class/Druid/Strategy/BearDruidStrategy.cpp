@@ -175,4 +175,15 @@ void BearDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             { NextAction("bash on enemy healer", 41.0f) }
         )
     );
+    // Shapeshifting strips roots and snares, and Feral Charge cannot be used while rooted, so a
+    // bear kept off its target drops the form; the "bear form" trigger above shifts back in.
+    triggers.push_back(
+        new TriggerNode(
+            "shift to break snare",
+            {
+                NextAction("cancel dire bear form", ACTION_MOVE + 5),
+                NextAction("cancel bear form", ACTION_MOVE + 4)
+            }
+        )
+    );
 }

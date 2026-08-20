@@ -203,4 +203,21 @@ void BalanceDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // Utility/Defensive
     triggers.push_back(new TriggerNode("medium mana", { NextAction("innervate", 29.0f) }));
     triggers.push_back(new TriggerNode("enemy too close for spell", { NextAction("flee", 39.0f) }));
+
+    // Root the melee that has closed and walk back out of its reach (the shaman Frost Shock
+    // kite pattern); the trigger only picks targets with no mana bar, i.e. actual melee.
+    triggers.push_back(new TriggerNode("entangling roots kite", { NextAction("entangling roots", 18.0f) }));
+
+    // Shapeshifting strips roots and snares: a moonkin with a player on top of it shifts out of
+    // the form and the rotation's own prerequisite shifts straight back in.
+    triggers.push_back(new TriggerNode("shift to break snare", { NextAction("cancel moonkin form", 39.5f) }));
+
+    // Instant fillers while moving (Starfire and Wrath have cast bars).
+    triggers.push_back(
+        new TriggerNode("moving filler",
+                        {
+                            NextAction("moonfire", 5.9f),
+                            NextAction("insect swarm", 5.8f),
+                            NextAction("starfall", 5.7f),
+                        }));
 }

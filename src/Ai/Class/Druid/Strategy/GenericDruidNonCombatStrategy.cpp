@@ -145,7 +145,14 @@ void GenericDruidNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
 
     int specTab = AiFactory::GetPlayerSpecTab(botAI->GetBot());
     if (specTab == DRUID_TAB_BALANCE || specTab == DRUID_TAB_RESTORATION)
+    {
         triggers.push_back(new TriggerNode("often", { NextAction("apply oil", 1.0f) }));
+
+        // Carrying the flag rules out mounting, and only feral has Dash: a caster druid runs it
+        // in Travel Form (the action already limits itself to flag carriers). Kept out of the
+        // combat engine, where the form would block every heal and nuke the bot needs.
+        triggers.push_back(new TriggerNode("player has flag", { NextAction("travel form", 10.0f) }));
+    }
     if (specTab == DRUID_TAB_FERAL)
     {
         triggers.push_back(new TriggerNode("often", { NextAction("apply stone", 1.0f) }));

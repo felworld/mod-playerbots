@@ -207,6 +207,24 @@ void CatDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // The only interrupt a cat has: Maim is a finisher, but a stopped cast is worth the combo
+    // points. Without any it simply cannot be cast, so the node is harmless when the bar is empty.
+    triggers.push_back(
+        new TriggerNode(
+            "maim", {
+                NextAction("maim", ACTION_INTERRUPT)
+            }
+        )
+    );
+    // Shapeshifting strips roots and snares: a cat rooted away from its target drops the form
+    // (which costs no global) and the "cat form" trigger above shifts straight back in.
+    triggers.push_back(
+        new TriggerNode(
+            "shift to break snare", {
+                NextAction("cancel cat form", ACTION_MOVE + 5)
+            }
+        )
+    );
 
     triggers.push_back(
         new TriggerNode(

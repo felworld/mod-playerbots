@@ -185,6 +185,28 @@ public:
     BashInterruptSpellTrigger(PlayerbotAI* botAI) : InterruptSpellTrigger(botAI, "bash") {}
 };
 
+// Cat form has no dedicated interrupt: Maim is a finisher, but a stopped cast is worth the combo
+// points. The action itself is harmless without any (it simply cannot be cast).
+class MaimInterruptSpellTrigger : public InterruptSpellTrigger
+{
+public:
+    MaimInterruptSpellTrigger(PlayerbotAI* botAI) : InterruptSpellTrigger(botAI, "maim") {}
+};
+
+// Shapeshifting - into a form or out of one - strips every root and snare, which is the only
+// answer a druid has to Frost Nova, Entangling Roots or Hamstring. Cancelling a form costs no
+// global and the spec's own form trigger puts it straight back on, so this is gated to the cases
+// where a human would pay for it: a player applied the effect, the bot is not prowling (the shift
+// would drop the opener), and the impairment is actually costing the fight - a melee druid rooted
+// away from its target, or a moonkin with a player in its face.
+class ShiftToBreakSnareTrigger : public Trigger
+{
+public:
+    ShiftToBreakSnareTrigger(PlayerbotAI* botAI) : Trigger(botAI, "shift to break snare", 2) {}
+
+    bool IsActive() override;
+};
+
 class BerserkTrigger : public BoostTrigger
 {
 public:

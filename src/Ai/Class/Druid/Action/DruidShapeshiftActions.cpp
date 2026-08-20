@@ -26,8 +26,10 @@ bool CastTravelFormAction::isUseful()
 {
     bool firstmount = bot->GetLevel() >= 20;
 
+    // Base check first: recasting the form while already in it would toggle it straight back off.
     // useful if no mount or with wsg flag
-    return !bot->IsMounted() && (!firstmount || (bot->HasAura(23333) || bot->HasAura(23335) || bot->HasAura(34976))) &&
+    return CastBuffSpellAction::isUseful() && !bot->IsMounted() &&
+           (!firstmount || (bot->HasAura(23333) || bot->HasAura(23335) || bot->HasAura(34976))) &&
            !botAI->HasAura("dash", bot);
 }
 

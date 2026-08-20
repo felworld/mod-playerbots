@@ -22,10 +22,42 @@ bool ThornsOnPartyTrigger::IsActive()
 
 bool EntanglingRootsKiteTrigger::IsActive()
 {
-    return DebuffTrigger::IsActive() && AI_VALUE(uint8, "attacker count") < 3 && !GetTarget()->GetPower(POWER_MANA);
+    // Kiting is a player problem: a mob follows the druid wherever it goes and the root breaks on
+    // the first tick of damage, so this only spends a global on a hostile player with no mana bar
+    // (warrior, rogue, death knight) - the melee a caster druid has to keep at arm's length.
+    Unit* target = GetTarget();
+    if (!target || !target->IsPlayer() || bot->IsFriendlyTo(target))
+        return false;
+
+    return DebuffTrigger::IsActive() && AI_VALUE(uint8, "attacker count") < 3 && !target->GetPower(POWER_MANA);
 }
 
 bool ThornsTrigger::IsActive() { return BuffTrigger::IsActive() && !botAI->HasAura("thorns", GetTarget()); }
+
+bool ShiftToBreakSnareTrigger::IsActive()
+{
+    if (!botAI->IsMovementImpaired(bot) || !botAI->HasPvpOpponent())
+        return false;
+
+    // Prowl is worth more than the snare: shifting would drop the stealth opener with it.
+    if (botAI->HasAura("prowl", bot))
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive())
+        return false;
+
+    // Cat and bear: the root is what is keeping the druid off its target.
+    if (botAI->HasAnyAuraOf(bot, "cat form", "bear form", "dire bear form", nullptr))
+        return !bot->IsWithinMeleeRange(target);
+
+    // Moonkin: a root costs a caster nothing, so only a player in melee range is worth shifting
+    // out of the form and back into it.
+    if (botAI->HasAura("moonkin form", bot))
+        return bot->IsWithinMeleeRange(target);
+
+    return false;
+}
 
 bool BearFormTrigger::IsActive() { return !botAI->HasAnyAuraOf(bot, "bear form", "dire bear form", nullptr); }
 

@@ -136,6 +136,8 @@ public:
         creators["rejuvenation blanket"] = &DruidTriggerFactoryInternal::rejuvenation_blanket;
         creators["wild growth blanket"] = &DruidTriggerFactoryInternal::wild_growth_blanket;
         creators["aquatic form"] = &DruidTriggerFactoryInternal::aquatic_form;
+        creators["maim"] = &DruidTriggerFactoryInternal::maim;
+        creators["shift to break snare"] = &DruidTriggerFactoryInternal::shift_to_break_snare;
     }
 
 private:
@@ -201,6 +203,8 @@ private:
     static Trigger* rejuvenation_blanket(PlayerbotAI* ai) { return new BuffOnPartyTrigger(ai, "rejuvenation"); }
     static Trigger* wild_growth_blanket(PlayerbotAI* ai) { return new BuffOnPartyTrigger(ai, "wild growth"); }
     static Trigger* aquatic_form(PlayerbotAI* ai) { return new AquaticFormTrigger(ai); }
+    static Trigger* maim(PlayerbotAI* ai) { return new MaimInterruptSpellTrigger(ai); }
+    static Trigger* shift_to_break_snare(PlayerbotAI* ai) { return new ShiftToBreakSnareTrigger(ai); }
 };
 
 class DruidAiObjectContextInternal : public NamedObjectContext<Action>

@@ -83,6 +83,14 @@ void RestoDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode("enemy too close for spell",
                                        { NextAction("flee", 39.0f) }));
+
+    // Root the melee that has closed and walk back out of its reach (the shaman Frost Shock kite
+    // pattern), below every heal. Tree of Life cannot cast it, so the form comes off first.
+    triggers.push_back(new TriggerNode("entangling roots kite",
+                                       {
+                                           NextAction("cancel tree form", 10.1f),
+                                           NextAction("entangling roots", 10.0f),
+                                       }));
 }
 
 void DruidTranquilityStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
