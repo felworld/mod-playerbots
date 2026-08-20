@@ -111,4 +111,18 @@ void DestructionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
             }
         )
     );
+
+    // Instant fillers while moving. The default list has Incinerate and Chaos Bolt above
+    // Corruption, which is the wrong order once the bot is on the move and only instants can go
+    // out at all.
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("conflagrate", 5.95f),
+                NextAction("corruption", 5.9f),
+                NextAction("curse of the elements", 5.85f)
+            }
+        )
+    );
 }

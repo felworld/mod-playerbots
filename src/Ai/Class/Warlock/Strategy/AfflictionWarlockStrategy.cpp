@@ -115,4 +115,16 @@ void AfflictionWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers
             }
         )
     );
+
+    // Instant fillers while moving: everything above this is a cast the engine refuses on the
+    // move, and Life Tap already sits at the bottom of the list as the last resort
+    triggers.push_back(
+        new TriggerNode(
+            "moving filler",
+            {
+                NextAction("corruption", 5.95f),
+                NextAction("curse of agony", 5.9f)
+            }
+        )
+    );
 }

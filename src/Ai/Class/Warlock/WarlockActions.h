@@ -10,6 +10,7 @@
 #include "Action.h"
 #include "GenericSpellActions.h"
 #include "InventoryAction.h"
+#include "SharedDefines.h"
 #include "UseItemAction.h"
 
 class PlayerbotAI;
@@ -195,11 +196,26 @@ public:
     std::string const GetTargetName() override { return "current target"; }
 };
 
-class CastDevourMagicCleanseAction : public CastSpellAction
+class CastDevourMagicCleanseAction : public CurePartyMemberAction
 {
 public:
-    CastDevourMagicCleanseAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "devour magic cleanse") {}
-    std::string const getName() override { return "cleanse magic on party"; }
+    CastDevourMagicCleanseAction(PlayerbotAI* botAI) : CurePartyMemberAction(botAI, "devour magic", DISPEL_MAGIC) {}
+};
+
+// Howl of Terror is the instant "get off me" - it is point-blank, so the melee opponent the
+// trigger found is what it lands on.
+class CastHowlOfTerrorAction : public CastSpellAction
+{
+public:
+    CastHowlOfTerrorAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "howl of terror") {}
+};
+
+// Death Coil horrifies for three seconds and heals the warlock for the damage: the answer to a
+// melee player who has closed the gap.
+class CastDeathCoilAction : public CastSpellAction
+{
+public:
+    CastDeathCoilAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "death coil") {}
 };
 
 // Utility Spells

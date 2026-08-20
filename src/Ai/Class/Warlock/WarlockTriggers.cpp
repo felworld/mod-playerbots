@@ -256,3 +256,22 @@ bool RainOfFireChannelCheckTrigger::IsActive()
     // Not channeling Rain of Fire
     return false;
 }
+
+bool ConflagrateTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || !target->IsAlive())
+        return false;
+
+    // Conflagrate consumes nothing in 3.3.5 but still requires one of our own fire DoTs
+    if (!botAI->HasAura("immolate", target, false, true) && !botAI->HasAura("shadowflame", target, false, true))
+        return false;
+
+    return SpellCanBeCastTrigger::IsActive();
+}
+
+bool MeleeOpponentTooCloseTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    return target && target->IsAlive() && target->IsControlledByPlayer() && bot->IsWithinMeleeRange(target);
+}

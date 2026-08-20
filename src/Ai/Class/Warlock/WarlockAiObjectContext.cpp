@@ -157,6 +157,8 @@ public:
         creators["banish"] = &WarlockTriggerFactoryInternal::banish;
         creators["fear"] = &WarlockTriggerFactoryInternal::fear;
         creators["spell lock"] = &WarlockTriggerFactoryInternal::spell_lock;
+        creators["melee opponent too close"] = &WarlockTriggerFactoryInternal::melee_opponent_too_close;
+        creators["shadow ward"] = &WarlockTriggerFactoryInternal::shadow_ward;
         creators["devour magic purge"] = &WarlockTriggerFactoryInternal::devour_magic_purge;
         creators["devour magic cleanse"] = &WarlockTriggerFactoryInternal::devour_magic_cleanse;
         creators["backlash"] = &WarlockTriggerFactoryInternal::backlash;
@@ -167,6 +169,8 @@ public:
         creators["unstable affliction"] = &WarlockTriggerFactoryInternal::unstable_affliction;
         creators["unstable affliction on attacker"] = &WarlockTriggerFactoryInternal::unstable_affliction_on_attacker;
         creators["haunt"] = &WarlockTriggerFactoryInternal::haunt;
+        creators["conflagrate"] = &WarlockTriggerFactoryInternal::conflagrate;
+        creators["chaos bolt"] = &WarlockTriggerFactoryInternal::chaos_bolt;
         creators["decimation"] = &WarlockTriggerFactoryInternal::decimation;
         creators["life tap"] = &WarlockTriggerFactoryInternal::life_tap;
         creators["life tap glyph buff"] = &WarlockTriggerFactoryInternal::life_tap_glyph_buff;
@@ -207,6 +211,8 @@ private:
     static Trigger* banish(PlayerbotAI* botAI) { return new BanishTrigger(botAI); }
     static Trigger* fear(PlayerbotAI* botAI) { return new FearTrigger(botAI); }
     static Trigger* spell_lock(PlayerbotAI* botAI) { return new SpellLockInterruptSpellTrigger(botAI); }
+    static Trigger* melee_opponent_too_close(PlayerbotAI* botAI) { return new MeleeOpponentTooCloseTrigger(botAI); }
+    static Trigger* shadow_ward(PlayerbotAI* botAI) { return new ShadowWardTrigger(botAI); }
     static Trigger* devour_magic_purge(PlayerbotAI* botAI) { return new DevourMagicPurgeTrigger(botAI); }
     static Trigger* devour_magic_cleanse(PlayerbotAI* botAI) { return new DevourMagicCleanseTrigger(botAI); }
     static Trigger* backlash(PlayerbotAI* botAI) { return new BacklashTrigger(botAI); }
@@ -215,6 +221,8 @@ private:
     static Trigger* unstable_affliction(PlayerbotAI* ai) { return new UnstableAfflictionTrigger(ai); }
     static Trigger* unstable_affliction_on_attacker(PlayerbotAI* ai) { return new UnstableAfflictionOnAttackerTrigger(ai); }
     static Trigger* haunt(PlayerbotAI* ai) { return new HauntTrigger(ai); }
+    static Trigger* conflagrate(PlayerbotAI* ai) { return new ConflagrateTrigger(ai); }
+    static Trigger* chaos_bolt(PlayerbotAI* ai) { return new ChaosBoltTrigger(ai); }
     static Trigger* decimation(PlayerbotAI* ai) { return new DecimationTrigger(ai); }
     static Trigger* life_tap(PlayerbotAI* ai) { return new LifeTapTrigger(ai); }
     static Trigger* life_tap_glyph_buff(PlayerbotAI* ai) { return new LifeTapGlyphBuffTrigger(ai); }
@@ -275,6 +283,8 @@ public:
         creators["banish on cc"] = &WarlockAiObjectContextInternal::banish_on_cc;
         creators["fear on cc"] = &WarlockAiObjectContextInternal::fear_on_cc;
         creators["spell lock"] = &WarlockAiObjectContextInternal::spell_lock;
+        creators["howl of terror"] = &WarlockAiObjectContextInternal::howl_of_terror;
+        creators["death coil"] = &WarlockAiObjectContextInternal::death_coil;
         creators["devour magic purge"] = &WarlockAiObjectContextInternal::devour_magic_purge;
         creators["devour magic cleanse"] = &WarlockAiObjectContextInternal::devour_magic_cleanse;
         creators["seed of corruption"] = &WarlockAiObjectContextInternal::seed_of_corruption;
@@ -348,6 +358,8 @@ private:
     static Action* banish_on_cc(PlayerbotAI* botAI) { return new CastBanishOnCcAction(botAI); }
     static Action* fear_on_cc(PlayerbotAI* botAI) { return new CastFearOnCcAction(botAI); }
     static Action* spell_lock(PlayerbotAI* botAI) { return new CastSpellLockAction(botAI); }
+    static Action* howl_of_terror(PlayerbotAI* botAI) { return new CastHowlOfTerrorAction(botAI); }
+    static Action* death_coil(PlayerbotAI* botAI) { return new CastDeathCoilAction(botAI); }
     static Action* devour_magic_purge(PlayerbotAI* botAI) { return new CastDevourMagicPurgeAction(botAI); }
     static Action* devour_magic_cleanse(PlayerbotAI* botAI) { return new CastDevourMagicCleanseAction(botAI); }
     static Action* seed_of_corruption(PlayerbotAI* botAI) { return new CastSeedOfCorruptionAction(botAI); }

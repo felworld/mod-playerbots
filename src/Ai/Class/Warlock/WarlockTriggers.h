@@ -157,6 +157,24 @@ public:
     SpellLockInterruptSpellTrigger(PlayerbotAI* botAI) : InterruptSpellTrigger(botAI, "spell lock") {}
 };
 
+// A player (or a player's pet) is standing in the warlock's face. That is the moment for an
+// instant panic button - a Fear cast would be interrupted, and our own DoTs would break it.
+class MeleeOpponentTooCloseTrigger : public Trigger
+{
+public:
+    MeleeOpponentTooCloseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "melee opponent too close") {}
+
+    bool IsActive() override;
+};
+
+// The enemy is mid-cast with a shadow spell aimed at us: soak it. Same pattern as the mage's
+// Fire Ward and Frost Ward.
+class ShadowWardTrigger : public DeflectSpellTrigger
+{
+public:
+    ShadowWardTrigger(PlayerbotAI* botAI) : DeflectSpellTrigger(botAI, "shadow ward") {}
+};
+
 class DevourMagicPurgeTrigger : public TargetAuraDispelTrigger
 {
 public:
@@ -313,6 +331,23 @@ class ShadowTranceTrigger : public HasAuraTrigger
 {
 public:
     ShadowTranceTrigger(PlayerbotAI* botAI) : HasAuraTrigger(botAI, "shadow trance") {}
+};
+
+// Conflagrate needs our own Immolate (or Shadowflame) burning on the target; the cast is
+// refused outright without it, so checking the cooldown alone is not enough.
+class ConflagrateTrigger : public SpellCanBeCastTrigger
+{
+public:
+    ConflagrateTrigger(PlayerbotAI* botAI) : SpellCanBeCastTrigger(botAI, "conflagrate") {}
+
+    bool IsActive() override;
+};
+
+// Chaos Bolt is a plain cooldown nuke: fire it whenever it is up.
+class ChaosBoltTrigger : public SpellCanBeCastTrigger
+{
+public:
+    ChaosBoltTrigger(PlayerbotAI* botAI) : SpellCanBeCastTrigger(botAI, "chaos bolt") {}
 };
 
 class BacklashTrigger : public HasAuraTrigger

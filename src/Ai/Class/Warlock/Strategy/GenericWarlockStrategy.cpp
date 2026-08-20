@@ -77,11 +77,45 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // The felhunter does the casting, but the bot still spends its action for the tick, so the
+    // party cleanse sits above the DoT rotation and below the interrupts and escapes.
     triggers.push_back(
         new TriggerNode(
             "devour magic cleanse",
             {
-                NextAction("devour magic cleanse", 50.0f)
+                NextAction("devour magic cleanse", ACTION_HIGH + 2)
+            }
+        )
+    );
+
+    // Soak an incoming shadow nuke, the same way a mage puts up Fire Ward or Frost Ward
+    triggers.push_back(
+        new TriggerNode(
+            "shadow ward",
+            {
+                NextAction("shadow ward", 90.0f)
+            }
+        )
+    );
+
+    // A player standing in our face: instant answers only. Howl of Terror buys the whole gap
+    // back, Death Coil horrifies and heals when Howl is on cooldown.
+    triggers.push_back(
+        new TriggerNode(
+            "melee opponent too close",
+            {
+                NextAction("howl of terror", ACTION_INTERRUPT + 1),
+                NextAction("death coil", ACTION_INTERRUPT)
+            }
+        )
+    );
+
+    // Dying with mana in the bar is worse than the DPS a channel costs
+    triggers.push_back(
+        new TriggerNode(
+            "critical health",
+            {
+                NextAction("drain life", 30.0f)
             }
         )
     );
