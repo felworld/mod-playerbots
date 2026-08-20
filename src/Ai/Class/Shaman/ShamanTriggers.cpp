@@ -16,7 +16,6 @@
 #include "SpellInfo.h"
 #include "TotemsShamanStrategy.h"
 #include "Unit.h"
-#include <cstring>
 #include <ctime>
 
 bool MainHandWeaponNoImbueTrigger::IsActive()
@@ -40,81 +39,6 @@ bool OffHandWeaponNoImbueTrigger::IsActive()
         return false;
 
     return true;
-}
-
-// A buff is worth a Purge GCD if it's an absorb shield, a HoT, or on the shortlist of
-// major offensive/defensive buffs. Everything else (food buffs, minor self-buffs, ...)
-// is ignored so Purge doesn't outrank the damage kit every tick.
-static bool IsHighValuePurgeAura(SpellInfo const* spellInfo)
-{
-    static char const* highValueBuffs[] = {
-        "Bloodlust",
-        "Heroism",
-        "Earth Shield",
-        "Hand of Freedom",
-        "Blessing of Freedom",
-        "Inner Focus",
-        "Power Infusion",
-    };
-
-    char const* name = spellInfo->SpellName[0];
-    if (name)
-    {
-        for (char const* buffName : highValueBuffs)
-        {
-            if (strcmp(name, buffName) == 0)
-                return true;
-        }
-    }
-
-    for (uint8 i = EFFECT_0; i <= EFFECT_2; ++i)
-    {
-        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
-            (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB ||
-             spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_HEAL))
-            return true;
-    }
-
-    return false;
-}
-
-bool PurgeTrigger::IsActive()
-{
-    Unit* target = GetTarget();
-    if (!target || !target->IsAlive() || !target->IsInWorld() || bot->IsFriendlyTo(target))
-        return false;
-
-    // Purge costs a GCD and mana that the damage kit needs more when running dry
-    uint32 maxMana = bot->GetMaxPower(POWER_MANA);
-    if (!maxMana || bot->GetPower(POWER_MANA) * 100 / maxMana < 40)
-        return false;
-
-    Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
-    if (!visibleAuras)
-        return false;
-
-    for (Unit::VisibleAuraMap::const_iterator itr = visibleAuras->begin(); itr != visibleAuras->end(); ++itr)
-    {
-        if (!itr->second)
-            continue;
-
-        Aura* aura = itr->second->GetBase();
-        if (!aura || aura->IsPassive() || aura->IsRemoved())
-            continue;
-
-        if (sPlayerbotAIConfig.dispelAuraDuration && aura->GetDuration() &&
-            aura->GetDuration() < (int32)sPlayerbotAIConfig.dispelAuraDuration)
-            continue;
-
-        SpellInfo const* spellInfo = aura->GetSpellInfo();
-        if (!spellInfo || spellInfo->Dispel != DISPEL_MAGIC || !spellInfo->IsPositive())
-            continue;
-
-        if (IsHighValuePurgeAura(spellInfo))
-            return true;
-    }
-
-    return false;
 }
 
 bool ShockTrigger::IsActive()
@@ -358,35 +282,6 @@ bool TotemicRecallTrigger::IsActive()
            !bot->m_SummonSlot[SUMMON_SLOT_TOTEM_AIR].IsEmpty();
 }
 
-// True if the bot is fighting a player opponent (BG, world PvP, duel): the current target
-// or any attacker is a hostile player or player-controlled unit.
-static bool HasPvpOpponent(PlayerbotAI* botAI)
-{
-    Player* bot = botAI->GetBot();
-    AiObjectContext* context = botAI->GetAiObjectContext();
-
-    if (Unit* target = context->GetValue<Unit*>("current target")->Get())
-    {
-        Player* player = target->GetCharmerOrOwnerPlayerOrPlayerItself();
-        if (player && !bot->IsFriendlyTo(player))
-            return true;
-    }
-
-    GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();
-    for (ObjectGuid const guid : attackers)
-    {
-        Unit* unit = botAI->GetUnit(guid);
-        if (!unit)
-            continue;
-
-        Player* player = unit->GetCharmerOrOwnerPlayerOrPlayerItself();
-        if (player && !bot->IsFriendlyTo(player))
-            return true;
-    }
-
-    return false;
-}
-
 // True if the slot is empty, its totem is out of range, or the totem is none of spellIds
 static bool TotemSlotNeeds(Player* bot, uint8 slot, uint32 const* spellIds, size_t count)
 {
@@ -410,7 +305,7 @@ static bool TotemSlotNeeds(Player* bot, uint8 slot, uint32 const* spellIds, size
 
 bool NoEarthTotemPvpTrigger::IsActive()
 {
-    if (!bot->HasSpell(SPELL_EARTHBIND_TOTEM_RANK_1) || !HasPvpOpponent(botAI))
+    if (!bot->HasSpell(SPELL_EARTHBIND_TOTEM_RANK_1) || !botAI->HasPvpOpponent())
         return false;
 
     // Stoneclaw (low-health defensive) also satisfies the slot — don't stomp it
@@ -420,7 +315,7 @@ bool NoEarthTotemPvpTrigger::IsActive()
 
 bool NoAirTotemPvpTrigger::IsActive()
 {
-    if (!bot->HasSpell(SPELL_GROUNDING_TOTEM_RANK_1) || !HasPvpOpponent(botAI))
+    if (!bot->HasSpell(SPELL_GROUNDING_TOTEM_RANK_1) || !botAI->HasPvpOpponent())
         return false;
 
     return TotemSlotNeeds(bot, SUMMON_SLOT_TOTEM_AIR, GROUNDING_TOTEM, GROUNDING_TOTEM_COUNT);
@@ -456,7 +351,7 @@ bool NoEarthTotemTrigger::IsActive()
         return false;
 
     // Versus player opponents the earth slot is owned by "no earth totem pvp" (Earthbind)
-    if (bot->HasSpell(SPELL_EARTHBIND_TOTEM_RANK_1) && HasPvpOpponent(botAI))
+    if (bot->HasSpell(SPELL_EARTHBIND_TOTEM_RANK_1) && botAI->HasPvpOpponent())
         return false;
 
     ObjectGuid guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_EARTH];
@@ -586,7 +481,7 @@ bool NoAirTotemTrigger::IsActive()
         return false;
 
     // Versus player opponents the air slot is owned by "no air totem pvp" (Grounding)
-    if (bot->HasSpell(SPELL_GROUNDING_TOTEM_RANK_1) && HasPvpOpponent(botAI))
+    if (bot->HasSpell(SPELL_GROUNDING_TOTEM_RANK_1) && botAI->HasPvpOpponent())
         return false;
 
     ObjectGuid guid = bot->m_SummonSlot[SUMMON_SLOT_TOTEM_AIR];

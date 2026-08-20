@@ -37,21 +37,22 @@ void GenericPaladinStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void PaladinCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Below critical heals, above medium ones: a dying tank outranks a Cleanse.
     triggers.push_back(new TriggerNode(
-        "cleanse cure disease", { NextAction("cleanse disease", ACTION_DISPEL + 2) }));
+        "cleanse cure disease", { NextAction("cleanse disease", ACTION_CRITICAL_HEAL + 3) }));
     triggers.push_back(
         new TriggerNode("cleanse party member cure disease",
-                        { NextAction("cleanse disease on party", ACTION_DISPEL + 1) }));
+                        { NextAction("cleanse disease on party", ACTION_CRITICAL_HEAL + 2) }));
     triggers.push_back(new TriggerNode(
-        "cleanse cure poison", { NextAction("cleanse poison", ACTION_DISPEL + 2) }));
+        "cleanse cure poison", { NextAction("cleanse poison", ACTION_CRITICAL_HEAL + 3) }));
     triggers.push_back(
         new TriggerNode("cleanse party member cure poison",
-                        { NextAction("cleanse poison on party", ACTION_DISPEL + 1) }));
+                        { NextAction("cleanse poison on party", ACTION_CRITICAL_HEAL + 2) }));
     triggers.push_back(new TriggerNode(
-        "cleanse cure magic", { NextAction("cleanse magic", ACTION_DISPEL + 2) }));
+        "cleanse cure magic", { NextAction("cleanse magic", ACTION_CRITICAL_HEAL + 3) }));
     triggers.push_back(
         new TriggerNode("cleanse party member cure magic",
-                        { NextAction("cleanse magic on party", ACTION_DISPEL + 1) }));
+                        { NextAction("cleanse magic on party", ACTION_CRITICAL_HEAL + 2) }));
 }
 
 void PaladinBoostStrategy::InitTriggers(std::vector<TriggerNode*>& /*triggers*/)

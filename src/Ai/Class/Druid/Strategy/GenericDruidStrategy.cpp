@@ -84,21 +84,22 @@ void DruidCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
     // Self first, party second: a decursed druid keeps dispelling, a dead one does not. The cure
     // actions carry their own shapeshift prerequisite, so no action nodes are needed here.
+    // Below critical heals, above medium ones: a dying tank outranks a cure.
     triggers.push_back(
         new TriggerNode("cure poison",
-                        { NextAction("abolish poison", 52.0f) }));
+                        { NextAction("abolish poison", ACTION_CRITICAL_HEAL + 3) }));
 
     triggers.push_back(
         new TriggerNode("party member cure poison",
-                        { NextAction("abolish poison on party", 51.0f) }));
+                        { NextAction("abolish poison on party", ACTION_CRITICAL_HEAL + 2) }));
 
     triggers.push_back(
         new TriggerNode("remove curse",
-                        { NextAction("remove curse", 58.0f) }));
+                        { NextAction("remove curse", ACTION_CRITICAL_HEAL + 3) }));
 
     triggers.push_back(
         new TriggerNode("party member remove curse",
-                        { NextAction("remove curse on party", 57.0f) }));
+                        { NextAction("remove curse on party", ACTION_CRITICAL_HEAL + 2) }));
 }
 
 void DruidBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

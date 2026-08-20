@@ -159,13 +159,10 @@ public:
     HexTrigger(PlayerbotAI* botAI) : HasCcTargetTrigger(botAI, "hex") {}
 };
 
-class PurgeTrigger : public SpellTrigger
+class PurgeTrigger : public TargetAuraDispelTrigger
 {
 public:
-    PurgeTrigger(PlayerbotAI* botAI) : SpellTrigger(botAI, "purge", 5 * 1000) {}
-
-    bool IsActive() override;
-    ReactionCategory GetReactionCategory() override { return REACTION_DISPEL; }
+    PurgeTrigger(PlayerbotAI* botAI) : TargetAuraDispelTrigger(botAI, "purge", DISPEL_MAGIC) {}
 };
 
 class CleanseSpiritPoisonTrigger : public NeedCureTrigger

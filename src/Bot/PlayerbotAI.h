@@ -572,7 +572,15 @@ public:
     virtual bool HasAnyAuraOf(Unit* player, ...);
 
     virtual bool IsInterruptableSpellCasting(Unit* player, std::string const spell);
-    virtual bool HasAuraToDispel(Unit* player, uint32 dispelType);
+    // True if target carries an aura of dispelType that this bot should spend a cast on:
+    // hostile targets only count high-value buffs (enrages, shields, HoTs, major cooldowns);
+    // friendly targets count everything for healers, but only loss-of-control debuffs for
+    // non-healers facing player opponents. worthCasting=false disables the policy and
+    // reports any dispellable aura of that type.
+    virtual bool HasAuraToDispel(Unit* target, uint32 dispelType, bool worthCasting = true);
+    // True if the bot is fighting a player opponent (BG, world PvP, duel): the current
+    // target or any attacker is a hostile player or player-controlled unit.
+    bool HasPvpOpponent();
     bool CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell = true, Item* itemTarget = nullptr,
                       Item* castItem = nullptr);
     bool CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkHasSpell = true);

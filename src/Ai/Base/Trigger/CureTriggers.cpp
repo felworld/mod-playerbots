@@ -14,6 +14,23 @@ bool NeedCureTrigger::IsActive()
     return target && target->IsInWorld() && botAI->HasAuraToDispel(target, dispelType);
 }
 
+bool TargetAuraDispelTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || bot->IsFriendlyTo(target))
+        return false;
+
+    // An offensive dispel costs a GCD and mana that the damage kit needs more when running dry
+    if (bot->getPowerType() == POWER_MANA)
+    {
+        uint32 maxMana = bot->GetMaxPower(POWER_MANA);
+        if (!maxMana || bot->GetPower(POWER_MANA) * 100 / maxMana < 40)
+            return false;
+    }
+
+    return NeedCureTrigger::IsActive();
+}
+
 Value<Unit*>* PartyMemberNeedCureTrigger::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member to dispel", dispelType);

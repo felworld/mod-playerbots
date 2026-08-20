@@ -524,8 +524,8 @@ bool FearSleepSapTrigger::IsActive()
 
 bool PoisonDiseaseBleedTrigger::IsActive()
 {
-    return botAI->HasAuraToDispel(bot, DISPEL_POISON) ||
-           botAI->HasAuraToDispel(bot, DISPEL_DISEASE) ||
+    return botAI->HasAuraToDispel(bot, DISPEL_POISON, false) ||
+           botAI->HasAuraToDispel(bot, DISPEL_DISEASE, false) ||
            bot->HasAuraWithMechanic(1 << MECHANIC_BLEED);
 }
 

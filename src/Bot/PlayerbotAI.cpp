@@ -57,6 +57,7 @@
 #include "UpdateTime.h"
 #include "Vehicle.h"
 #include <cmath>
+#include <cstring>
 #include <mutex>
 #include <sstream>
 #include <string>
@@ -4659,7 +4660,94 @@ bool PlayerbotAI::IsInterruptableSpellCasting(Unit* target, std::string const sp
     return false;
 }
 
-bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
+// A hostile buff is worth a dispel GCD if it's an enrage, an absorb shield, a HoT, or on the
+// shortlist of major offensive/defensive cooldowns. Everything else (food buffs, minor
+// self-buffs, ...) is ignored so offensive dispels don't outrank the damage kit every tick.
+static bool IsHighValueDispelBuff(SpellInfo const* spellInfo)
+{
+    if (spellInfo->Dispel == DISPEL_ENRAGE)
+        return true;
+
+    static char const* highValueBuffs[] = {
+        "Bloodlust",
+        "Heroism",
+        "Earth Shield",
+        "Hand of Freedom",
+        "Blessing of Freedom",
+        "Hand of Protection",
+        "Blessing of Protection",
+        "Hand of Sacrifice",
+        "Blessing of Sacrifice",
+        "Inner Focus",
+        "Power Infusion",
+        "Pain Suppression",
+        "Icy Veins",
+        "Arcane Power",
+        "Avenging Wrath",
+        "Nature's Swiftness",
+    };
+
+    char const* name = spellInfo->SpellName[0];
+    if (name)
+    {
+        for (char const* buffName : highValueBuffs)
+        {
+            if (strcmp(name, buffName) == 0)
+                return true;
+        }
+    }
+
+    for (uint8 i = EFFECT_0; i <= EFFECT_2; ++i)
+    {
+        if (spellInfo->Effects[i].Effect == SPELL_EFFECT_APPLY_AURA &&
+            (spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_SCHOOL_ABSORB ||
+             spellInfo->Effects[i].ApplyAuraName == SPELL_AURA_PERIODIC_HEAL))
+            return true;
+    }
+
+    return false;
+}
+
+// A debuff takes control away from its victim: CC, roots, snares, silences, disarms.
+static bool IsLossOfControlAura(SpellInfo const* spellInfo)
+{
+    uint64 const locMechanics = (1 << MECHANIC_CHARM) | (1 << MECHANIC_DISORIENTED) | (1 << MECHANIC_DISARM) |
+                                (1 << MECHANIC_FEAR) | (1 << MECHANIC_ROOT) | (1 << MECHANIC_SILENCE) |
+                                (1 << MECHANIC_SLEEP) | (1 << MECHANIC_SNARE) | (1 << MECHANIC_STUN) |
+                                (1 << MECHANIC_FREEZE) | (1 << MECHANIC_KNOCKOUT) | (1 << MECHANIC_POLYMORPH) |
+                                (1 << MECHANIC_BANISH) | (1 << MECHANIC_SHACKLE) | (1 << MECHANIC_TURN) |
+                                (1 << MECHANIC_HORROR) | (1 << MECHANIC_DAZE) | (1 << MECHANIC_SAPPED);
+    if (spellInfo->GetAllEffectsMechanicMask() & locMechanics)
+        return true;
+
+    for (uint8 i = EFFECT_0; i <= EFFECT_2; ++i)
+    {
+        if (spellInfo->Effects[i].Effect != SPELL_EFFECT_APPLY_AURA)
+            continue;
+
+        switch (spellInfo->Effects[i].ApplyAuraName)
+        {
+            case SPELL_AURA_MOD_STUN:
+            case SPELL_AURA_MOD_ROOT:
+            case SPELL_AURA_MOD_FEAR:
+            case SPELL_AURA_MOD_CONFUSE:
+            case SPELL_AURA_MOD_SILENCE:
+            case SPELL_AURA_MOD_PACIFY:
+            case SPELL_AURA_MOD_PACIFY_SILENCE:
+            case SPELL_AURA_MOD_DISARM:
+            case SPELL_AURA_MOD_CHARM:
+            case SPELL_AURA_MOD_POSSESS:
+            case SPELL_AURA_MOD_DECREASE_SPEED:
+                return true;
+            default:
+                break;
+        }
+    }
+
+    return false;
+}
+
+bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType, bool worthCasting)
 {
     if (!IsValidUnit(target) || !target->IsAlive())
         return false;
@@ -4668,6 +4756,10 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
         return false;
 
     bool isFriend = bot->IsFriendlyTo(target);
+
+    // Non-healers in a PvP fight cleanse only what takes a teammate out of the fight; DoTs and
+    // stat debuffs are the healer's job. Healers (and everyone in PvE) dispel anything hostile.
+    bool lossOfControlOnly = worthCasting && isFriend && !IsHeal(bot) && HasPvpOpponent();
 
     Unit::VisibleAuraMap const* visibleAuras = target->GetVisibleAuras();
     if (!visibleAuras)
@@ -4697,8 +4789,16 @@ bool PlayerbotAI::HasAuraToDispel(Unit* target, uint32 dispelType)
         if (!isPositiveSpell && !isFriend)
             continue;
 
-        if (canDispel(spellInfo, dispelType))
-            return true;
+        if (!canDispel(spellInfo, dispelType))
+            continue;
+
+        if (worthCasting && !isFriend && !IsHighValueDispelBuff(spellInfo))
+            continue;
+
+        if (lossOfControlOnly && !IsLossOfControlAura(spellInfo))
+            continue;
+
+        return true;
     }
 
     return false;
@@ -4739,6 +4839,30 @@ bool PlayerbotAI::canDispel(SpellInfo const* spellInfo, uint32 dispelType)
                                         strcmpi((const char*)spellInfo->SpellName[0], "chilled") &&
                                         strcmpi((const char*)spellInfo->SpellName[0], "mana tap") &&
                                         strcmpi((const char*)spellInfo->SpellName[0], "ice armor"));
+}
+
+bool PlayerbotAI::HasPvpOpponent()
+{
+    if (Unit* target = aiObjectContext->GetValue<Unit*>("current target")->Get())
+    {
+        Player* player = target->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (player && !bot->IsFriendlyTo(player))
+            return true;
+    }
+
+    GuidVector attackers = aiObjectContext->GetValue<GuidVector>("attackers")->Get();
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = GetUnit(guid);
+        if (!unit)
+            continue;
+
+        Player* player = unit->GetCharmerOrOwnerPlayerOrPlayerItself();
+        if (player && !bot->IsFriendlyTo(player))
+            return true;
+    }
+
+    return false;
 }
 
 bool IsRealPlayer(Player* player)

@@ -51,10 +51,11 @@ PriestCureStrategy::PriestCureStrategy(PlayerbotAI* botAI) : Strategy(botAI)
 
 void PriestCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // Below critical heals, above medium ones: a dying tank outranks a dispel.
     triggers.push_back(
-        new TriggerNode("dispel magic", { NextAction("dispel magic", 41.0f) }));
+        new TriggerNode("dispel magic", { NextAction("dispel magic", ACTION_CRITICAL_HEAL + 3) }));
     triggers.push_back(new TriggerNode("dispel magic on party",
-                                       { NextAction("dispel magic on party", 40.0f) }));
+                                       { NextAction("dispel magic on party", ACTION_CRITICAL_HEAL + 2) }));
     triggers.push_back(
         new TriggerNode("cure disease", { NextAction("abolish disease", 31.0f) }));
     triggers.push_back(new TriggerNode(

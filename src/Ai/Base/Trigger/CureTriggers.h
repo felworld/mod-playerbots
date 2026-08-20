@@ -15,8 +15,8 @@ class Unit;
 class NeedCureTrigger : public SpellTrigger
 {
 public:
-    NeedCureTrigger(PlayerbotAI* botAI, std::string const spell, uint32 dispelType)
-        : SpellTrigger(botAI, spell, 1 * 1000), dispelType(dispelType)
+    NeedCureTrigger(PlayerbotAI* botAI, std::string const spell, uint32 dispelType, int32 checkInterval = 1 * 1000)
+        : SpellTrigger(botAI, spell, checkInterval), dispelType(dispelType)
     {
     }
 
@@ -28,15 +28,19 @@ protected:
     uint32 dispelType;
 };
 
+// Offensive dispel (Purge, Spellsteal, Devour Magic, Tranquilizing Shot): only fires on
+// high-value buffs (see PlayerbotAI::HasAuraToDispel), checks every 5s rather than every
+// second, and is skipped below 40% mana so it can't starve the damage kit.
 class TargetAuraDispelTrigger : public NeedCureTrigger
 {
 public:
     TargetAuraDispelTrigger(PlayerbotAI* botAI, std::string const spell, uint32 dispelType)
-        : NeedCureTrigger(botAI, spell, dispelType)
+        : NeedCureTrigger(botAI, spell, dispelType, 5 * 1000)
     {
     }
 
     std::string const GetTargetName() override { return "current target"; }
+    bool IsActive() override;
 };
 
 class PartyMemberNeedCureTrigger : public NeedCureTrigger
