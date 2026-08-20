@@ -57,11 +57,43 @@ void GenericDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(
         new TriggerNode("target changed", { NextAction("pet assist", ACTION_NORMAL + 5) }));
 
+    // Interrupts belong in the interrupt tier: at ACTION_HIGH + 1 Mind Freeze sat below Death and
+    // Decay, Pestilence and Raise Dead, so a cast went through while the bot kept up its rotation.
     triggers.push_back(
-        new TriggerNode("mind freeze", { NextAction("mind freeze", ACTION_HIGH + 1) }));
+        new TriggerNode("mind freeze", { NextAction("mind freeze", ACTION_INTERRUPT) }));
     triggers.push_back(
         new TriggerNode("mind freeze on enemy healer",
-                        { NextAction("mind freeze on enemy healer", ACTION_HIGH + 1) }));
+                        { NextAction("mind freeze on enemy healer", ACTION_INTERRUPT) }));
+    // Strangulate is the backup interrupt: a 30 yard silence on a two-minute cooldown, so it is
+    // spent only when Mind Freeze cannot reach or is down.
+    triggers.push_back(
+        new TriggerNode("strangulate", { NextAction("strangulate", ACTION_INTERRUPT - 1) }));
+    triggers.push_back(
+        new TriggerNode("strangulate on enemy healer",
+                        { NextAction("strangulate on enemy healer", ACTION_INTERRUPT - 1) }));
+
+    // A caster is throwing something at the bot and Anti-Magic Shell absorbs it.
+    triggers.push_back(
+        new TriggerNode("anti magic shell", { NextAction("anti magic shell", ACTION_HIGH + 7) }));
+    // Icebound Fortitude is the stun break; nothing else the bot could queue works while stunned.
+    triggers.push_back(
+        new TriggerNode("stunned", { NextAction("icebound fortitude", ACTION_EMERGENCY) }));
+
+    // Snare whatever is running: a fleeing creature, or the hostile player the bot is fighting
+    // once it starts moving (the kite trigger has no lifetime gate, so a player at 10% health
+    // still gets chained).
+    triggers.push_back(
+        new TriggerNode("chains of ice", { NextAction("chains of ice", ACTION_HIGH) }));
+    triggers.push_back(
+        new TriggerNode("chains of ice kite", { NextAction("chains of ice on target", ACTION_HIGH) }));
+
+    // The melee analogue of a caster being kited: a player target that has left melee range gets
+    // gripped back, and while Death Grip is on cooldown Death Coil is the only thing a death
+    // knight can throw at range. Death Grip sits above "reach melee", the rest below it, so the
+    // bot chases and fills the gaps of the chase with damage.
+    triggers.push_back(
+        new TriggerNode("player target out of melee", { NextAction("death grip", ACTION_HIGH + 2),
+                                                        NextAction("death coil", ACTION_HIGH - 1) }));
     triggers.push_back(new TriggerNode(
         "horn of winter", { NextAction("horn of winter", ACTION_NORMAL + 1) }));
     triggers.push_back(new TriggerNode("critical health",

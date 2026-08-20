@@ -30,6 +30,23 @@ public:
     CastUnholyPresenceAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "unholy presence") {}
 };
 
+// The dps presence choice. Blood Presence (damage and self-healing) is right in PvE, but against
+// a player opponent Unholy Presence's run speed decides whether the bot is in melee at all, and
+// a death knight out of melee does almost nothing.
+class CastDpsPresenceAction : public CastBuffSpellAction
+{
+public:
+    CastDpsPresenceAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "blood presence") {}
+
+    std::string const getName() override { return "dps presence"; }
+    bool isUseful() override;
+    bool isPossible() override;
+    bool Execute(Event event) override;
+
+private:
+    std::string const WantedPresence();
+};
+
 class CastDeathchillAction : public CastBuffSpellAction
 {
 public:
@@ -137,12 +154,6 @@ public:
     }
 };
 
-class CastUnholyBlightAction : public CastBuffSpellAction
-{
-public:
-    CastUnholyBlightAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "unholy blight") {}
-};
-
 class CastSummonGargoyleAction : public CastSpellAction
 {
 public:
@@ -159,22 +170,36 @@ public:
 BEGIN_MELEE_SPELL_ACTION(CastCorpseExplosionAction, "corpse explosion")
 END_SPELL_ACTION()
 
-BEGIN_MELEE_SPELL_ACTION(CastAntiMagicShellAction, "anti magic shell")
-END_SPELL_ACTION()
+// Anti-Magic Shell is cast on the death knight: as a melee action it could only fire when the
+// caster we want to shrug off happened to be standing next to us.
+class CastAntiMagicShellAction : public CastBuffSpellAction
+{
+public:
+    CastAntiMagicShellAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "anti magic shell") {}
+};
 
 BEGIN_MELEE_SPELL_ACTION(CastAntiMagicZoneAction, "anti magic zone")
 END_SPELL_ACTION()
 
-class CastChainsOfIceAction : public CastSpellAction
+// Chains of Ice follows the snare target (a fleeing creature, or the hostile player the bot is
+// fighting once it starts moving); the kite wiring uses the current-target variant below.
+class CastChainsOfIceAction : public CastSnareSpellAction
 {
 public:
-    CastChainsOfIceAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "chains of ice") {}
+    CastChainsOfIceAction(PlayerbotAI* botAI) : CastSnareSpellAction(botAI, "chains of ice") {}
 };
 
-class CastHungeringColdAction : public CastMeleeSpellAction
+class CastChainsOfIceOnTargetAction : public CastSpellAction
 {
 public:
-    CastHungeringColdAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "hungering cold") {}
+    CastChainsOfIceOnTargetAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "chains of ice") {}
+};
+
+// Hungering Cold freezes everything around the death knight and needs no target of its own.
+class CastHungeringColdAction : public CastBuffSpellAction
+{
+public:
+    CastHungeringColdAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "hungering cold") {}
 };
 
 class CastHeartStrikeAction : public CastMeleeSpellAction
@@ -297,10 +322,23 @@ public:
     CastKillingMachineAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "killing machine") {}
 };
 
+// Icebound Fortitude breaks stuns and Lichborne breaks fear, charm and sleep, which is exactly
+// when PlayerbotAI::CanCastSpell refuses everything (UNIT_STATE_LOST_CONTROL). Both check only
+// the cooldown, the same way the racial control breakers do.
 class CastIceboundFortitudeAction : public CastBuffSpellAction
 {
 public:
     CastIceboundFortitudeAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "icebound fortitude") {}
+
+    bool isPossible() override;
+};
+
+class CastLichborneAction : public CastBuffSpellAction
+{
+public:
+    CastLichborneAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "lichborne") {}
+
+    bool isPossible() override;
 };
 
 class CastUnbreakableArmorAction : public CastBuffSpellAction
@@ -321,10 +359,18 @@ public:
     CastMindFreezeAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "mind freeze") {}
 };
 
-class CastStrangulateAction : public CastMeleeSpellAction
+// Strangulate silences at 30 yards - the whole point is reaching a caster the bot cannot touch,
+// so it must not be gated on melee range like Mind Freeze.
+class CastStrangulateAction : public CastSpellAction
 {
 public:
-    CastStrangulateAction(PlayerbotAI* botAI) : CastMeleeSpellAction(botAI, "strangulate") {}
+    CastStrangulateAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "strangulate") {}
+};
+
+class CastStrangulateOnEnemyHealerAction : public CastSpellOnEnemyHealerAction
+{
+public:
+    CastStrangulateOnEnemyHealerAction(PlayerbotAI* botAI) : CastSpellOnEnemyHealerAction(botAI, "strangulate") {}
 };
 
 class CastMindFreezeOnEnemyHealerAction : public CastSpellOnEnemyHealerAction

@@ -205,4 +205,54 @@ public:
     HysteriaNoCooldownTrigger(PlayerbotAI* botAI) : SpellNoCooldownTrigger(botAI, "hysteria") {}
 };
 
+// The bot's current target is a hostile player who has left melee range: it is kiting or running,
+// and the answer is Death Grip first and the 30 yard instants while the grip is on cooldown.
+class DKPlayerTargetOutOfMeleeTrigger : public Trigger
+{
+public:
+    DKPlayerTargetOutOfMeleeTrigger(PlayerbotAI* botAI) : Trigger(botAI, "player target out of melee") {}
+
+    bool IsActive() override;
+};
+
+// Keep Chains of Ice on a hostile player current target; no lifetime gate - a player about to die
+// is exactly the one trying to run away.
+class ChainsOfIceKiteTrigger : public DebuffTrigger
+{
+public:
+    ChainsOfIceKiteTrigger(PlayerbotAI* botAI) : DebuffTrigger(botAI, "chains of ice", 1, false, 0.0f) {}
+
+    bool IsActive() override;
+};
+
+// Someone is casting at the bot: Anti-Magic Shell eats the spell and pays runic power for it.
+// Against melee-only opponents the cooldown is better kept.
+class AntiMagicShellTrigger : public BuffTrigger
+{
+public:
+    AntiMagicShellTrigger(PlayerbotAI* botAI) : BuffTrigger(botAI, "anti magic shell") {}
+
+    bool IsActive() override;
+};
+
+// Icebound Fortitude is the death knight's stun break; roots, fears and charms go straight through
+// it, so the two-minute cooldown is only spent on an actual stun.
+class DKStunnedTrigger : public Trigger
+{
+public:
+    DKStunnedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "stunned") {}
+
+    bool IsActive() override;
+};
+
+// Two or more player opponents standing inside Hungering Cold's ten yards. Against creatures the
+// freeze breaks on the first tick of anyone's area damage, so the runic power is only spent in PvP.
+class HungeringColdTrigger : public Trigger
+{
+public:
+    HungeringColdTrigger(PlayerbotAI* botAI) : Trigger(botAI, "hungering cold") {}
+
+    bool IsActive() override;
+};
+
 #endif

@@ -24,7 +24,7 @@ private:
     {
         return new ActionNode(
             "death strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -33,7 +33,7 @@ private:
     {
         return new ActionNode(
             "ghoul frenzy",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -42,7 +42,7 @@ private:
     {
         return new ActionNode(
             "corpse explosion",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -52,7 +52,7 @@ private:
     {
         return new ActionNode(
             "scourge strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -61,7 +61,7 @@ private:
     {
         return new ActionNode(
             "icy touch",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );

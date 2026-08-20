@@ -5,6 +5,7 @@
  */
 
 #include "DKTriggers.h"
+#include "AttackersValue.h"
 #include "GenericTriggers.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
@@ -74,4 +75,66 @@ bool DeathAndDecayCooldownTrigger::IsActive()
         return true;
 
     return bot->GetSpellCooldownDelay(spellId) >= 2000;
+}
+
+bool DKPlayerTargetOutOfMeleeTrigger::IsActive()
+{
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !target->IsPlayer() || bot->IsFriendlyTo(target))
+        return false;
+
+    return !bot->IsWithinMeleeRange(target);
+}
+
+bool ChainsOfIceKiteTrigger::IsActive()
+{
+    Unit* target = GetTarget();
+    if (!target || !target->IsPlayer() || bot->IsFriendlyTo(target))
+        return false;
+
+    return DebuffTrigger::IsActive();
+}
+
+bool AntiMagicShellTrigger::IsActive()
+{
+    if (!BuffTrigger::IsActive())
+        return false;
+
+    GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker || !attacker->IsAlive())
+            continue;
+
+        if (attacker->IsNonMeleeSpellCast(true) && attacker->GetTarget() == bot->GetGUID())
+            return true;
+    }
+
+    return false;
+}
+
+bool DKStunnedTrigger::IsActive() { return bot->IsInCombat() && bot->HasUnitState(UNIT_STATE_STUNNED); }
+
+bool HungeringColdTrigger::IsActive()
+{
+    if (!botAI->HasPvpOpponent())
+        return false;
+
+    uint32 count = 0;
+    GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* attacker = botAI->GetUnit(guid);
+        if (!attacker || !attacker->IsAlive() || !attacker->IsControlledByPlayer())
+            continue;
+
+        if (AttackersValue::IsCrowdControlled(attacker))
+            continue;
+
+        if (bot->GetDistance(attacker) <= 10.0f)
+            ++count;
+    }
+
+    return count >= 2;
 }

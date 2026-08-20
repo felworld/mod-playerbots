@@ -25,7 +25,7 @@ private:
     {
         return new ActionNode(
             "icy touch",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -35,7 +35,7 @@ private:
     {
         return new ActionNode(
             "obliterate",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -45,7 +45,7 @@ private:
     {
         return new ActionNode(
             "rune strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ { NextAction("melee") },
             /*C*/ {}
         );
@@ -55,7 +55,7 @@ private:
     {
         return new ActionNode(
             "frost strike",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -65,7 +65,7 @@ private:
     {
         return new ActionNode(
             "howling blast",
-            /*P*/ { NextAction("blood presence") },
+            /*P*/ { NextAction("dps presence") },
             /*A*/ {},
             /*C*/ {}
         );
@@ -153,6 +153,28 @@ void FrostDKStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         )
     );
 
+    // Swarmed by players: Hungering Cold freezes everyone within ten yards for long enough to peel
+    // or to walk away. The trigger only counts player opponents - a creature pack breaks the freeze
+    // with its first hit.
+    triggers.push_back(
+        new TriggerNode(
+            "hungering cold",
+            {
+                NextAction("hungering cold", ACTION_HIGH + 3)
+            }
+        )
+    );
+
+    // Lichborne makes the death knight undead for ten seconds, which is the frost tree's answer to
+    // being feared, charmed or slept.
+    triggers.push_back(
+        new TriggerNode(
+            "fear charm sleep",
+            {
+                NextAction("lichborne", ACTION_EMERGENCY)
+            }
+        )
+    );
 }
 
 void FrostDKAoeStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

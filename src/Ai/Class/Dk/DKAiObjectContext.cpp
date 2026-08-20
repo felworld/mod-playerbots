@@ -89,6 +89,12 @@ public:
         creators["death and decay cooldown"] = &DeathKnightTriggerFactoryInternal::death_and_decay_cooldown;
         creators["army of the dead"] = &DeathKnightTriggerFactoryInternal::army_of_the_dead;
         creators["hysteria no cd"] = &DeathKnightTriggerFactoryInternal::hysteria_no_cd;
+        creators["rune strike"] = &DeathKnightTriggerFactoryInternal::rune_strike;
+        creators["chains of ice kite"] = &DeathKnightTriggerFactoryInternal::chains_of_ice_kite;
+        creators["player target out of melee"] = &DeathKnightTriggerFactoryInternal::player_target_out_of_melee;
+        creators["anti magic shell"] = &DeathKnightTriggerFactoryInternal::anti_magic_shell;
+        creators["stunned"] = &DeathKnightTriggerFactoryInternal::stunned;
+        creators["hungering cold"] = &DeathKnightTriggerFactoryInternal::hungering_cold;
     }
 
 private:
@@ -142,6 +148,15 @@ private:
     static Trigger* death_and_decay_cooldown(PlayerbotAI* botAI) { return new DeathAndDecayCooldownTrigger(botAI); }
     static Trigger* army_of_the_dead(PlayerbotAI* botAI) { return new ArmyOfTheDeadTrigger(botAI); }
     static Trigger* hysteria_no_cd(PlayerbotAI* botAI) { return new HysteriaNoCooldownTrigger(botAI); }
+    static Trigger* rune_strike(PlayerbotAI* botAI) { return new RuneStrikeTrigger(botAI); }
+    static Trigger* chains_of_ice_kite(PlayerbotAI* botAI) { return new ChainsOfIceKiteTrigger(botAI); }
+    static Trigger* player_target_out_of_melee(PlayerbotAI* botAI)
+    {
+        return new DKPlayerTargetOutOfMeleeTrigger(botAI);
+    }
+    static Trigger* anti_magic_shell(PlayerbotAI* botAI) { return new AntiMagicShellTrigger(botAI); }
+    static Trigger* stunned(PlayerbotAI* botAI) { return new DKStunnedTrigger(botAI); }
+    static Trigger* hungering_cold(PlayerbotAI* botAI) { return new HungeringColdTrigger(botAI); }
 };
 
 class DeathKnightAiObjectContextInternal : public NamedObjectContext<Action>
@@ -156,7 +171,6 @@ public:
         creators["death grip"] = &DeathKnightAiObjectContextInternal::death_grip;
         creators["death coil"] = &DeathKnightAiObjectContextInternal::death_coil;
         creators["death strike"] = &DeathKnightAiObjectContextInternal::death_strike;
-        creators["unholy blight"] = &DeathKnightAiObjectContextInternal::unholy_blight;
         creators["scourge strike"] = &DeathKnightAiObjectContextInternal::scourge_strike;
         creators["death and decay"] = &DeathKnightAiObjectContextInternal::death_and_decay;
         creators["unholy presence"] = &DeathKnightAiObjectContextInternal::unholy_presence;
@@ -174,6 +188,7 @@ public:
         creators["howling blast"] = &DeathKnightAiObjectContextInternal::howling_blast;
         creators["frost strike"] = &DeathKnightAiObjectContextInternal::frost_strike;
         creators["chains of ice"] = &DeathKnightAiObjectContextInternal::chains_of_ice;
+        creators["chains of ice on target"] = &DeathKnightAiObjectContextInternal::chains_of_ice_on_target;
         creators["rune strike"] = &DeathKnightAiObjectContextInternal::rune_strike;
         // creators["icy clutch"] = &DeathKnightAiObjectContextInternal::icy_clutch;
         creators["horn of winter"] = &DeathKnightAiObjectContextInternal::horn_of_winter;
@@ -193,15 +208,19 @@ public:
         creators["strangulate"] = &DeathKnightAiObjectContextInternal::strangulate;
         creators["blood boil"] = &DeathKnightAiObjectContextInternal::blood_boil;
         creators["heart strike"] = &DeathKnightAiObjectContextInternal::heart_strike;
-        creators["mark of_blood"] = &DeathKnightAiObjectContextInternal::mark_of_blood;
+        creators["mark of blood"] = &DeathKnightAiObjectContextInternal::mark_of_blood;
         creators["blood presence"] = &DeathKnightAiObjectContextInternal::blood_presence;
         creators["rune tap"] = &DeathKnightAiObjectContextInternal::rune_tap;
         creators["vampiric blood"] = &DeathKnightAiObjectContextInternal::vampiric_blood;
         creators["death pact"] = &DeathKnightAiObjectContextInternal::death_pact;
-        creators["death rune_mastery"] = &DeathKnightAiObjectContextInternal::death_rune_mastery;
+        creators["death rune mastery"] = &DeathKnightAiObjectContextInternal::death_rune_mastery;
         creators["hysteria"] = &DeathKnightAiObjectContextInternal::hysteria;
         creators["dancing rune weapon"] = &DeathKnightAiObjectContextInternal::dancing_rune_weapon;
         creators["dark command"] = &DeathKnightAiObjectContextInternal::dark_command;
+        creators["mind freeze on enemy healer"] = &DeathKnightAiObjectContextInternal::mind_freeze_on_enemy_healer;
+        creators["strangulate on enemy healer"] = &DeathKnightAiObjectContextInternal::strangulate_on_enemy_healer;
+        creators["dps presence"] = &DeathKnightAiObjectContextInternal::dps_presence;
+        creators["lichborne"] = &DeathKnightAiObjectContextInternal::lichborne;
     }
 
 private:
@@ -212,7 +231,6 @@ private:
     static Action* death_grip(PlayerbotAI* botAI) { return new CastDeathGripAction(botAI); }
     static Action* death_coil(PlayerbotAI* botAI) { return new CastDeathCoilAction(botAI); }
     static Action* death_strike(PlayerbotAI* botAI) { return new CastDeathStrikeAction(botAI); }
-    static Action* unholy_blight(PlayerbotAI* botAI) { return new CastUnholyBlightAction(botAI); }
     static Action* scourge_strike(PlayerbotAI* botAI) { return new CastScourgeStrikeAction(botAI); }
     static Action* death_and_decay(PlayerbotAI* botAI) { return new CastDeathAndDecayAction(botAI); }
     static Action* unholy_presence(PlayerbotAI* botAI) { return new CastUnholyPresenceAction(botAI); }
@@ -230,6 +248,7 @@ private:
     static Action* howling_blast(PlayerbotAI* botAI) { return new CastHowlingBlastAction(botAI); }
     static Action* frost_strike(PlayerbotAI* botAI) { return new CastFrostStrikeAction(botAI); }
     static Action* chains_of_ice(PlayerbotAI* botAI) { return new CastChainsOfIceAction(botAI); }
+    static Action* chains_of_ice_on_target(PlayerbotAI* botAI) { return new CastChainsOfIceOnTargetAction(botAI); }
     static Action* rune_strike(PlayerbotAI* botAI) { return new CastRuneStrikeAction(botAI); }
     // static Action* icy_clutch(PlayerbotAI* botAI) { return new CastIcyClutchAction(botAI); }
     static Action* horn_of_winter(PlayerbotAI* botAI) { return new CastHornOfWinterAction(botAI); }
@@ -262,6 +281,12 @@ private:
     {
         return new CastMindFreezeOnEnemyHealerAction(botAI);
     }
+    static Action* strangulate_on_enemy_healer(PlayerbotAI* botAI)
+    {
+        return new CastStrangulateOnEnemyHealerAction(botAI);
+    }
+    static Action* dps_presence(PlayerbotAI* botAI) { return new CastDpsPresenceAction(botAI); }
+    static Action* lichborne(PlayerbotAI* botAI) { return new CastLichborneAction(botAI); }
 };
 
 SharedNamedObjectContextList<Strategy> DKAiObjectContext::sharedStrategyContexts;
