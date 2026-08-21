@@ -130,11 +130,26 @@ namespace EngineeringDevices
 
         return nullptr;
     }
+
+    uint32 TauntableAttackerCount(Player* bot)
+    {
+        uint32 count = 0;
+        for (Unit* attacker : bot->getAttackers())
+        {
+            if (!attacker || !attacker->IsAlive() || attacker->IsPlayer())
+                continue;
+
+            ++count;
+        }
+
+        return count;
+    }
 }
 
 bool UseTargetDummyAction::isUseful()
 {
-    return bot->IsInCombat() && botAI->DuelAllowsConsumable(DuelConsumables::BANDAGES);
+    return bot->IsInCombat() && EngineeringDevices::TauntableAttackerCount(bot) &&
+           botAI->DuelAllowsConsumable(DuelConsumables::BANDAGES);
 }
 
 bool UseTargetDummyAction::isPossible()

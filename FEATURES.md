@@ -1261,8 +1261,10 @@ lob at an ordinary mob just because — and answer an enemy cast with a
 stun grenade at just-below class-interrupt priority, so a real kick wins
 when one is available. Surrounded by three or more attackers with a
 healthy HP buffer, an engineer sets off a sapper charge; overwhelmed and
-hurting, it drops a target dummy to shed aggro; now and then it releases
-an explosive sheep. Glove tinkers fire on cooldown. Rocket boots pop
+hurting, it drops a target dummy to shed aggro — only when at least two
+of its attackers are creatures, since the dummy peels by taunting and
+players simply ignore it; now and then it releases an explosive sheep.
+Glove tinkers fire on cooldown. Rocket boots pop
 when it matters most: carrying a Warsong Gulch flag, chasing an enemy
 flag carrier who is pulling away, or fleeing below 25% health. A
 stealthed bot holds every gadget — an item cast would knock it out of
