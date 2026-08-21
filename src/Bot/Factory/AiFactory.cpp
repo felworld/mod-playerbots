@@ -284,6 +284,10 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 {
     uint8 tab = GetPlayerSpecTab(player);
 
+    // Everywhere, battlegrounds included: an immunity that has outlived its use gets cancelled
+    // like a player would right-click it off (Felworld).
+    engine->addStrategy("cancel immunity", false);
+
     if (!player->InBattleground())
     {
         engine->addStrategiesNoInit("racials", "chat", "default", "cast time", "potions", "engineering", "duel",
@@ -623,6 +627,10 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
                  !PlayerbotAI::IsTank(player, true))
             nonCombatEngine->addStrategy("prowl", false);
     }
+
+    // Out of combat too, so a Divine Intervention gets dropped once the wipe has settled and an
+    // Ice Block no longer pins the bot in place after the fight (Felworld).
+    nonCombatEngine->addStrategy("cancel immunity", false);
 
     if (sPlayerbotAIConfig.autoSaveMana && PlayerbotAI::IsHeal(player, true))
         nonCombatEngine->addStrategy("save mana", false);

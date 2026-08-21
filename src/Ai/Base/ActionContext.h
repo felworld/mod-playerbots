@@ -15,6 +15,7 @@
 #include "BuyAction.h"
 #include "BystanderAssistActions.h"
 #include "CancelChannelAction.h"
+#include "ImmunityActions.h"
 #include "DungeonPullActions.h"
 #include "QuestCompetitionActions.h"
 #include "SocialBuffActions.h"
@@ -221,6 +222,11 @@ public:
         creators["escape artist"] = &ActionContext::escape_artist;
         creators["use trinket"] = &ActionContext::use_trinket;
         creators["use pvp trinket"] = &ActionContext::use_pvp_trinket;
+        creators["cancel ice block"] = &ActionContext::cancel_ice_block;
+        creators["cancel divine shield"] = &ActionContext::cancel_divine_shield;
+        creators["cancel dispersion"] = &ActionContext::cancel_dispersion;
+        creators["cancel divine intervention"] = &ActionContext::cancel_divine_intervention;
+        creators["cancel hand of protection"] = &ActionContext::cancel_hand_of_protection;
         creators["auto talents"] = &ActionContext::auto_talents;
         creators["auto share quest"] = &ActionContext::auto_share_quest;
         creators["auto maintenance on levelup"] = &ActionContext::auto_maintenance_on_levelup;
@@ -477,6 +483,14 @@ private:
     static Action* escape_artist(PlayerbotAI* botAI) { return new CastEscapeArtistAction(botAI); }
     static Action* use_trinket(PlayerbotAI* botAI) { return new UseTrinketAction(botAI); }
     static Action* use_pvp_trinket(PlayerbotAI* botAI) { return new UsePvpTrinketAction(botAI); }
+    static Action* cancel_ice_block(PlayerbotAI* botAI) { return new CancelIceBlockAction(botAI); }
+    static Action* cancel_divine_shield(PlayerbotAI* botAI) { return new CancelDivineShieldAction(botAI); }
+    static Action* cancel_dispersion(PlayerbotAI* botAI) { return new CancelDispersionAction(botAI); }
+    static Action* cancel_divine_intervention(PlayerbotAI* botAI)
+    {
+        return new CancelDivineInterventionAction(botAI);
+    }
+    static Action* cancel_hand_of_protection(PlayerbotAI* botAI) { return new CancelHandOfProtectionAction(botAI); }
     static Action* auto_talents(PlayerbotAI* botAI) { return new AutoSetTalentsAction(botAI); }
     static Action* auto_share_quest(PlayerbotAI* ai) { return new AutoShareQuestAction(ai); }
     static Action* auto_maintenance_on_levelup(PlayerbotAI* botAI) { return new AutoMaintenanceOnLevelupAction(botAI); }

@@ -47,6 +47,7 @@
 #include "QuestStrategies.h"
 #include "RTSCStrategy.h"
 #include "RacialsStrategy.h"
+#include "CancelImmunityStrategy.h"
 #include "RangedCombatStrategy.h"
 #include "ReturnStrategy.h"
 #include "RpgStrategy.h"
@@ -69,6 +70,7 @@ public:
     StrategyContext()
     {
         creators["racials"] = &StrategyContext::racials;
+        creators["cancel immunity"] = &StrategyContext::cancel_immunity;
         creators["loot"] = &StrategyContext::loot;
         creators["gather"] = &StrategyContext::gather;
         creators["emote"] = &StrategyContext::emote;
@@ -165,6 +167,7 @@ private:
     static Strategy* flee(PlayerbotAI* botAI) { return new FleeStrategy(botAI); }
     static Strategy* dead(PlayerbotAI* botAI) { return new DeadStrategy(botAI); }
     static Strategy* racials(PlayerbotAI* botAI) { return new RacialsStrategy(botAI); }
+    static Strategy* cancel_immunity(PlayerbotAI* botAI) { return new CancelImmunityStrategy(botAI); }
     static Strategy* loot(PlayerbotAI* botAI) { return new LootNonCombatStrategy(botAI); }
     static Strategy* gather(PlayerbotAI* botAI) { return new GatherStrategy(botAI); }
     static Strategy* emote(PlayerbotAI* botAI) { return new EmoteStrategy(botAI); }

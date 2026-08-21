@@ -8,6 +8,7 @@
 #define PLAYERBOTS_MAGEACTIONS_H
 
 #include "GenericSpellActions.h"
+#include "ImmunityActions.h"
 #include "SharedDefines.h"
 #include "UseItemAction.h"
 
@@ -124,10 +125,10 @@ class CastInvisibilityAction : public CastBuffSpellAction
 public:
     CastInvisibilityAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "invisibility") {}
 };
-class CastIceBlockAction : public CastBuffSpellAction
+class CastIceBlockAction : public CastEmergencyImmunityAction
 {
 public:
-    CastIceBlockAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "ice block") {}
+    CastIceBlockAction(PlayerbotAI* botAI) : CastEmergencyImmunityAction(botAI, "ice block") {}
 };
 
 class CastMirrorImageAction : public CastBuffSpellAction

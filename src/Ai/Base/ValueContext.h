@@ -101,6 +101,7 @@
 #include "TradeValues.h"
 #include "Value.h"
 #include "WaitForAttackTimeValue.h"
+#include "EmergencyImmunityTimeValue.h"
 
 class PlayerbotAI;
 
@@ -354,6 +355,7 @@ public:
         creators["fishing spot"] = &ValueContext::fishing_spot;
         creators["wait for attack time"] = &ValueContext::wait_for_attack_time;
         creators["combat start time"] = &ValueContext::combat_start_time;
+        creators["emergency immunity time"] = &ValueContext::emergency_immunity_time;
     }
 
 private:
@@ -641,6 +643,7 @@ private:
     }
     static UntypedValue* wait_for_attack_time(PlayerbotAI* botAI) { return new WaitForAttackTimeValue(botAI); }
     static UntypedValue* combat_start_time(PlayerbotAI* botAI) { return new CombatStartTimeValue(botAI); }
+    static UntypedValue* emergency_immunity_time(PlayerbotAI* botAI) { return new EmergencyImmunityTimeValue(botAI); }
 };
 
 #endif

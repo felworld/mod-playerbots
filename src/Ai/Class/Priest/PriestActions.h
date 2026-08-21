@@ -8,6 +8,7 @@
 #define PLAYERBOTS_PRIESTACTIONS_H
 
 #include "GenericSpellActions.h"
+#include "ImmunityActions.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 
@@ -174,12 +175,10 @@ public:
     bool isUseful() override;
 };
 
-class CastDispersionAction : public CastSpellAction
+class CastDispersionAction : public CastEmergencyImmunityAction
 {
 public:
-    CastDispersionAction(PlayerbotAI* ai) : CastSpellAction(ai, "dispersion") {}
-
-    virtual std::string const GetTargetName() { return "self target"; }
+    CastDispersionAction(PlayerbotAI* botAI) : CastEmergencyImmunityAction(botAI, "dispersion") {}
 };
 
 class CastPenanceOnPartyAction : public HealPartyMemberAction

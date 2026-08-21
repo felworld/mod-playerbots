@@ -1312,6 +1312,44 @@ item's native fail chance supplies the comedy. Duels honor
 `AiPlayerbot.DuelConsumables` (engineering items are tier `1`, the
 Felworld setting). No other config knobs.
 
+## Outlived immunities
+
+Bots never cancelled an immunity: a mage that Ice Blocked at critical
+health stood frozen for the full ten seconds after the healer had long
+topped it up, a paladin kept a bubble that halves its damage and makes
+every mob walk past it (the core suppresses damage-immune victims on the
+threat list, so a bubbled tank hands its pulls to the healer), and a bot
+under a human's Divine Intervention sat out the full three minutes after
+the mobs had reset instead of resurrecting the group. Upstream's
+`RemoveAuraAction` only existed as the `ra` chat command, plus a few
+hand-placed removals in raid scripts.
+
+The always-on `cancel immunity` strategy (combat and non-combat engines,
+battlegrounds included) drops an aura the way a player right-clicks it
+off, so it works from inside the stun:
+
+- **Ice Block** — cancelled once the bot is back above
+  `AiPlayerbot.MediumHealth`, or as soon as it is out of combat.
+- **Divine Shield** — the paladin keeps acting under it and upstream
+  already self-heals to 80% underneath, so the bar is
+  `AiPlayerbot.AlmostFullHealth`; also dropped out of combat.
+- **Dispersion** — the shadow priest's panic button and mana battery:
+  cancelled above `MediumHealth` *and* `AiPlayerbot.MediumMana`, or out
+  of combat.
+- **Divine Intervention** — cancelled once the bot is out of combat,
+  i.e. the wipe has settled and the survivor can start resurrecting.
+- **Hand of Protection** — a tank, melee or hunter drops it above
+  `AlmostFullHealth` or out of combat, since it stops them attacking and
+  makes mobs ignore them; casters and healers lose nothing and keep it.
+
+The health-based rules only apply to an immunity the bot cast *as a
+survival move* (its own critical-health trigger, with health under
+`AiPlayerbot.LowHealth` at cast time — recorded in the `emergency
+immunity time` value). A raid strategy that Ice Blocks or bubbles at full
+health to dodge a mechanic leaves no such record, and that immunity runs
+its course. Hunter Deterrence is left alone: five seconds, and the hunter
+can still move and trap under it. No config knobs.
+
 ## Emote exchanges that end
 
 Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting

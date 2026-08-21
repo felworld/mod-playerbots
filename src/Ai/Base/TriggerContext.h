@@ -17,6 +17,7 @@
 #include "GenericTriggers.h"
 #include "GuildTriggers.h"
 #include "HealthTriggers.h"
+#include "ImmunityTriggers.h"
 #include "LfgTriggers.h"
 #include "LootTriggers.h"
 #include "NamedObjectContext.h"
@@ -80,6 +81,11 @@ public:
         creators["generic boost"] = &TriggerContext::generic_boost;
         creators["loss of control"] = &TriggerContext::loss_of_control;
         creators["fear charm sleep"] = &TriggerContext::fear_charm_sleep;
+        creators["ice block outlived"] = &TriggerContext::ice_block_outlived;
+        creators["divine shield outlived"] = &TriggerContext::divine_shield_outlived;
+        creators["dispersion outlived"] = &TriggerContext::dispersion_outlived;
+        creators["divine intervention outlived"] = &TriggerContext::divine_intervention_outlived;
+        creators["hand of protection outlived"] = &TriggerContext::hand_of_protection_outlived;
         creators["fear sleep sap"] = &TriggerContext::fear_sleep_sap;
         creators["poison disease bleed"] = &TriggerContext::poison_disease_bleed;
         creators["movement impaired"] = &TriggerContext::movement_impaired;
@@ -459,6 +465,17 @@ private:
     }
     static Trigger* generic_boost(PlayerbotAI* botAI) { return new GenericBoostTrigger(botAI); }
     static Trigger* loss_of_control(PlayerbotAI* botAI) { return new LossOfControlTrigger(botAI); }
+    static Trigger* ice_block_outlived(PlayerbotAI* botAI) { return new IceBlockOutlivedTrigger(botAI); }
+    static Trigger* divine_shield_outlived(PlayerbotAI* botAI) { return new DivineShieldOutlivedTrigger(botAI); }
+    static Trigger* dispersion_outlived(PlayerbotAI* botAI) { return new DispersionOutlivedTrigger(botAI); }
+    static Trigger* divine_intervention_outlived(PlayerbotAI* botAI)
+    {
+        return new DivineInterventionOutlivedTrigger(botAI);
+    }
+    static Trigger* hand_of_protection_outlived(PlayerbotAI* botAI)
+    {
+        return new HandOfProtectionOutlivedTrigger(botAI);
+    }
     static Trigger* fear_charm_sleep(PlayerbotAI* botAI) { return new FearCharmSleepTrigger(botAI); }
     static Trigger* fear_sleep_sap(PlayerbotAI* botAI) { return new FearSleepSapTrigger(botAI); }
     static Trigger* poison_disease_bleed(PlayerbotAI* botAI) { return new PoisonDiseaseBleedTrigger(botAI); }

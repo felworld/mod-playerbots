@@ -9,6 +9,7 @@
 
 #include "AiObject.h"
 #include "GenericSpellActions.h"
+#include "ImmunityActions.h"
 
 // seals
 BUFF_ACTION(CastSealOfRighteousnessAction, "seal of righteousness");
@@ -209,10 +210,10 @@ public:
     std::string const getName() override { return "divine protection on party"; }
 };
 
-class CastDivineShieldAction : public CastBuffSpellAction
+class CastDivineShieldAction : public CastEmergencyImmunityAction
 {
 public:
-    CastDivineShieldAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "divine shield") {}
+    CastDivineShieldAction(PlayerbotAI* botAI) : CastEmergencyImmunityAction(botAI, "divine shield") {}
 };
 
 // Hand of Sacrifice moves 30% of an ally's incoming damage onto the paladin: a save for someone

@@ -179,6 +179,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   engineer bots throw bombs and grenades, interrupt casters with stun
   grenades, sapper when surrounded, drop target dummies, pop rocket
   boots on flag runs, and jump-start dead groupmates with jumper cables.
+- **[Outlived immunities](FEATURES.md#outlived-immunities)** — bots cancel
+  an Ice Block, Divine Shield, Dispersion, Divine Intervention or Hand of
+  Protection once it has done its job, instead of sitting out its full
+  duration after being healed up or after the fight has ended.
 - **[Emote exchanges that end](FEATURES.md#emote-exchanges-that-end)** —
   bot-to-bot emote replies trail off instead of ping-ponging forever, and
   crowds don't reply in chorus.
