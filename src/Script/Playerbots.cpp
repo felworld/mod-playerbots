@@ -5,6 +5,7 @@
 
 #include "Playerbots.h"
 #include "BattleGroundTactics.h"
+#include "Battleground.h"
 #include "BattlefieldScript.h"
 #include "Channel.h"
 #include "Config.h"
@@ -69,6 +70,38 @@ public:
     }
 };
 
+namespace
+{
+    // AiPlayerbot.CastDeserter keeps the deserter debuff for bots, and for real players
+    // who leave another real player behind; a real player bailing on all bots is spared.
+    bool DeserterPaysDebuff(Player* player, Battleground* bg)
+    {
+        if (player->GetSession()->IsBot())
+            return true;
+
+        if (bg)
+            for (auto const& [guid, other] : bg->GetPlayers())
+                if (other && other != player && !other->GetSession()->IsBot())
+                    return true;
+
+        return false;
+    }
+
+    bool DeserterPaysDebuff(Player* player, Group* group)
+    {
+        if (player->GetSession()->IsBot())
+            return true;
+
+        if (group)
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+                if (Player* other = ref->GetSource())
+                    if (other != player && !other->GetSession()->IsBot())
+                        return true;
+
+        return false;
+    }
+}
+
 class PlayerbotsPlayerScript : public PlayerScript
 {
 public:
@@ -84,6 +117,8 @@ public:
         PLAYERHOOK_ON_GIVE_EXP,
         PLAYERHOOK_ON_GHOST_SPEED_RATE,
         PLAYERHOOK_ON_RESURRECT_SICKNESS_LEVEL,
+        PLAYERHOOK_ON_BATTLEGROUND_DESERTER_DEBUFF,
+        PLAYERHOOK_ON_DUNGEON_DESERTER_DEBUFF,
         PLAYERHOOK_ON_BEFORE_TELEPORT,
         PLAYERHOOK_ON_UPDATE_ZONE,
         PLAYERHOOK_ON_DUEL_END,
@@ -342,6 +377,20 @@ public:
         // AiPlayerbot.ResurrectionSicknessLevel replaces Death.SicknessLevel for bots.
         if (sPlayerbotAIConfig.resurrectionSicknessLevel && player && player->GetSession()->IsBot())
             startLevel = sPlayerbotAIConfig.resurrectionSicknessLevel;
+    }
+
+    void OnPlayerBattlegroundDeserterDebuff(Player* player, Battleground* bg, bool& castDeserter) override
+    {
+        // AiPlayerbot.CastDeserter restores the debuff Battleground.CastDeserter = 0 skips.
+        if (!castDeserter && sPlayerbotAIConfig.castDeserter && player)
+            castDeserter = DeserterPaysDebuff(player, bg);
+    }
+
+    void OnPlayerDungeonDeserterDebuff(Player* player, Group* group, bool& castDeserter) override
+    {
+        // AiPlayerbot.CastDeserter restores the debuff DungeonFinder.CastDeserter = 0 skips.
+        if (!castDeserter && sPlayerbotAIConfig.castDeserter && player)
+            castDeserter = DeserterPaysDebuff(player, group);
     }
 };
 

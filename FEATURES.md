@@ -1352,6 +1352,22 @@ server-wide and restore the standard threshold for bots: humans skip the
 debuff, while a bot that opts for an instant spirit-healer rez still pays
 its cost.
 
+## Deserter debuffs for bots
+
+The [core fork](https://github.com/felworld/azerothcore) adds
+`OnPlayerBattlegroundDeserterDebuff` / `OnPlayerDungeonDeserterDebuff`
+hooks that let modules decide per player whether leaving a battleground in
+progress or an LFG dungeon early casts the Deserter debuff, after the
+server's `Battleground.CastDeserter` / `DungeonFinder.CastDeserter` have
+been applied. `AiPlayerbot.CastDeserter` (default 0 = follow the server
+options) casts it regardless of those options when the leaver is a bot, or
+is a real player who leaves another real player behind in the battleground
+or group. [Our configs](https://github.com/felworld/configs) disable both
+server options and turn this on: a human who bails on an all-bot run skips
+the debuff — nobody real was let down — while bots still pay it (and
+already refuse to queue while Deserter is up), and a human who abandons
+another human pays as usual.
+
 ## Unseen stuck recovery
 
 When a travelling bot makes no real progress toward its destination for

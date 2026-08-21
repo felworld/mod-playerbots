@@ -870,6 +870,13 @@ AiPlayerbot.GhostMoveSpeedRate = 1.0
 # sickness (e.g. for real players). Default: 0 (follow Death.SicknessLevel)
 AiPlayerbot.ResurrectionSicknessLevel = 0
 
+# Cast the battleground/dungeon Deserter debuff even when the server's
+# Battleground.CastDeserter / DungeonFinder.CastDeserter are off, for bots
+# and for real players who leave another real player behind. Lets the server
+# options be disabled so a real player bailing on an all-bot group skips the
+# debuff while bots still pay it. Default: 0 (follow the server options)
+AiPlayerbot.CastDeserter = 0
+
 #
 #
 ####################################################################################################

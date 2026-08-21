@@ -730,6 +730,7 @@ bool PlayerbotAIConfig::Initialize()
     randomBotXPRate = sConfigMgr->GetOption<float>("AiPlayerbot.RandomBotXPRate", 1.0);
     ghostMoveSpeedRate = sConfigMgr->GetOption<float>("AiPlayerbot.GhostMoveSpeedRate", 1.0);
     resurrectionSicknessLevel = sConfigMgr->GetOption<int32>("AiPlayerbot.ResurrectionSicknessLevel", 0);
+    castDeserter = sConfigMgr->GetOption<bool>("AiPlayerbot.CastDeserter", false);
     randomBotAllianceRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotAllianceRatio", 50);
     randomBotHordeRatio = sConfigMgr->GetOption<int32>("AiPlayerbot.RandomBotHordeRatio", 50);
     disableDeathKnightLogin = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableDeathKnightLogin", 0);
