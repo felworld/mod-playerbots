@@ -131,24 +131,24 @@ namespace EngineeringDevices
         return nullptr;
     }
 
-    uint32 TauntableAttackerCount(Player* bot)
+    bool HasTauntableAttacker(Player* bot)
     {
-        uint32 count = 0;
         for (Unit* attacker : bot->getAttackers())
         {
-            if (!attacker || !attacker->IsAlive() || attacker->IsPlayer())
-                continue;
-
-            ++count;
+            // CanHaveThreatList() is exactly what the taunt aura handler checks: players,
+            // pets, totems, triggers and player-summoned guardians have no threat list, so
+            // the dummy's taunt is a no-op on them.
+            if (attacker && attacker->CanHaveThreatList())
+                return true;
         }
 
-        return count;
+        return false;
     }
 }
 
 bool UseTargetDummyAction::isUseful()
 {
-    return bot->IsInCombat() && EngineeringDevices::TauntableAttackerCount(bot) &&
+    return bot->IsInCombat() && EngineeringDevices::HasTauntableAttacker(bot) &&
            botAI->DuelAllowsConsumable(DuelConsumables::BANDAGES);
 }
 

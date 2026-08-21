@@ -925,12 +925,12 @@ bool TargetDummyTrigger::IsActive()
     if (HoldGadgetsWhileStealthed(bot))
         return false;
 
-    if (!bot->IsInCombat() || bot->GetHealthPct() > 60.0f)
+    if (!bot->IsInCombat() || bot->GetHealthPct() > 60.0f || AI_VALUE(uint8, "my attacker count") < 2)
         return false;
 
-    // Only creatures obey the dummy's taunt, so a pack of players pounding on the
-    // bot is not something a dummy can peel - don't waste one on them.
-    if (EngineeringDevices::TauntableAttackerCount(bot) < 2)
+    // The dummy peels by taunting, which players and their pets ignore outright. One
+    // tauntable attacker in the pile is enough to be worth it; a pack of players is not.
+    if (!EngineeringDevices::HasTauntableAttacker(bot))
         return false;
 
     return EngineeringDevices::FindBestCarried(bot, EngineeringDevices::TargetDummies()) != nullptr;
