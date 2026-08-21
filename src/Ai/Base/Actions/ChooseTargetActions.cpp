@@ -141,6 +141,13 @@ bool AttackAnythingAction::isUseful()
     if (bot->IsInCombat())
         return false;
 
+    // In instanced group content the opener is the main tank (the "dungeon pull" strategy), not
+    // whichever bot happens to hold group leadership - and never a bot when the tank is a real
+    // player (Felworld). Without any tank in the group the leader keeps grinding as upstream.
+    if (sPlayerbotAIConfig.dungeonPullByTank && IsInstancedGroupContent(bot) &&
+        !PlayerbotAI::GetMainTankGuid(bot->GetGroup()).IsEmpty())
+        return false;
+
     Unit* target = GetTarget();
     if (!target || !target->IsInWorld())  // Checks if the target is valid and in the world
         return false;

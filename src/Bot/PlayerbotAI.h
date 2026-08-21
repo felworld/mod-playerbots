@@ -80,6 +80,8 @@ enum BotState
 
 bool IsRealPlayer(Player* player);
 bool IsSelfBot(Player* player);
+// Grouped and inside a dungeon or raid map: the content where pulls are a group decision (Felworld).
+bool IsInstancedGroupContent(Player* player);
 bool IsAlliance(uint8 race);
 
 class PlayerbotChatHandler : protected ChatHandler

@@ -15,6 +15,7 @@
 #include "BuyAction.h"
 #include "BystanderAssistActions.h"
 #include "CancelChannelAction.h"
+#include "DungeonPullActions.h"
 #include "QuestCompetitionActions.h"
 #include "SocialBuffActions.h"
 #include "StealthReactActions.h"
@@ -158,6 +159,8 @@ public:
         creators["sit"] = &ActionContext::sit;
         creators["aggressive target"] = &ActionContext::aggressive_target;
         creators["attack anything"] = &ActionContext::attack_anything;
+        creators["dungeon pull"] = &ActionContext::dungeon_pull;
+        creators["give leader to tank"] = &ActionContext::give_leader_to_tank;
         creators["attack quest target"] = &ActionContext::attack_quest_target;
         creators["attack least hp target"] = &ActionContext::attack_least_hp_target;
         creators["attack enemy player"] = &ActionContext::attack_enemy_player;
@@ -421,6 +424,8 @@ private:
     static Action* suggest_dungeon(PlayerbotAI* botAI) { return new SuggestDungeonAction(botAI); }
     static Action* aggressive_target(PlayerbotAI* botAI) { return new AggressiveTargetAction(botAI); }
     static Action* attack_anything(PlayerbotAI* botAI) { return new AttackAnythingAction(botAI); }
+    static Action* dungeon_pull(PlayerbotAI* botAI) { return new DungeonPullAction(botAI); }
+    static Action* give_leader_to_tank(PlayerbotAI* botAI) { return new GiveLeaderToTankAction(botAI); }
     static Action* attack_quest_target(PlayerbotAI* botAI) { return new AttackQuestTargetAction(botAI); }
     static Action* attack_least_hp_target(PlayerbotAI* botAI) { return new AttackLeastHpTargetAction(botAI); }
     static Action* attack_enemy_player(PlayerbotAI* botAI) { return new AttackEnemyPlayerAction(botAI); }

@@ -210,6 +210,12 @@ public:
     bool questCompetitionInvite;
     uint32 questCompetitionInviteCooldown;
 
+    // dungeon pulls by the main tank (Felworld)
+    bool dungeonPullByTank;
+    float dungeonPullGroupRange;
+    uint32 dungeonPullMinHealth;
+    uint32 dungeonPullMinMana;
+
     // bystander assist (Felworld)
     bool enableBystanderAssist;
     float bystanderAssistRadius;

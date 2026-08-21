@@ -26,6 +26,10 @@ public:
 
     bool Execute(Event event) override;
 
+    // Hands a vetted target to the bot's PullStrategy: records the pull position, arms the pull and
+    // switches to the combat engine. Shared by the chat-driven pulls and the dungeon tank's own pulls.
+    static bool BeginPull(PlayerbotAI* botAI, Unit* target);
+
 protected:
     virtual Unit* GetPullTarget(Event event) = 0;
 };

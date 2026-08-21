@@ -48,12 +48,6 @@ static std::vector<uint32> disabledPetSpells = {
 
 namespace
 {
-// A grouped bot is not the one holding threat. Mirrors the anti-body-pull guard in PetAttackTrigger.
-bool IsInstancedGroupContent(Player* bot)
-{
-    return bot && bot->GetGroup() && bot->GetMap() && bot->GetMap()->IsDungeon();
-}
-
 // Taunt detection follows the core (Spell::EffectTaunt uses SPELL_EFFECT_ATTACK_ME, PetAI keys taunt
 // behaviour off SPELL_AURA_MOD_TAUNT). SPELL_EFFECT_THREAT is added because on pets it only ever
 // backs a threat-grabbing ability (Growl, Torment, Suffering, Anguish), which is what we want off.

@@ -82,6 +82,41 @@ grouped in an instance (and back on when solo, where a pet tanking for
 its owner is the point), and a pet configured aggressive via
 `AiPlayerbot.DefaultPetStance` is clamped to defensive while grouped.
 
+## Dungeon pulls by the tank
+
+Who opens on the next pack in a dungeon used to be whichever bot happened
+to hold group leadership: the Dungeon Finder picks a leader at random
+unless someone ticked "Leader", a bot leader gets the open-world `grind`
+kit, and inside an instance that kit has no leash and no aggro-range
+check — so a hunter leader would shoot the nearest mob in line of sight
+while the real tank was still drinking, and every other DPS would assist
+the moment it had threat. Upstream's "I don't know this dungeon, lead the
+way!" hand-off didn't help: it re-derived the bot's strategies before the
+leader change had actually landed, so the bot kept the kit.
+
+Initiation in instanced group content is now a role, not a leadership
+accident. With `AiPlayerbot.DungeonPullByTank` (default 1) the opener is
+the group's main tank — the main-tank flag if one is set, otherwise the
+tank by role (Dungeon Finder badge for humans, spec for bots). When that's
+a real player, no bot starts a fight, period; DPS bots still assist
+anything that has threat. When the main tank is a bot, it pulls the
+nearest unengaged pack in its line of sight — with its ranged pull
+ability (Shoot, Icy Touch, Judgement, Faerie Fire) through the existing
+pull machinery, so pets get parked and it returns to its pull spot, or by
+walking in when it has no such ability or weapon — but only once the whole
+group is ready: everyone on the map, alive, out of combat, within
+`AiPlayerbot.DungeonPullGroupRange` yards of the tank (default 30), not
+sitting to eat or drink, and above `AiPlayerbot.DungeonPullMinHealth` /
+`AiPlayerbot.DungeonPullMinMana` percent (defaults 80 / 60). That gate is
+the ready check done the way a human at the keyboard reads it — standing
+back holds the tank, walking up releases it — with no popups; `!stay` and
+`passive` remain the hard stop. In all-bot groups the leader hands
+leadership to the tank ("Thrallok, you lead.") since bots follow their
+leader, and the ex-leader now sheds its grind kit only after the leader
+change has landed. Pulls are logged as `dungeon_pull` events. Without any
+tank in the group the leader keeps grinding as before; `0` restores the
+upstream behaviour everywhere.
+
 ## Dependable LFD port-in
 
 Bots that queue through the Dungeon Finder now reliably arrive in the

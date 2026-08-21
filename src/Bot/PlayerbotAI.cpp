@@ -4942,6 +4942,11 @@ bool IsSelfBot(Player* player)
     return botAI && botAI->GetMaster() == player;
 }
 
+bool IsInstancedGroupContent(Player* player)
+{
+    return player && player->GetGroup() && player->GetMap() && player->GetMap()->IsDungeon();
+}
+
 bool IsAlliance(uint8 race)
 {
     return race == RACE_HUMAN || race == RACE_DWARF || race == RACE_NIGHTELF || race == RACE_GNOME ||

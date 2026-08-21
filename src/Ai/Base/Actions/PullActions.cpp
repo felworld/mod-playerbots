@@ -84,7 +84,19 @@ bool PullRequestAction::Execute(Event event)
         return false;
     }
 
-    PositionMap& posMap = AI_VALUE(PositionMap&, "position");
+    return BeginPull(botAI, target);
+}
+
+bool PullRequestAction::BeginPull(PlayerbotAI* botAI, Unit* target)
+{
+    PullStrategy* strategy = PullStrategy::Get(botAI);
+    if (!strategy || !target)
+        return false;
+
+    Player* bot = botAI->GetBot();
+    AiObjectContext* context = botAI->GetAiObjectContext();
+
+    PositionMap& posMap = context->GetValue<PositionMap&>("position")->Get();
     PositionInfo pullPosition = posMap["pull"];
     pullPosition.Set(bot->GetPositionX(), bot->GetPositionY(), bot->GetPositionZ(), bot->GetMapId());
     posMap["pull"] = pullPosition;

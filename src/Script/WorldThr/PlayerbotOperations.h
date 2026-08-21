@@ -216,8 +216,8 @@ private:
 class GroupSetLeaderOperation : public PlayerbotOperation
 {
 public:
-    GroupSetLeaderOperation(ObjectGuid botGuid, ObjectGuid newLeaderGuid)
-        : m_botGuid(botGuid), m_newLeaderGuid(newLeaderGuid)
+    GroupSetLeaderOperation(ObjectGuid botGuid, ObjectGuid newLeaderGuid, bool resetBotStrategies = false)
+        : m_botGuid(botGuid), m_newLeaderGuid(newLeaderGuid), m_resetBotStrategies(resetBotStrategies)
     {
     }
 
@@ -245,6 +245,17 @@ public:
         group->ChangeLeader(newLeader->GetGUID());
         group->SendUpdate();
         LOG_DEBUG("playerbots", "GroupSetLeaderOperation: Changed leader to {}", newLeader->GetName());
+
+        // Re-derive the ex-leader's default strategies now that it really is no longer the leader.
+        if (m_resetBotStrategies)
+        {
+            if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+            {
+                botAI->ResetStrategies();
+                botAI->Reset();
+            }
+        }
+
         return true;
     }
 
@@ -264,6 +275,7 @@ public:
 private:
     ObjectGuid m_botGuid;
     ObjectGuid m_newLeaderGuid;
+    bool m_resetBotStrategies;
 };
 
 // Form arena group

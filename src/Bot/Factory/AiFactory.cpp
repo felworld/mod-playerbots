@@ -606,6 +606,9 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
         nonCombatEngine->addStrategiesNoInit("nc", "food", "chat", "follow", "default", "quest", "loot",
                                             "gather", "duel", "pvp", "buff", "mount", "emote", nullptr);
 
+        // Pulls in instanced group content belong to the main tank, whoever leads (Felworld).
+        nonCombatEngine->addStrategy("dungeon pull", false);
+
         // All bots, grouped or not - a party walking past an enemy rogue
         // should flinch too (Felworld).
         if (sPlayerbotAIConfig.enableStealthReactions)

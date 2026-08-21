@@ -35,6 +35,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Pet group etiquette](FEATURES.md#pet-group-etiquette)** — bot pets
   assist their owner's target, keep taunts off in instanced groups, and
   heel on disengage instead of body-pulling the next pack.
+- **[Dungeon pulls by the tank](FEATURES.md#dungeon-pulls-by-the-tank)** —
+  in instances the main tank opens, never the bot that happens to be group
+  leader; a bot tank pulls only once the group is in place and topped up,
+  and a human tank is never pre-empted.
 - **[Dependable LFD port-in](FEATURES.md#dependable-lfd-port-in)** —
   bots stranded outside their Dungeon Finder instance retry the teleport
   until they land, and a mid-fight bot defers a group-ready proposal

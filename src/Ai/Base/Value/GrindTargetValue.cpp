@@ -34,8 +34,10 @@ Unit* GrindTargetValue::FindTargetForGrinding(uint32 assistCount)
     Group* group = bot->GetGroup();
     Player* master = GetMaster();
 
-    if (master && (master == bot || master->GetMapId() != bot->GetMapId() || master->IsBeingTeleported() ||
-                   !GET_PLAYERBOT_AI(master)))
+    // The master only anchors the "far from master" leash below. A real-player master is the best
+    // anchor there is - upstream dropped it here, which left a bot following a human with no leash at
+    // all (Felworld).
+    if (master && (master == bot || master->GetMapId() != bot->GetMapId() || master->IsBeingTeleported()))
         master = nullptr;
 
     GuidVector attackers = context->GetValue<GuidVector>("attackers")->Get();

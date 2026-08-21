@@ -640,6 +640,12 @@ bool PlayerbotAIConfig::Initialize()
     questCompetitionInvite = sConfigMgr->GetOption<bool>("AiPlayerbot.QuestCompetitionInvite", true);
     questCompetitionInviteCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.QuestCompetitionInviteCooldown", 600);
 
+    // dungeon pulls by the main tank (Felworld)
+    dungeonPullByTank = sConfigMgr->GetOption<bool>("AiPlayerbot.DungeonPullByTank", true);
+    dungeonPullGroupRange = sConfigMgr->GetOption<float>("AiPlayerbot.DungeonPullGroupRange", 30.0f);
+    dungeonPullMinHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonPullMinHealth", 80);
+    dungeonPullMinMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonPullMinMana", 60);
+
     // bystander assist (Felworld)
     enableBystanderAssist = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBystanderAssist", true);
     bystanderAssistRadius = sConfigMgr->GetOption<float>("AiPlayerbot.BystanderAssistRadius", 40.0f);

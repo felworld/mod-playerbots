@@ -14,17 +14,15 @@ bool PassLeadershipToMasterAction::Execute(Event /*event*/)
     if (Player* master = GetMaster())
         if (master && master != bot && bot->GetGroup() && bot->GetGroup()->IsMember(master->GetGUID()))
         {
-            auto setLeaderOp = std::make_unique<GroupSetLeaderOperation>(bot->GetGUID(), master->GetGUID());
+            // A random bot sheds its leader kit (grind, rpg, ...) once it is no longer leader. That has
+            // to happen after the queued leader change lands: resetting here, while the bot is still
+            // leader, just re-added the kit - and nothing removed it later (Felworld).
+            auto setLeaderOp = std::make_unique<GroupSetLeaderOperation>(bot->GetGUID(), master->GetGUID(),
+                                                                         sRandomPlayerbotMgr.IsRandomBot(bot));
             PlayerbotWorldThreadProcessor::instance().QueueOperation(std::move(setLeaderOp));
 
             if (!message.empty())
                 botAI->TellMasterNoFacing(message);
-
-            if (sRandomPlayerbotMgr.IsRandomBot(bot))
-            {
-                botAI->ResetStrategies();
-                botAI->Reset();
-            }
 
             return true;
         }

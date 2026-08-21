@@ -528,6 +528,23 @@ AiPlayerbot.DropObsoleteQuests = 1
 # Auto add dungeon/raid strategies when entering the instance if implemented
 AiPlayerbot.ApplyInstanceStrategies = 1
 
+# Dungeon pulls by the main tank (Felworld). In instanced group content, who
+# opens on the next pack is the group's main tank (the main-tank flag, else
+# the tank by role), never whichever bot happens to hold group leadership.
+# A bot main tank pulls the nearest pack in line of sight - with its ranged
+# pull ability when it has one, by walking in otherwise - once the whole
+# group is ready: everyone alive, out of combat, within DungeonPullGroupRange
+# yards of the tank, not sitting to eat or drink, and above the health/mana
+# percentages below. Standing back holds the tank. When the main tank is a
+# real player, no bot starts a fight. In all-bot groups the leader hands
+# leadership to the tank so the group follows the puller. 0 restores the
+# upstream behaviour (the group leader grinds).
+# Default: 1 (enabled)
+AiPlayerbot.DungeonPullByTank = 1
+AiPlayerbot.DungeonPullGroupRange = 30
+AiPlayerbot.DungeonPullMinHealth = 80
+AiPlayerbot.DungeonPullMinMana = 60
+
 # Enable auto avoid aoe strategy
 # Default: 1 (enabled)
 AiPlayerbot.AutoAvoidAoe = 1
