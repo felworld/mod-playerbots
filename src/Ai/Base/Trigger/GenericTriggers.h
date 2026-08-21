@@ -530,10 +530,12 @@ protected:
     std::string name2;
 };
 
+// A snare is about movement, not damage paid back over time, so the debuff lifetime gate is off:
+// the target closest to death is the one most likely to run.
 class SnareTargetTrigger : public DebuffTrigger
 {
 public:
-    SnareTargetTrigger(PlayerbotAI* botAI, std::string const spell) : DebuffTrigger(botAI, spell) {}
+    SnareTargetTrigger(PlayerbotAI* botAI, std::string const spell) : DebuffTrigger(botAI, spell, 1, false, 0.0f) {}
 
     Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return spell + " on snare target"; }

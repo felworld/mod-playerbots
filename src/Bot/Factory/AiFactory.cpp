@@ -610,6 +610,15 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
         // should flinch too (Felworld).
         if (sPlayerbotAIConfig.enableStealthReactions)
             nonCombatEngine->addStrategy("stealth react", false);
+
+        // Stealth openers outside battlegrounds too, grouped or not: Sap, Cheap Shot, Ambush,
+        // Pounce and Ravage are only reachable from stealth, and the triggers already wait for a
+        // target within 30 yards, out of combat and off cooldown (Felworld).
+        if (player->getClass() == CLASS_ROGUE)
+            nonCombatEngine->addStrategy("stealth", false);
+        else if (player->getClass() == CLASS_DRUID && GetPlayerSpecTab(player) == DRUID_TAB_FERAL &&
+                 !PlayerbotAI::IsTank(player, true))
+            nonCombatEngine->addStrategy("prowl", false);
     }
 
     if (sPlayerbotAIConfig.autoSaveMana && PlayerbotAI::IsHeal(player, true))

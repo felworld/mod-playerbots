@@ -322,23 +322,18 @@ public:
     CastKillingMachineAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "killing machine") {}
 };
 
-// Icebound Fortitude breaks stuns and Lichborne breaks fear, charm and sleep, which is exactly
-// when PlayerbotAI::CanCastSpell refuses everything (UNIT_STATE_LOST_CONTROL). Both check only
-// the cooldown, the same way the racial control breakers do.
 class CastIceboundFortitudeAction : public CastBuffSpellAction
 {
 public:
     CastIceboundFortitudeAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "icebound fortitude") {}
-
-    bool isPossible() override;
 };
 
+// Lichborne makes the death knight undead for ten seconds: the frost tree's answer to being
+// feared, charmed or slept.
 class CastLichborneAction : public CastBuffSpellAction
 {
 public:
     CastLichborneAction(PlayerbotAI* botAI) : CastBuffSpellAction(botAI, "lichborne") {}
-
-    bool isPossible() override;
 };
 
 class CastUnbreakableArmorAction : public CastBuffSpellAction

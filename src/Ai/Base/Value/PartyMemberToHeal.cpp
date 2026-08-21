@@ -170,7 +170,6 @@ Unit* HealerLowMana::Calculate()
 
 Unit* PartyMemberToProtect::Calculate()
 {
-    return nullptr;
     Group* group = bot->GetGroup();
     if (!group)
         return nullptr;

@@ -3616,6 +3616,34 @@ bool PlayerbotAI::CanCastSpell(std::string const name, Unit* target, Item* itemT
     return CanCastSpell(aiObjectContext->GetValue<uint32>("spell id", name)->Get(), target, true, itemTarget);
 }
 
+namespace
+{
+// Spells flagged usable while stunned, feared or confused (PvP trinkets, Every Man for Himself,
+// Will of the Forsaken, Berserker Rage, Icebound Fortitude, Lichborne, ...) exist for exactly the
+// moment the bot has lost control, so they are not refused here; Spell::CheckCast still applies
+// the mechanic-specific rules. Jumping and charging still block everything.
+bool LostControlBlocksCast(Player* bot, uint32 spellId)
+{
+    if (!bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+        return false;
+
+    if (bot->HasUnitState(UNIT_STATE_JUMPING | UNIT_STATE_CHARGING))
+        return true;
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    if (!spellInfo)
+        return true;
+
+    if (bot->HasUnitState(UNIT_STATE_STUNNED) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_STUNNED))
+        return true;
+
+    if (bot->HasUnitState(UNIT_STATE_FLEEING) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_FLEEING))
+        return true;
+
+    return bot->HasUnitState(UNIT_STATE_CONFUSED) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_CONFUSED);
+}
+}  // namespace
+
 bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell, Item* itemTarget, Item* castItem)
 {
     if (!spellid)
@@ -3626,7 +3654,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, Unit* target, bool checkHasSpell,
         return false;
     }
 
-    if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    if (LostControlBlocksCast(bot, spellid))
     {
         if (!sPlayerbotAIConfig.logInGroupOnly || (bot->GetGroup() && HasGameClientMaster()))
             LOG_DEBUG("playerbots", "Can cast spell failed. Unit state lost control. - spellid: {}, bot name: {}", spellid, bot->GetName());
@@ -3779,7 +3807,7 @@ bool PlayerbotAI::CanCastSpell(uint32 spellid, GameObject* goTarget, bool checkH
     if (!spellid)
         return false;
 
-    if (bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
+    if (LostControlBlocksCast(bot, spellid))
         return false;
 
     Pet* pet = bot->GetPet();

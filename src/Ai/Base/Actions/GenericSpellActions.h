@@ -373,7 +373,8 @@ public:
 class CastSnareSpellAction : public CastDebuffSpellAction
 {
 public:
-    CastSnareSpellAction(PlayerbotAI* botAI, std::string const spell) : CastDebuffSpellAction(botAI, spell) {}
+    // No lifetime gate: a snare is worth casting on a target about to die and about to run.
+    CastSnareSpellAction(PlayerbotAI* botAI, std::string const spell) : CastDebuffSpellAction(botAI, spell, false, 0.0f) {}
 
     Value<Unit*>* GetTargetValue() override;
     std::string const getName() override { return spell + " on snare target"; }

@@ -6,7 +6,6 @@
 
 #include "DKActions.h"
 #include "Duration.h"
-#include "GenericBuffUtils.h"
 #include "GenericSpellActions.h"
 #include "Playerbots.h"
 #include "SpellInfo.h"
@@ -37,18 +36,6 @@ bool CastDpsPresenceAction::isUseful() { return !botAI->HasAura(WantedPresence()
 bool CastDpsPresenceAction::isPossible() { return botAI->CanCastSpell(WantedPresence(), bot); }
 
 bool CastDpsPresenceAction::Execute(Event /*event*/) { return botAI->CastSpell(WantedPresence(), bot); }
-
-bool CastIceboundFortitudeAction::isPossible()
-{
-    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    return spellId && !ai::spell::HasSpellOrCategoryCooldown(bot, spellId);
-}
-
-bool CastLichborneAction::isPossible()
-{
-    uint32 spellId = AI_VALUE2(uint32, "spell id", spell);
-    return spellId && !ai::spell::HasSpellOrCategoryCooldown(bot, spellId);
-}
 
 std::vector<NextAction> CastDeathchillAction::getPrerequisites()
 {
