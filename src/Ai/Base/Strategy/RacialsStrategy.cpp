@@ -105,4 +105,12 @@ void RacialsStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
     triggers.push_back(new TriggerNode(
         "generic boost", { NextAction("use trinket", ACTION_NORMAL + 4) }));
+
+    // PvP trinket (Felworld): PlayerbotFactory equips a Medallion on PvP-spec bots, but nothing ever
+    // used it to break crowd control. Same priority as Every Man for Himself; the action's
+    // isPossible() requires an equipped, usable, off-cooldown trinket, so it is a no-op otherwise.
+    triggers.push_back(new TriggerNode(
+        "loss of control", { NextAction("use pvp trinket", ACTION_EMERGENCY + 1) }));
+    triggers.push_back(new TriggerNode(
+        "fear charm sleep", { NextAction("use pvp trinket", ACTION_EMERGENCY + 1) }));
 }

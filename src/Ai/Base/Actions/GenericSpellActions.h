@@ -361,6 +361,18 @@ private:
     std::unordered_map<uint32, uint32> trinketCategoryCooldownExpiries;
 };
 
+// Uses an equipped PvP trinket (Medallion / Insignia) to break the crowd control the bot is under.
+// Deliberately bypasses CanCastSpell the way the racial CC breakers do: the item exists for exactly
+// the moment every other cast is refused (Felworld).
+class UsePvpTrinketAction : public Action
+{
+public:
+    UsePvpTrinketAction(PlayerbotAI* botAI) : Action(botAI, "use pvp trinket") {}
+
+    bool isPossible() override;
+    bool Execute(Event event) override;
+};
+
 class CastSpellOnEnemyHealerAction : public CastSpellAction
 {
 public:

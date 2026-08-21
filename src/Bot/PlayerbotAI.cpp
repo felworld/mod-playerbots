@@ -3622,6 +3622,35 @@ namespace
 // Will of the Forsaken, Berserker Rage, Icebound Fortitude, Lichborne, ...) exist for exactly the
 // moment the bot has lost control, so they are not refused here; Spell::CheckCast still applies
 // the mechanic-specific rules. Jumping and charging still block everything.
+// Mechanics the spell grants immunity to, the way Spell::CheckCasterAuras computes them: only spells
+// with SPELL_ATTR1_IMMUNITY_PURGES_EFFECT purge the controlling aura on cast, and the PvP trinkets /
+// Every Man for Himself get their full loss-of-control mask from SpellInfo::_LoadImmunityInfo.
+uint64 PurgedMechanicMask(SpellInfo const* spellInfo)
+{
+    if (!spellInfo->HasAttribute(SPELL_ATTR1_IMMUNITY_PURGES_EFFECT))
+        return 0;
+
+    uint64 mask = 0;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        if (ImmunityInfo const* immunity = spellInfo->GetImmunityInfo(i))
+            mask |= immunity->MechanicImmuneMask;
+
+    return mask;
+}
+
+// True when every aura of the given type on the bot would be purged by the spell being cast.
+bool ControlIsPurged(Player* bot, AuraType type, uint64 purgedMask)
+{
+    if (!purgedMask)
+        return false;
+
+    for (AuraEffect const* effect : bot->GetAuraEffectsByType(type))
+        if (!(effect->GetSpellInfo()->GetAllEffectsMechanicMask() & purgedMask))
+            return false;
+
+    return true;
+}
+
 bool LostControlBlocksCast(Player* bot, uint32 spellId)
 {
     if (!bot->HasUnitState(UNIT_STATE_LOST_CONTROL))
@@ -3634,13 +3663,18 @@ bool LostControlBlocksCast(Player* bot, uint32 spellId)
     if (!spellInfo)
         return true;
 
-    if (bot->HasUnitState(UNIT_STATE_STUNNED) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_STUNNED))
+    uint64 const purgedMask = PurgedMechanicMask(spellInfo);
+
+    if (bot->HasUnitState(UNIT_STATE_STUNNED) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_STUNNED) &&
+        !ControlIsPurged(bot, SPELL_AURA_MOD_STUN, purgedMask))
         return true;
 
-    if (bot->HasUnitState(UNIT_STATE_FLEEING) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_FLEEING))
+    if (bot->HasUnitState(UNIT_STATE_FLEEING) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_FLEEING) &&
+        !ControlIsPurged(bot, SPELL_AURA_MOD_FEAR, purgedMask))
         return true;
 
-    return bot->HasUnitState(UNIT_STATE_CONFUSED) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_CONFUSED);
+    return bot->HasUnitState(UNIT_STATE_CONFUSED) && !spellInfo->HasAttribute(SPELL_ATTR5_ALLOW_WHILE_CONFUSED) &&
+           !ControlIsPurged(bot, SPELL_AURA_MOD_CONFUSE, purgedMask);
 }
 }  // namespace
 

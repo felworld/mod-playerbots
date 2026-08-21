@@ -965,6 +965,19 @@ shares rather than in any one rotation. The shared fixes:
   Sap, Cheap Shot, Ambush, Pounce and Ravage are reachable in world PvP
   and while grinding; the trigger already waits for a target within 30
   yards, out of combat and with Stealth off cooldown.
+- **PvP trinket on loss of control** — the factory already equips a
+  Medallion / Insignia on PvP-spec bots from level 50, but no trigger ever
+  used it: the only path to an equipped trinket was the generic
+  cooldown-burn on a healthy target, which fired the Medallion while the
+  bot was free and, because it tries slot 1 first, kept the real DPS
+  trinket in slot 2 from being used on the same tick. A dedicated `use
+  pvp trinket` action now fires at emergency priority whenever the bot is
+  stunned, feared, rooted, confused, charmed or asleep, bypassing the
+  normal cast check like the racial breakers do; the generic burn leaves
+  PvP trinkets alone. The cast check itself also learned the core's
+  rule that a spell purging the controlling mechanic (the trinkets,
+  Every Man for Himself) is castable under it, instead of relying on
+  client attribute bits those spells don't carry.
 
 ## Per-class PvP passes
 

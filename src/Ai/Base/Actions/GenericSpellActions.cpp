@@ -25,6 +25,44 @@ using ai::spell::HasSpellOrCategoryCooldown;
 
 namespace
 {
+    // On-use spells of the PvP trinkets (Medallion of the Alliance / Horde, Insignia of the Alliance /
+    // Horde, Medallion of Immunity, the Argent Tournament trinket). The core hardcodes each of them as
+    // immunity to movement impairment and loss of control, see Spell::CheckCasterAuras.
+    bool IsCcBreakTrinketSpell(uint32 spellId)
+    {
+        return spellId == 42292 || spellId == 65547 || spellId == 46227;
+    }
+
+    uint32 CcBreakSpellOf(Item const* item)
+    {
+        ItemTemplate const* proto = item->GetTemplate();
+        for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
+            if (proto->Spells[i].SpellTrigger == ITEM_SPELLTRIGGER_ON_USE &&
+                IsCcBreakTrinketSpell(proto->Spells[i].SpellId))
+                return proto->Spells[i].SpellId;
+
+        return 0;
+    }
+
+    Item* FindUsableCcBreakTrinket(Player* bot, uint32& spellId)
+    {
+        for (uint8 slot : { EQUIPMENT_SLOT_TRINKET1, EQUIPMENT_SLOT_TRINKET2 })
+        {
+            Item* item = bot->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+            if (!item)
+                continue;
+
+            uint32 const itemSpellId = CcBreakSpellOf(item);
+            if (!itemSpellId || bot->CanUseItem(item) != EQUIP_ERR_OK || HasSpellOrCategoryCooldown(bot, itemSpellId))
+                continue;
+
+            spellId = itemSpellId;
+            return item;
+        }
+
+        return nullptr;
+    }
+
     std::unordered_set<uint32> const& GetMixedTriggerTrinketSpellIds()
     {
         static std::unordered_set<uint32> const mixedTriggerSpellIds = []()
@@ -594,6 +632,11 @@ bool UseTrinketAction::UseTrinket(Item* item)
             if (!spellInfo || !spellInfo->IsPositive())
                 return false;
 
+            // PvP trinkets are saved for "use pvp trinket" on loss of control; burning one here
+            // also kept the slot-2 trinket from ever being tried on the same tick (Felworld).
+            if (IsCcBreakTrinketSpell(spellId))
+                return false;
+
             bool applyAura = false;
             bool restoresMana = false;
             bool improvesManaEfficiency = false;
@@ -674,6 +717,33 @@ bool UseTrinketAction::UseTrinket(Item* item)
         }
     }
 
+    return true;
+}
+
+bool UsePvpTrinketAction::isPossible()
+{
+    uint32 spellId = 0;
+    return FindUsableCcBreakTrinket(bot, spellId) != nullptr;
+}
+
+bool UsePvpTrinketAction::Execute(Event /*event*/)
+{
+    uint32 spellId = 0;
+    Item* item = FindUsableCcBreakTrinket(bot, spellId);
+    if (!item)
+        return false;
+
+    uint8 const bagIndex = item->GetBagSlot();
+    uint8 const slot = item->GetSlot();
+    uint8 const castCount = 1;
+    uint32 const glyphIndex = 0;
+    uint8 const castFlags = 0;
+    uint32 const targetFlag = TARGET_FLAG_NONE;
+
+    WorldPacket packet(CMSG_USE_ITEM);
+    packet << bagIndex << slot << castCount << spellId << item->GetGUID() << glyphIndex << castFlags;
+    packet << targetFlag << bot->GetPackGUID();
+    bot->GetSession()->HandleUseItemOpcode(packet);
     return true;
 }
 
