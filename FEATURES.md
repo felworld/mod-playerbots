@@ -929,9 +929,9 @@ shares rather than in any one rotation. The shared fixes:
   engine never enabled `cc` for these three classes, so Shackle Undead,
   Turn Evil and Sap were unreachable however they were wired. Paladin
   Turn Undead was also still addressed by its pre-3.0 name, which
-  resolves to no spell; it is Turn Evil now. Sap remains inert in
-  practice (it needs stealth and an out-of-combat target, and the CC
-  target selection only scans attackers) until a stealth opener exists.
+  resolves to no spell; it is Turn Evil now. Sap itself is handled by
+  the rogue's stealth opener below, since the shared CC target selection
+  only scans attackers and Sap needs an out-of-combat target.
 - **Burst cooldowns on a dying player are not burst** — the shared
   "boost" trigger treated any player target as a reason to pop every
   major cooldown (Avenging Wrath, Icy Veins, Metamorphosis, Adrenaline
@@ -944,6 +944,116 @@ shares rather than in any one rotation. The shared fixes:
 - **No more silent dead code** — a strategy that references a trigger or
   action name with no registered factory now logs a warning the first
   time it is seen, instead of silently skipping the node.
+
+- **Usable-while-controlled spells** — the cast check refused every
+  spell while the bot was stunned, feared or confused, so the abilities
+  that exist for exactly that moment (PvP trinkets, Every Man for
+  Himself, Will of the Forsaken, Berserker Rage, Icebound Fortitude,
+  Lichborne, Barkskin, …) only worked where a hand-written exception
+  existed. Spells the client allows while stunned / fleeing / confused
+  now pass; jumping and charging still block everything.
+- **Intervene and Hand of Protection** — the shared "party member to
+  protect" value had an unconditional early return from an upstream
+  optimisation pass, so neither ever fired. Restored.
+- **Snares on a dying target** — snares inherited the "target must live
+  another 8 seconds" rule meant for DoTs, so Hamstring, Chains of Ice,
+  Deadly Throw and company were refused on the one target most likely to
+  run. Snares are exempt.
+- **Stealth openers everywhere** — the rogue `stealth` and cat druid
+  `prowl` non-combat strategies were only enabled in battlegrounds.
+  Every rogue and cat-build feral druid now has them, grouped or not, so
+  Sap, Cheap Shot, Ambush, Pounce and Ravage are reachable in world PvP
+  and while grinding; the trigger already waits for a target within 30
+  yards, out of combat and with Stealth off cooldown.
+
+## Per-class PvP passes
+
+With the shared machinery in place, each class got a pass for the three
+kinds of rot the audit kept finding: nodes wired to names that resolve to
+nothing (typos, pre-3.0 spell names, factories never registered),
+abilities that were implemented correctly and referenced from no
+strategy, and kits that made sense against mobs but not against a player
+who moves, heals and casts. Casters also get instant fillers while
+moving (the `moving filler` trigger introduced with the shaman), so a
+kited caster presses something instead of auto-attacking. By class:
+
+- **Death knight** — Mind Freeze (and the enemy-healer variant) move up
+  to interrupt priority; Strangulate, a 30-yard silence that was gated
+  as a melee action, backs it up. Chains of Ice, registered and never
+  wired, snares the shared snare target and keeps a kiting player
+  slowed. A player target out of melee draws Death Grip, with Death Coil
+  filling the chase (frost had no ranged instant at all). Anti-Magic
+  Shell is a self-buff against an attacker casting at the bot, Icebound
+  Fortitude also answers a stun, Lichborne answers fear/charm/sleep, and
+  frost uses Hungering Cold when two or more players stand within 10
+  yards. Frost and unholy sit in Unholy Presence against player
+  opponents and Blood Presence otherwise. Unholy Blight (a passive in
+  3.3.5) and two mistyped registration keys are gone.
+- **Druid** — Entangling Roots kiting (registered, never wired) roots a
+  mana-less player who closed on a balance or resto druid. A new "shift
+  to break snare" trigger cancels form when a cat or bear is rooted away
+  from its target, or a moonkin has a player in melee, and the spec's
+  form trigger shifts straight back. Maim is the cat interrupt, Barkskin
+  also fires below `MediumHealth`, flag-carrying balance/resto druids
+  take Travel Form, and the Cyclone / Hibernate / Roots CC nodes move
+  below critical heals now that they actually fire on players.
+- **Hunter** — `explosive shot` was an unregistered name, so survival's
+  signature shot only fired off Lock and Load; Arcane Shot's guard was
+  inverted (only survival used it). Freezing Trap, Scare Beast and
+  Wyvern Sting go through the shared CC targeting. A player swinging at
+  the hunter gets Freezing Trap at feet → Scatter Shot → Frost Trap →
+  Disengage, Master's Call clears snares, marksman Silencing Shot also
+  hits the enemy healer, and Aspect of the Viper swaps at
+  `AiPlayerbot.LowMana` rather than ~7%.
+- **Mage** — Counterspell on the current target (trigger and action
+  existed, wired nowhere). Presence of Mind is cast from the boost
+  strategy and spent on Pyroblast, Arcane Blast or Frostbolt. Fire and
+  frostfire open an even solo 1v1 with Polymorph → Pyroblast — both at
+  `AlmostFullHealth`, one attacker, Polymorph not diminished — the
+  Pyroblast node sitting just above the shared drop-target reaction that
+  fires the tick the sheep lands. Frost Nova answers any attacker within
+  10 yards, Ice Lance is the shatter fall-through, arcane gets Slow for
+  kiting, and Mirror Image hangs off the working "medium threat" trigger
+  instead of the unregistered "high threat".
+- **Paladin** — `blessing of protection` is a pre-3.0 name resolving to
+  no spell, which killed the emergency party save; it is Hand of
+  Protection now. Repentance was fully dead and is crowd control via the
+  shared CC target plus the backup interrupt for both ret strategies.
+  Judgement of Justice caps a kiting player's run speed, Hand of
+  Sacrifice covers a party member at critical health, and a healer holds
+  Divine Plea while anyone needs healing.
+- **Priest** — Psychic Scream (registered, never wired) fires on a player
+  in melee, with Psychic Horror one tier lower for shadow; both are held
+  for players since they break on damage and scatter mob packs. Inner
+  Fire is refreshed in combat, Fear Ward is kept up and re-applied
+  against player opponents, Binding Heal is wired, Shadowfiend hangs off
+  its real trigger, and the holy DPS list no longer ends in Starshards
+  (removed in 3.0).
+- **Rogue** — `blade flurry` was registered as "blade fury". Kidney Shot
+  on a player target with three or more combo points, Dismantle against
+  melee players, Gouge behind Kick → Kidney Shot, Vanish → Cloak of
+  Shadows → Blind on "pvp escape". The new "sap opener" has a stealthed
+  rogue committed to one player Sap a second enemy within 10 yards so
+  the opener lands 1v1. Shadowstep outranks Sprint on a runner, Deadly
+  Throw snares one, Expose Armor waits for five combo points, and
+  rogues expecting players carry Crippling Poison on the off-hand.
+- **Warrior** — the stance-requirement factory was defined but never
+  registered, so every stance-gated ability failed its cast check; it is
+  registered and the stance switches are alternatives rather than
+  prerequisites (the engine only pushes prerequisites once the action is
+  already possible). Arms gets Pummel behind a cooldown gate so it only
+  dances out of Battle Stance when the interrupt is up, Intercept on a
+  runner (its trigger name was misspelled), Heroic Throw and Shattering
+  Throw (whose immunity check looked for the pre-3.0 Blessing of
+  Protection). Arms Hamstring and fury Piercing Howl → Hamstring snare
+  the shared snare target; Intimidating Shout moves to "pvp escape",
+  Enraged Regeneration to low health, Retaliation to "being attacked".
+- **Warlock** — `devour magic cleanse` cast a spell literally named that
+  (id 0) at the enemy; it cleanses a party member now. Conflagrate and
+  Chaos Bolt hung off unregistered triggers and sat at filler priority.
+  Howl of Terror and Death Coil answer a player in melee, Shadow Ward
+  moves out of the never-enabled "tank" strategy onto the shared deflect
+  trigger, and Drain Life fires at critical health.
 
 ## Initiation readiness
 

@@ -139,6 +139,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   and below critical heals, crowd control without a raid icon, snares
   and escape tools that work against real players, and a warning for
   strategies wired to unregistered triggers or actions.
+- **[Per-class PvP passes](FEATURES.md#per-class-pvp-passes)** — every
+  class's dead nodes, misnamed spells and never-wired abilities fixed,
+  PvP-aware choices (stealth openers in the open world, Polymorph →
+  Pyroblast, presences and poisons by opponent), and instant fillers
+  while moving for casters.
 - **[Initiation readiness](FEATURES.md#initiation-readiness)** — a bot
   below its health/mana comfort bars passes on starting an open-world
   fight and drinks up first, unless the target's state makes striking
