@@ -212,10 +212,10 @@ public:
 
 // Death Coil horrifies for three seconds and heals the warlock for the damage: the answer to a
 // melee player who has closed the gap.
-class CastDeathCoilAction : public CastSpellAction
+class CastWarlockDeathCoilAction : public CastSpellAction
 {
 public:
-    CastDeathCoilAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "death coil") {}
+    CastWarlockDeathCoilAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "death coil") {}
 };
 
 // Utility Spells
