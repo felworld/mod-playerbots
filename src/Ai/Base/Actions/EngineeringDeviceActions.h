@@ -34,9 +34,9 @@ namespace EngineeringDevices
     // Best carried, usable, off-cooldown device from the ladder; nullptr if none.
     Item* FindBestCarried(Player* bot, std::vector<Tier> const& ladder);
 
-    // A target dummy peels by taunting, which only units with a threat list obey - players
-    // and their pets ignore it entirely, so there has to be something it can actually pull.
-    bool HasTauntableAttacker(Player* bot);
+    // Whether dropping a target dummy could actually peel something off the bot: it works by
+    // taunting, which only units with a threat list obey, and it is barred inside instances.
+    bool TargetDummyWouldHelp(Player* bot);
 }
 
 // Drop a target dummy to shed aggro when the bot is getting overwhelmed.

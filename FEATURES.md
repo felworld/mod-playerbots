@@ -1261,10 +1261,10 @@ lob at an ordinary mob just because — and answer an enemy cast with a
 stun grenade at just-below class-interrupt priority, so a real kick wins
 when one is available. Surrounded by three or more attackers with a
 healthy HP buffer, an engineer sets off a sapper charge; overwhelmed and
-hurting, it drops a target dummy to shed aggro — but only if at least
-one attacker is something a taunt can move, since players and their pets
-have no threat list and ignore the dummy outright; now and then it
-releases an explosive sheep.
+hurting, it drops a target dummy to shed aggro — but only outside
+dungeons and raids, and only if at least one attacker is something a
+taunt can move, since players and their pets have no threat list and
+ignore the dummy outright; now and then it releases an explosive sheep.
 Glove tinkers fire on cooldown. Rocket boots pop
 when it matters most: carrying a Warsong Gulch flag, chasing an enemy
 flag carrier who is pulling away, or fleeing below 25% health. A

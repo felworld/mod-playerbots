@@ -10,6 +10,7 @@
 #include "Event.h"
 #include "Item.h"
 #include "ItemTemplate.h"
+#include "Map.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
@@ -131,8 +132,14 @@ namespace EngineeringDevices
         return nullptr;
     }
 
-    bool HasTauntableAttacker(Player* bot)
+    bool TargetDummyWouldHelp(Player* bot)
     {
+        // Inside an instance the dummy's untargeted taunt is as likely to rip a pull off
+        // the tank as it is to save the bot. A group could use one cleverly; a bot can't,
+        // so it just doesn't.
+        if (bot->GetMap()->IsDungeon())
+            return false;
+
         for (Unit* attacker : bot->getAttackers())
         {
             // CanHaveThreatList() is exactly what the taunt aura handler checks: players,
@@ -148,7 +155,7 @@ namespace EngineeringDevices
 
 bool UseTargetDummyAction::isUseful()
 {
-    return bot->IsInCombat() && EngineeringDevices::HasTauntableAttacker(bot) &&
+    return bot->IsInCombat() && EngineeringDevices::TargetDummyWouldHelp(bot) &&
            botAI->DuelAllowsConsumable(DuelConsumables::BANDAGES);
 }
 

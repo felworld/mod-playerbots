@@ -928,9 +928,9 @@ bool TargetDummyTrigger::IsActive()
     if (!bot->IsInCombat() || bot->GetHealthPct() > 60.0f || AI_VALUE(uint8, "my attacker count") < 2)
         return false;
 
-    // The dummy peels by taunting, which players and their pets ignore outright. One
-    // tauntable attacker in the pile is enough to be worth it; a pack of players is not.
-    if (!EngineeringDevices::HasTauntableAttacker(bot))
+    // The dummy peels by taunting, which players and their pets ignore outright, and it is
+    // never worth the tank's aggro inside an instance.
+    if (!EngineeringDevices::TargetDummyWouldHelp(bot))
         return false;
 
     return EngineeringDevices::FindBestCarried(bot, EngineeringDevices::TargetDummies()) != nullptr;
