@@ -32,6 +32,11 @@ bool SafeToDropImmunityValue::Calculate()
     if (!AI_VALUE2(bool, "combat", "self target"))
         return true;
 
+    // The last mob died or the duel ended: nothing is fighting the bot any more, only the core's
+    // in-combat flag has yet to run down (up to 5 s). Low health is no reason to wait that out.
+    if (FightIsOver())
+        return true;
+
     if (AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.mediumHealth)
         return false;
 
@@ -39,6 +44,22 @@ bool SafeToDropImmunityValue::Calculate()
         return true;
 
     return !MobWouldReturn() && !EnemyPlayerInSight();
+}
+
+bool SafeToDropImmunityValue::FightIsOver()
+{
+    if (bot->duel)
+        return false;
+
+    GuidVector attackers = AI_VALUE(GuidVector, "attackers");
+    for (ObjectGuid const guid : attackers)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (unit && unit->IsAlive())
+            return false;
+    }
+
+    return !EnemyPlayerInSight();
 }
 
 bool SafeToDropImmunityValue::MobWouldReturn()

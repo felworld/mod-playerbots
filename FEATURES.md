@@ -1339,14 +1339,21 @@ emergency that called for it has passed:
    from attacking, so only a tank, melee or hunter counts it as limiting.
    Divine Intervention always is.
 2. **Dropping it is safe** (`safe to drop immunity` value): the bot is
-   out of combat, or it is above `AiPlayerbot.MediumHealth` and nothing
-   would resume attacking it - no mob on the group's attacker list holds
-   more threat on the bot than on its current victim (the usual "who is
-   attacking me" reads empty under an immunity, since the core makes mobs
-   retarget; the threat list says who comes straight back), and no enemy
-   player within `AiPlayerbot.SightDistance`. A tank wants the mobs back
-   and only needs the health. So a paladin bubbled against three enemy
-   players stays bubbled until they are gone, whatever its health.
+   out of combat; or the fight is over - nothing alive on the group's
+   attacker list, no duel, no enemy player in sight - and only the
+   core's in-combat flag has yet to run down (it lingers up to 5 s after
+   the last mob dies or a duel ends, which is exactly when a solo bot
+   used to sit in Ice Block for nothing); or it is above
+   `AiPlayerbot.MediumHealth` and nothing would resume attacking it - no
+   mob on the attacker list holds more threat on the bot than on its
+   current victim (the usual "who is attacking me" reads empty under an
+   immunity, since the core makes mobs retarget; the threat list says
+   who comes straight back), and no enemy player within
+   `AiPlayerbot.SightDistance`. A tank wants the mobs back and only
+   needs the health. So a paladin bubbled against three enemy players
+   stays bubbled until they are gone, whatever its health, and a solo
+   mage whose mob is still waiting for it sits out the block - but drops
+   it the moment the mob dies or the duel is called.
    Divine Intervention is the exception: cancelling it mid-fight throws
    away the paladin who died casting it, so only "out of combat" counts.
 

@@ -33,11 +33,12 @@ public:
     ImmunityCastValue(PlayerbotAI* botAI) : ManualSetValue<ImmunityCast>(botAI, ImmunityCast(), "immunity cast") {}
 };
 
-// Dropping an immunity would not get the bot killed: out of combat, or healed back up with nothing
-// waiting to resume attacking it - no mob that would come straight back (the core suppresses
-// immune victims on the threat list, so "who is attacking me" reads empty under the aura; the
-// threat list says who returns), no enemy player in sight. A tank wants the mobs back and only
-// needs the health (Felworld).
+// Dropping an immunity would not get the bot killed: out of combat, the fight is over (nothing
+// alive is fighting the bot: last mob dead, duel ended), or healed back up with nothing waiting to
+// resume attacking it - no mob that would come straight back (the core suppresses immune victims
+// on the threat list, so "who is attacking me" reads empty under the aura; the threat list says
+// who returns), no enemy player in sight. A tank wants the mobs back and only needs the health
+// (Felworld).
 class SafeToDropImmunityValue : public BoolCalculatedValue
 {
 public:
@@ -46,6 +47,7 @@ public:
     bool Calculate() override;
 
 private:
+    bool FightIsOver();
     bool MobWouldReturn();
     bool EnemyPlayerInSight();
 };
