@@ -32,7 +32,7 @@ protected:
     virtual bool Managed(Aura const* /*aura*/) { return true; }
     // Whether the aura is currently holding the bot back.
     virtual bool Limiting() { return true; }
-    virtual bool Safe() { return AI_VALUE(bool, "safe to drop immunity"); }
+    virtual bool Safe();
 
     bool OutOfCombat();
 

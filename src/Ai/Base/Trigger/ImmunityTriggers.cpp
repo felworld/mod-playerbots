@@ -20,6 +20,8 @@ bool OutlivedImmunityTrigger::IsActive()
     return false;
 }
 
+bool OutlivedImmunityTrigger::Safe() { return AI_VALUE(bool, "safe to drop immunity"); }
+
 bool OutlivedImmunityTrigger::OutOfCombat() { return !AI_VALUE2(bool, "combat", "self target"); }
 
 bool OwnImmunityOutlivedTrigger::Managed(Aura const* aura)
