@@ -6,20 +6,19 @@
 
 #include "ImmunityActions.h"
 
+#include "GameTime.h"
 #include "ImmunitySpells.h"
-#include "PlayerbotAIConfig.h"
+#include "ImmunityValues.h"
 #include "Playerbots.h"
 
 bool CastEmergencyImmunityAction::Execute(Event event)
 {
-    bool const survivalCast = AI_VALUE2(uint8, "health", "self target") < sPlayerbotAIConfig.lowHealth;
-
     if (!CastBuffSpellAction::Execute(event))
         return false;
 
-    if (survivalCast)
-        context->GetValue<time_t>("emergency immunity time")->Set(time(nullptr));
-
+    // The event's source is the trigger that fired this action (the engine passes it through
+    // prerequisite and alternative chains unchanged).
+    context->GetValue<ImmunityCast>("immunity cast")->Set({ event.GetSource(), GameTime::GetGameTime().count() });
     return true;
 }
 

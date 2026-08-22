@@ -1326,29 +1326,40 @@ hand-placed removals in raid scripts.
 
 The always-on `cancel immunity` strategy (combat and non-combat engines,
 battlegrounds included) drops an aura the way a player right-clicks it
-off, so it works from inside the stun:
+off, so it works from inside the stun. It needs two *positive* reasons
+before it acts - an immunity is never dropped merely because the
+emergency that called for it has passed:
 
-- **Ice Block** — cancelled once the bot is back above
-  `AiPlayerbot.MediumHealth`, or as soon as it is out of combat.
-- **Divine Shield** — the paladin keeps acting under it and upstream
-  already self-heals to 80% underneath, so the bar is
-  `AiPlayerbot.AlmostFullHealth`; also dropped out of combat.
-- **Dispersion** — the shadow priest's panic button and mana battery:
-  cancelled above `MediumHealth` *and* `AiPlayerbot.MediumMana`, or out
-  of combat.
-- **Divine Intervention** — cancelled once the bot is out of combat,
-  i.e. the wipe has settled and the survivor can start resurrecting.
-- **Hand of Protection** — a tank, melee or hunter drops it above
-  `AlmostFullHealth` or out of combat, since it stops them attacking and
-  makes mobs ignore them; casters and healers lose nothing and keep it.
+1. **The aura is holding the bot back.** Ice Block and Dispersion lock
+   the bot out of acting (Dispersion counts as limiting only once mana is
+   back above `AiPlayerbot.MediumMana`; below that it is still doing its
+   job as a mana battery). Divine Shield halves damage and sheds every
+   mob, which holds back a tank or damage dealer but costs a healer
+   nothing - Holy keeps its bubble. Hand of Protection stops its wearer
+   from attacking, so only a tank, melee or hunter counts it as limiting.
+   Divine Intervention always is.
+2. **Dropping it is safe** (`safe to drop immunity` value): the bot is
+   out of combat, or it is above `AiPlayerbot.MediumHealth` and nothing
+   would resume attacking it - no mob on the group's attacker list holds
+   more threat on the bot than on its current victim (the usual "who is
+   attacking me" reads empty under an immunity, since the core makes mobs
+   retarget; the threat list says who comes straight back), and no enemy
+   player within `AiPlayerbot.SightDistance`. A tank wants the mobs back
+   and only needs the health. So a paladin bubbled against three enemy
+   players stays bubbled until they are gone, whatever its health.
+   Divine Intervention is the exception: cancelling it mid-fight throws
+   away the paladin who died casting it, so only "out of combat" counts.
 
-The health-based rules only apply to an immunity the bot cast *as a
-survival move* (its own critical-health trigger, with health under
-`AiPlayerbot.LowHealth` at cast time — recorded in the `emergency
-immunity time` value). A raid strategy that Ice Blocks or bubbles at full
-health to dodge a mechanic leaves no such record, and that immunity runs
-its course. Hunter Deterrence is left alone: five seconds, and the hunter
-can still move and trap under it. No config knobs.
+The strategy only manages an immunity it can account for. The bot's own
+casts (Ice Block, Divine Shield, Dispersion) record the trigger that
+fired them and when (`immunity cast` value, matched to the aura's apply
+time); only a survival trigger - `critical health`, `low health`, `low
+mana` - makes the aura eligible. A raid strategy that Ice Blocks to dodge
+a mechanic, or a `cast ice block` from the master, leaves no such record
+and that immunity runs its course. Divine Intervention and Hand of
+Protection are cast on the bot by others and are always managed. Hunter
+Deterrence is left alone: five seconds, and the hunter can still move and
+trap under it. No config knobs.
 
 ## Emote exchanges that end
 

@@ -9,6 +9,7 @@
 
 #include "Define.h"
 
+#include <string>
 #include <vector>
 
 // The immunities "cancel immunity" knows how to drop (see ImmunityTriggers.h). Spell ids rather
@@ -23,6 +24,14 @@ namespace ai::immunity
 
     // All three ranks of Hand of Protection (the 3.3.5 name of Blessing of Protection).
     inline std::vector<uint32> HandOfProtectionRanks() { return { 1022, 5599, 10278 }; }
+
+    // The triggers whose immunity casts are survival moves the bot may cut short once it is safe.
+    // An immunity fired by anything else - a raid strategy dodging a mechanic, the master's "cast"
+    // command - is left to run its course, since only its author knows when it has done its job.
+    inline bool IsSurvivalTrigger(std::string const& trigger)
+    {
+        return trigger == "critical health" || trigger == "low health" || trigger == "low mana";
+    }
 }
 
 #endif

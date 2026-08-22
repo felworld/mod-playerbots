@@ -181,8 +181,8 @@ is in [FEATURES.md](FEATURES.md). In brief:
   boots on flag runs, and jump-start dead groupmates with jumper cables.
 - **[Outlived immunities](FEATURES.md#outlived-immunities)** — bots cancel
   an Ice Block, Divine Shield, Dispersion, Divine Intervention or Hand of
-  Protection once it has done its job, instead of sitting out its full
-  duration after being healed up or after the fight has ended.
+  Protection once it is holding them back and dropping it is safe, instead
+  of sitting out its full duration after the danger has passed.
 - **[Emote exchanges that end](FEATURES.md#emote-exchanges-that-end)** —
   bot-to-bot emote replies trail off instead of ping-ponging forever, and
   crowds don't reply in chorus.

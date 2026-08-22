@@ -12,12 +12,13 @@
 
 #include <vector>
 
+class Aura;
 class PlayerbotAI;
 
-// An immunity the bot is wearing has stopped paying for itself: the fight that called for it is
-// over, or the bot has been healed back up and the aura now only keeps it from acting (Ice Block,
-// Dispersion, Divine Intervention), halves its damage and sheds every mob's interest (Divine
-// Shield), or stops a physical attacker from swinging (Hand of Protection) (Felworld).
+// An immunity the bot is wearing has outlived its use: it is now costing the bot something
+// (Limiting) and dropping it would not get the bot killed ("safe to drop immunity"). Both halves
+// are positive reasons - the trigger never fires merely because the emergency has passed, since a
+// bubble that costs nothing and hurts nobody may as well run out (Felworld).
 class OutlivedImmunityTrigger : public Trigger
 {
 public:
@@ -27,43 +28,51 @@ public:
     bool IsActive() override;
 
 protected:
-    virtual bool Outlived() = 0;
+    // Whether "cancel immunity" is responsible for this aura at all. Default: yes.
+    virtual bool Managed(Aura const* /*aura*/) { return true; }
+    // Whether the aura is currently holding the bot back.
+    virtual bool Limiting() { return true; }
+    virtual bool Safe() { return AI_VALUE(bool, "safe to drop immunity"); }
 
     bool OutOfCombat();
-    // The aura came from the bot's own critical-health cast, not a scripted mechanic dodge.
-    bool SurvivalCast();
-    uint8 Health();
-    uint8 Mana();
 
 private:
     std::vector<uint32> spellIds;
 };
 
-class IceBlockOutlivedTrigger : public OutlivedImmunityTrigger
+// An immunity the bot cast itself. Only managed when it came from one of the survival triggers
+// (see ai::immunity::IsSurvivalTrigger) - the record left by CastEmergencyImmunityAction.
+class OwnImmunityOutlivedTrigger : public OutlivedImmunityTrigger
+{
+public:
+    using OutlivedImmunityTrigger::OutlivedImmunityTrigger;
+
+protected:
+    bool Managed(Aura const* aura) override;
+};
+
+class IceBlockOutlivedTrigger : public OwnImmunityOutlivedTrigger
 {
 public:
     IceBlockOutlivedTrigger(PlayerbotAI* botAI);
-
-protected:
-    bool Outlived() override;
 };
 
-class DivineShieldOutlivedTrigger : public OutlivedImmunityTrigger
+class DivineShieldOutlivedTrigger : public OwnImmunityOutlivedTrigger
 {
 public:
     DivineShieldOutlivedTrigger(PlayerbotAI* botAI);
 
 protected:
-    bool Outlived() override;
+    bool Limiting() override;
 };
 
-class DispersionOutlivedTrigger : public OutlivedImmunityTrigger
+class DispersionOutlivedTrigger : public OwnImmunityOutlivedTrigger
 {
 public:
     DispersionOutlivedTrigger(PlayerbotAI* botAI);
 
 protected:
-    bool Outlived() override;
+    bool Limiting() override;
 };
 
 class DivineInterventionOutlivedTrigger : public OutlivedImmunityTrigger
@@ -72,7 +81,7 @@ public:
     DivineInterventionOutlivedTrigger(PlayerbotAI* botAI);
 
 protected:
-    bool Outlived() override;
+    bool Safe() override;
 };
 
 class HandOfProtectionOutlivedTrigger : public OutlivedImmunityTrigger
@@ -81,7 +90,7 @@ public:
     HandOfProtectionOutlivedTrigger(PlayerbotAI* botAI);
 
 protected:
-    bool Outlived() override;
+    bool Limiting() override;
 };
 
 #endif

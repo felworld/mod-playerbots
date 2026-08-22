@@ -13,10 +13,9 @@
 
 class PlayerbotAI;
 
-// A self-immunity the class strategies fire at critical health. Records the cast when it really
-// was a survival move (health under AiPlayerbot.LowHealth), so "cancel immunity" knows it may drop
-// the aura again once the bot is healed; a raid strategy casting the same spell at full health to
-// dodge a mechanic leaves no record and keeps its immunity (Felworld).
+// A self-immunity (Ice Block, Divine Shield, Dispersion). Records which trigger asked for the cast
+// and when, so "cancel immunity" can tell a survival cast it may cut short from a raid strategy's
+// mechanic dodge or the master's "cast" command, which it leaves alone (Felworld).
 class CastEmergencyImmunityAction : public CastBuffSpellAction
 {
 public:
