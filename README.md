@@ -33,8 +33,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   human-scale delay, and occasionally miss, instead of triggering
   instantly every time.
 - **[Pet group etiquette](FEATURES.md#pet-group-etiquette)** — bot pets
-  assist their owner's target, keep taunts off in instanced groups, and
-  heel on disengage instead of body-pulling the next pack.
+  assist their owner's target, keep taunts off in instanced groups and
+  against players, and heel on disengage instead of body-pulling the next
+  pack.
 - **[Dungeon pulls by the tank](FEATURES.md#dungeon-pulls-by-the-tank)** —
   in instances the main tank opens, never the bot that happens to be group
   leader; a bot tank pulls only once the group is in place and topped up,

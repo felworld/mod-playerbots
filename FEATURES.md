@@ -82,6 +82,18 @@ grouped in an instance (and back on when solo, where a pet tanking for
 its owner is the point), and a pet configured aggressive via
 `AiPlayerbot.DefaultPetStance` is clamped to defensive while grouped.
 
+The same taunt autocasts also come off against players. A taunt does
+nothing to a player — players have no threat list — but the pet still
+spends a global cooldown on it every time it comes off cooldown, which is
+a global cooldown not spent on Bite, Claw, or a Kill Command follow-up. A
+battleground or arena counts as PvP for the whole match; out in the world
+it is whether a player, or a player's pet, is the bot's target, on the
+bot's attacker list, or what the pet itself is swinging at. Taunts stay
+off for ten seconds after the last player opponent, so a fight that
+alternates between players and their pets or nearby mobs does not flap the
+pet bar. Upkeep runs in combat as well as out of it, since who the pet is
+fighting is only known once the fight is on.
+
 ## Dungeon pulls by the tank
 
 Who opens on the next pack in a dungeon used to be whichever bot happened

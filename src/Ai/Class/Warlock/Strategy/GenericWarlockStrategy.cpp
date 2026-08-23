@@ -29,6 +29,17 @@ void GenericWarlockStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             }
         )
     );
+    // Autocast upkeep runs in combat as well as out of it: whether Torment/Suffering/Anguish is
+    // worth a global cooldown depends on who the minion is fighting, and that is only known once
+    // the fight is on.
+    triggers.push_back(
+        new TriggerNode(
+            "has pet",
+            {
+                NextAction("toggle pet spell", 60.0f)
+            }
+        )
+    );
     triggers.push_back(
         new TriggerNode(
             "low mana",

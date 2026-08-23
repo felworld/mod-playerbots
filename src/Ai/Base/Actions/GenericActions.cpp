@@ -57,6 +57,10 @@ bool IsPetTauntSpell(SpellInfo const* spellInfo)
            spellInfo->HasEffect(SPELL_EFFECT_THREAT);
 }
 
+// A player opponent seen this recently still counts as one, so a fight that alternates between
+// players and their pets/mobs does not flap the pet bar every few seconds.
+constexpr uint32 PVP_TAUNT_SUPPRESSION_LINGER_MS = 10 * IN_MILLISECONDS;
+
 // PullStrategy parks the pet on REACT_PASSIVE for the duration of a pull; stance upkeep must not
 // undo that mid-pull.
 bool IsPullInProgress(PlayerbotAI* botAI)
@@ -76,6 +80,36 @@ bool MeleeAction::isUseful()
     // Future rogue stealth implementation should use this instead:
     // return !(botAI->HasAura("stealth", bot) || botAI->HasAura("prowl", bot));
     return !botAI->HasAura("prowl", bot);
+}
+
+bool TogglePetSpellAutoCastAction::SuppressTaunts(Pet* pet)
+{
+    // Inside an instance with a group the tank owns threat: actively turn taunt autocasts off so a
+    // previously enabled Growl/Torment/Suffering/Anguish stops ripping mobs off the tank. Solo (or
+    // outdoors) they are left enabled - a lone pet tanking for its owner still wants them.
+    if (IsInstancedGroupContent(bot))
+        return true;
+
+    // Players have no threat list, so a taunt lands as a pure no-op that still eats the pet's global
+    // cooldown and delays Bite/Claw/Kill Command. A battleground or arena is PvP from the start; out
+    // in the world it is whether a player (or a player's pet) is on the other side of the fight.
+    if (bot->InBattleground() || bot->InArena())
+        return true;
+
+    // HasPvpOpponent() reads the bot's own target and attackers; the pet can be swinging at someone
+    // else entirely (a warlock minion left on a previous target), and it is the pet's global cooldown
+    // being spent, so its own victim gets the same owner check.
+    Unit* petVictim = pet->GetVictim();
+    Player* petVictimOwner = petVictim ? petVictim->GetCharmerOrOwnerPlayerOrPlayerItself() : nullptr;
+
+    uint32 const now = getMSTime();
+    if (botAI->HasPvpOpponent() || (petVictimOwner && !bot->IsFriendlyTo(petVictimOwner)))
+    {
+        lastPvpOpponentMs = now;
+        return true;
+    }
+
+    return lastPvpOpponentMs && getMSTimeDiff(lastPvpOpponentMs, now) < PVP_TAUNT_SUPPRESSION_LINGER_MS;
 }
 
 bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
@@ -100,10 +134,7 @@ bool TogglePetSpellAutoCastAction::Execute(Event /*event*/)
         if (autospellItr != pet->m_autospells.end())
             pet->m_autospells.erase(autospellItr);
     }
-    // Inside an instance with a group the tank owns threat: actively turn taunt autocasts off so a
-    // previously enabled Growl/Torment/Suffering/Anguish stops ripping mobs off the tank. Solo (or
-    // outdoors) they are left enabled - a lone pet tanking for its owner still wants them.
-    bool const suppressTaunts = IsInstancedGroupContent(bot);
+    bool const suppressTaunts = SuppressTaunts(pet);
 
     bool toggled = false;
     for (PetSpellMap::const_iterator itr = pet->m_spells.begin(); itr != pet->m_spells.end(); ++itr)

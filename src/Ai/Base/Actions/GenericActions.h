@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "PlayerbotAI.h"
 
+class Pet;
 class PlayerbotAI;
 
 class MeleeAction : public AttackAction
@@ -27,6 +28,14 @@ class TogglePetSpellAutoCastAction : public Action
 public:
     TogglePetSpellAutoCastAction(PlayerbotAI* ai) : Action(ai, "toggle pet spell") {}
     virtual bool Execute(Event event) override;
+
+private:
+    // Whether the pet's taunt autocasts (Growl, Torment, Suffering, Anguish) should be off right now.
+    bool SuppressTaunts(Pet* pet);
+
+    // getMSTime() of the last tick that saw a player opponent, 0 if never. Backs the linger window
+    // that keeps taunts off through the lulls of a PvP fight.
+    uint32 lastPvpOpponentMs = 0;
 };
 
 // Sends the pet at the bot's current target ("assist"), instead of letting core PetAI pick a target
