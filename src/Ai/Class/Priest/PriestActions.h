@@ -56,7 +56,15 @@ SPELL_ACTION(CastMassDispelAction, "mass dispel");
 
 // disc talents
 BUFF_ACTION(CastPowerInfusionAction, "power infusion");
-BUFF_PARTY_ACTION(CastPowerInfusionOnPartyAction, "power infusion");
+// Power Infusion is worth more on the group's caster dps than on the priest that owns it, so
+// this targets "party member to boost" rather than the generic party member missing the buff.
+class CastPowerInfusionOnPartyAction : public BuffOnPartyAction
+{
+public:
+    CastPowerInfusionOnPartyAction(PlayerbotAI* botAI) : BuffOnPartyAction(botAI, "power infusion") {}
+
+    Value<Unit*>* GetTargetValue() override;
+};
 BUFF_ACTION(CastInnerFocusAction, "inner focus");
 // disc 2.4.3 talents
 BUFF_ACTION(CastPainSuppressionAction, "pain suppression");

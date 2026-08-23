@@ -1088,7 +1088,12 @@ kited caster presses something instead of auto-attacking. By class:
   Fire is refreshed in combat, Fear Ward is kept up and re-applied
   against player opponents, Binding Heal is wired, Shadowfiend hangs off
   its real trigger, and the holy DPS list no longer ends in Starshards
-  (removed in 3.0).
+  (removed in 3.0). Power Infusion was wired to the priest itself and
+  nowhere else; it goes to the group's caster dps first, through a new
+  "party member to boost" value that wants an in-combat mana caster
+  within 30 yards, free to cast (not sheeped, feared, stunned or
+  silenced) and not already under Power Infusion, Bloodlust or Heroism.
+  The self-buff is the fallback when there is nobody to hand it to.
 - **Rogue** — `blade flurry` was registered as "blade fury". Kidney Shot
   on a player target with three or more combo points, Dismantle against
   melee players, Gouge behind Kick → Kidney Shot, Vanish → Cloak of

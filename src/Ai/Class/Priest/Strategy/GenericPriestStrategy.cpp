@@ -75,8 +75,15 @@ void PriestCureStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 
 void PriestBoostStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
 {
+    // A caster dps in the group gets Power Infusion ahead of the priest: 20% haste on a mage
+    // or a warlock beats 20% haste on the healer's own casts. With nobody to hand it to (solo,
+    // or every caster sheeped, silenced or already hasted), the party action finds no target
+    // and the self-buff below it fires instead.
     triggers.push_back(
-        new TriggerNode("power infusion", { NextAction("power infusion", 41.0f) }));
+        new TriggerNode("power infusion",
+            {
+                NextAction("power infusion on party", 42.0f),
+                NextAction("power infusion", 41.0f) }));
     triggers.push_back(new TriggerNode("shadowfiend", { NextAction("shadowfiend", 20.0f) }));
 }
 

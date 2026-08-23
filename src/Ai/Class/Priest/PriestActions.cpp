@@ -104,3 +104,8 @@ bool CastPowerWordShieldOnNotFullAction::isUseful()
 {
     return GetTarget();
 }
+
+Value<Unit*>* CastPowerInfusionOnPartyAction::GetTargetValue()
+{
+    return context->GetValue<Unit*>("party member to boost");
+}
