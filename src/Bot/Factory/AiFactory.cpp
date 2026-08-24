@@ -620,11 +620,14 @@ void AiFactory::AddDefaultNonCombatStrategies(Player* player, PlayerbotAI* const
 
         // Stealth openers outside battlegrounds too, grouped or not: Sap, Cheap Shot, Ambush,
         // Pounce and Ravage are only reachable from stealth, and the triggers already wait for a
-        // target within 30 yards, out of combat and off cooldown (Felworld).
+        // target within 30 yards, out of combat and off cooldown. Every druid spec prowls, the way
+        // they do in battlegrounds - the prowl action carries a cat form prerequisite, so a caster
+        // or bear build shifts in to sneak and the combat engine puts it back in its own form once
+        // the fight starts. The one exception is a grouped bear-build tank: sneaking off ahead of
+        // the party is a liability on a pull, so a tank keeps prowl only while solo (Felworld).
         if (player->getClass() == CLASS_ROGUE)
             nonCombatEngine->addStrategy("stealth", false);
-        else if (player->getClass() == CLASS_DRUID && GetPlayerSpecTab(player) == DRUID_TAB_FERAL &&
-                 !PlayerbotAI::IsTank(player, true))
+        else if (player->getClass() == CLASS_DRUID && !(player->GetGroup() && PlayerbotAI::IsTank(player, true)))
             nonCombatEngine->addStrategy("prowl", false);
     }
 

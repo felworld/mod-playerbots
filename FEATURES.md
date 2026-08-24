@@ -1008,12 +1008,18 @@ shares rather than in any one rotation. The shared fixes:
   another 8 seconds" rule meant for DoTs, so Hamstring, Chains of Ice,
   Deadly Throw and company were refused on the one target most likely to
   run. Snares are exempt.
-- **Stealth openers everywhere** — the rogue `stealth` and cat druid
+- **Stealth openers everywhere** — the rogue `stealth` and druid
   `prowl` non-combat strategies were only enabled in battlegrounds.
-  Every rogue and cat-build feral druid now has them, grouped or not, so
+  Every rogue and every druid now has them in the open world too, so
   Sap, Cheap Shot, Ambush, Pounce and Ravage are reachable in world PvP
   and while grinding; the trigger already waits for a target within 30
-  yards, out of combat and with Stealth off cooldown.
+  yards, out of combat and with Stealth off cooldown. Druids of any
+  spec sneak the way they already do in battlegrounds — the prowl
+  action's Cat Form prerequisite shifts a caster or bear build in, and
+  the combat engine puts it back in its own form once the fight starts.
+  The one exception is a grouped bear-build tank, which stays visible
+  so it never wanders off stealthed ahead of a pull (solo tanks still
+  prowl).
 - **PvP trinket on loss of control** — the factory already equips a
   Medallion / Insignia on PvP-spec bots from level 50, but no trigger ever
   used it: the only path to an equipped trinket was the generic
