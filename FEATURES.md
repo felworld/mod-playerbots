@@ -713,12 +713,14 @@ in the open world; this cluster of fixes makes them react like people:
 - **Soulstone discipline**: a warlock's soulstone (or a shaman's
   reincarnation) fired the instant the bot died, even mid-gank — handing
   the enemy a free second kill and wasting the stone. Bots now hold the
-  self-res while a PvP-flagged enemy is within 40 yards, waiting up to a
-  minute for them to leave before giving up on it and releasing normally.
+  self-res while a PvP-flagged enemy is within 40 yards, waiting up to
+  twenty seconds for them to leave; if the enemy stays, the bot uses the
+  self-res anyway — resurrecting into a camper beats releasing and losing
+  the stone.
 - **No rezzing into campers**: a dead bot ran back and popped up at its
   corpse — or took the spirit-healer res — regardless of who was standing
   on it. Ghosts now wait out a flagged enemy loitering at the rez spot,
-  and only after about three minutes of being camped give up and rez
+  and only after about ninety seconds of being camped give up and rez
   anyway.
 - **No dueling next to a battlefield**: idle bots would happily start a
   recreational duel while a gank unfolded across the road. Bots now
@@ -728,8 +730,8 @@ in the open world; this cluster of fixes makes them react like people:
   (`AiPlayerbot.WpvpVisionDistance`). A real player's challenge is still
   accepted; a human read the room.
 
-No config knobs; the thresholds (40 yards, one minute, two minutes, three
-minutes) are fixed.
+No config knobs; the thresholds (40 yards, twenty seconds, ninety
+seconds, two minutes) are fixed.
 
 ## Corpse-camping satiation
 
@@ -1440,6 +1442,17 @@ that, so a dead bot kept "seeing" — and reacting to — live players and NPCs
 at full sight range. While ghosted, the nearest-unit perception values now
 run through the same server visibility check a real client is subject to.
 No config knobs.
+
+## Prompt spirit release
+
+Upstream hung the release-spirit decision off a periodic dice roll — one
+1-in-5 chance every few seconds — so a dead bot lay there for fifteen
+seconds on average, sometimes a minute, before releasing. The decision is
+now evaluated every AI tick, with a fixed two-second pause first so the
+release still reads as a hand reaching for the button rather than a
+reflex. All the deliberate holds are unchanged: battleground release
+timing, the soulstone hold above, and a grouped bot near its real-player
+leader still waiting for a rez instead of ghost-running.
 
 ## Corpse-run pacing
 

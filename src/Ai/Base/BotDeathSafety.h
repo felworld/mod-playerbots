@@ -15,11 +15,15 @@ namespace BotDeathSafety
 {
 // How long a dead bot waits out an enemy player camping its body/graveyard before
 // resurrecting anyway.
-constexpr int64 CAMP_GIVE_UP_SECONDS = 3 * MINUTE;
+constexpr int64 CAMP_GIVE_UP_SECONDS = 90;
 
 // How long a dead bot holds a pending soulstone/reincarnation (instead of releasing)
-// while an enemy player is nearby.
-constexpr int64 SELF_RES_WAIT_SECONDS = 60;
+// while an enemy player is nearby. When the hold expires the bot uses the self-res
+// even with the enemy still there - better than releasing and losing it.
+constexpr int64 SELF_RES_WAIT_SECONDS = 20;
+
+// Short pause between dying and releasing spirit, like a human reaching for the button.
+constexpr int64 RELEASE_DELAY_SECONDS = 2;
 
 // True when a live, PvP-flagged enemy player is within range. Uses a grid scan rather
 // than the bot's own vision so it also works while dead or as a ghost.

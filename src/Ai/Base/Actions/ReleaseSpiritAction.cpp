@@ -113,6 +113,10 @@ bool AutoReleaseSpiritAction::isUseful()
     if (bot->HasPlayerFlag(PLAYER_FLAGS_GHOST))
         return false;
 
+    // Brief pause before releasing, like a human reaching for the button.
+    if (BotDeathSafety::TimeSinceDeath(bot) < BotDeathSafety::RELEASE_DELAY_SECONDS)
+        return false;
+
     // A pending soulstone/reincarnation is lost on release; while its use is blocked by a
     // nearby enemy player, hold the release a bit and wait for them to leave.
     if (bot->GetUInt32Value(PLAYER_SELF_RES_SPELL) &&
@@ -272,6 +276,9 @@ bool SelfResurrectAction::Execute(Event /*event*/)
 }
 bool SelfResurrectAction::isUseful()
 {
+    // Once the enemy-wait hold expires, use the self-res even with the enemy still
+    // nearby - better than releasing and losing it.
     return !bot->IsAlive() && bot->GetUInt32Value(PLAYER_SELF_RES_SPELL) &&
-           !BotDeathSafety::EnemyPlayerNear(bot);
+           (!BotDeathSafety::EnemyPlayerNear(bot) ||
+            BotDeathSafety::TimeSinceDeath(bot) >= BotDeathSafety::SELF_RES_WAIT_SECONDS);
 }
