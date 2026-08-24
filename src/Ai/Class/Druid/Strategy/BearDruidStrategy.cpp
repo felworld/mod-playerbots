@@ -117,10 +117,13 @@ void BearDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             { NextAction("dire bear form", 28.0f) }
         )
     );
+    // Below ACTION_MOVE (30) this never ran in PvP - the bot is moving on almost every tick, so a
+    // 27.0 action is starved out. It stays on medium health rather than low: a 3-minute cooldown
+    // that heals over time is only worth anything if it lands before the burst does (Felworld).
     triggers.push_back(
         new TriggerNode(
             "medium health",
-            { NextAction("frenzied regeneration", 27.0f) }
+            { NextAction("frenzied regeneration", 33.0f) }
         )
     );
     triggers.push_back(new TriggerNode(

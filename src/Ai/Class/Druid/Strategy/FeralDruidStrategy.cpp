@@ -85,6 +85,16 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         "enemy out of melee", { NextAction("reach melee", 21.0f) }));
     triggers.push_back(new TriggerNode(
         "low health", { NextAction("survival instincts", 91.0f) }));
+    // Feral had no in-combat self-heal at all: nothing ever fired a heal while the bot was in cat
+    // or bear form. The regrowth action node shifts out through its "caster form" prerequisite and
+    // the spec's own form trigger shifts straight back, so the only thing missing was a trigger.
+    // 36.0 clears ACTION_MOVE (30) - below it a kiting PvP fight starves the heal (Felworld).
+    triggers.push_back(new TriggerNode(
+        "critical health", { NextAction("regrowth", 36.0f) }));
+    // Cheaper rung for cats: with a Predator's Swiftness proc the Regrowth is instant, so it is
+    // worth taking earlier. Bears never generate the proc, so the trigger self-gates (Felworld).
+    triggers.push_back(new TriggerNode(
+        "predator's swiftness and low health", { NextAction("regrowth", 34.0f) }));
     triggers.push_back(new TriggerNode("player has flag",
                                        { NextAction("dash", 92.0f) }));
     triggers.push_back(new TriggerNode("enemy flagcarrier near",

@@ -131,6 +131,7 @@ public:
         creators["predator's swiftness and hibernate"] = &DruidTriggerFactoryInternal::predators_swiftness_and_hibernate;
         creators["predator's swiftness and entangling roots"] = &DruidTriggerFactoryInternal::predators_swiftness_and_entangling_roots;
         creators["predator's swiftness and combat party member dead"] = &DruidTriggerFactoryInternal::predators_swiftness_and_combat_party_member_dead;
+        creators["predator's swiftness and low health"] = &DruidTriggerFactoryInternal::predators_swiftness_and_low_health;
         creators["clearcasting and medium aoe"] = &DruidTriggerFactoryInternal::clearcasting_and_medium_aoe;
         creators["prowl"] = &DruidTriggerFactoryInternal::prowl_trigger;
         creators["rejuvenation blanket"] = &DruidTriggerFactoryInternal::rejuvenation_blanket;
@@ -198,6 +199,7 @@ private:
     static Trigger* predators_swiftness_and_hibernate(PlayerbotAI* ai) { return new TwoTriggers(ai, "predator's swiftness", "hibernate"); }
     static Trigger* predators_swiftness_and_entangling_roots(PlayerbotAI* ai) { return new TwoTriggers(ai, "predator's swiftness", "entangling roots"); }
     static Trigger* predators_swiftness_and_combat_party_member_dead(PlayerbotAI* ai) { return new TwoTriggers(ai, "predator's swiftness", "combat party member dead"); }
+    static Trigger* predators_swiftness_and_low_health(PlayerbotAI* ai) { return new TwoTriggers(ai, "predator's swiftness", "low health"); }
     static Trigger* clearcasting_and_medium_aoe(PlayerbotAI* ai) { return new TwoTriggers(ai, "clearcasting", "medium aoe"); }
     static Trigger* prowl_trigger(PlayerbotAI* ai) { return new ProwlTrigger(ai); }
     static Trigger* rejuvenation_blanket(PlayerbotAI* ai) { return new BuffOnPartyTrigger(ai, "rejuvenation"); }
