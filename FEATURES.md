@@ -1067,10 +1067,12 @@ kited caster presses something instead of auto-attacking. By class:
   below critical heals now that they actually fire on players. Ferals
   also heal themselves mid-fight now — nothing ever fired a self-heal
   while the bot was in cat or bear form, so a feral at critical health
-  drops form for a Regrowth (or cashes in a Predator's Swiftness proc
-  for an instant one already at low health) and shifts straight back,
-  and Frenzied Regeneration moves above movement priority so a bear in
-  a PvP fight actually presses it instead of forever repositioning.
+  drops form for a Regrowth (stacking an instant Rejuvenation on top if
+  it stays critical while the Regrowth HoT ticks), a cat cashes a
+  Predator's Swiftness proc in for an instant Healing Touch already at
+  low health, and either shifts straight back. Frenzied Regeneration
+  moves above movement priority so a bear in a PvP fight actually
+  presses it instead of forever repositioning.
 - **Hunter** — `explosive shot` was an unregistered name, so survival's
   signature shot only fired off Lock and Load; Arcane Shot's guard was
   inverted (only survival used it). Freezing Trap, Scare Beast and

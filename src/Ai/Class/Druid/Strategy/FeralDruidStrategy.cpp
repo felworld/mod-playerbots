@@ -86,15 +86,21 @@ void FeralDruidStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "low health", { NextAction("survival instincts", 91.0f) }));
     // Feral had no in-combat self-heal at all: nothing ever fired a heal while the bot was in cat
-    // or bear form. The regrowth action node shifts out through its "caster form" prerequisite and
+    // or bear form. The heal action nodes shift out through their "caster form" prerequisite and
     // the spec's own form trigger shifts straight back, so the only thing missing was a trigger.
-    // 36.0 clears ACTION_MOVE (30) - below it a kiting PvP fight starves the heal (Felworld).
+    // 36.0 clears ACTION_MOVE (30) - below it a kiting PvP fight starves the heal. Regrowth reads
+    // as not-useful while its own HoT ticks, so the instant Rejuvenation backs it up: the two
+    // HoTs stack, and once both are rolling the bot has done what a feral can and keeps fighting
+    // in form (Felworld).
     triggers.push_back(new TriggerNode(
-        "critical health", { NextAction("regrowth", 36.0f) }));
-    // Cheaper rung for cats: with a Predator's Swiftness proc the Regrowth is instant, so it is
-    // worth taking earlier. Bears never generate the proc, so the trigger self-gates (Felworld).
+        "critical health", { NextAction("regrowth", 36.0f), NextAction("rejuvenation", 35.0f) }));
+    // Cats cash a Predator's Swiftness proc in for an instant Healing Touch already at low
+    // health: the proc's value is making the slow, big heal instant - Regrowth is fast anyway and
+    // covered above, and would read as not-useful whenever its HoT from the critical-health rung
+    // is still ticking, wasting the proc. Bears never generate the proc, so the trigger
+    // self-gates (Felworld).
     triggers.push_back(new TriggerNode(
-        "predator's swiftness and low health", { NextAction("regrowth", 34.0f) }));
+        "predator's swiftness and low health", { NextAction("healing touch", 34.0f) }));
     triggers.push_back(new TriggerNode("player has flag",
                                        { NextAction("dash", 92.0f) }));
     triggers.push_back(new TriggerNode("enemy flagcarrier near",
