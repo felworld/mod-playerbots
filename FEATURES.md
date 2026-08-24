@@ -1413,6 +1413,18 @@ frequency) is rolled each time an unprompted emote timer fires, so idle
 emoting can be thinned out without touching reactions: replies to
 received emotes and emotes commanded by a master are unaffected.
 
+## Tunable duel chatter
+
+Bots say fixed lines around duels: a solicitation while loitering at a
+gate duel spot ("Anyone up for a duel?"), sometimes a challenge line as
+the flag goes down ("Care for a duel?"), and a winner/loser exchange
+afterwards ("Good fight!" / "gg"). `AiPlayerbot.DuelChatter` (default 1)
+keeps that behavior; 0 drops the spoken lines while leaving the duels and
+their emotes (flex, roar, cheer, salute, …) untouched — for setups where
+another module voices these moments instead, as Felworld's llm session
+mode does with
+[mod-llm's duel talk](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#duel-talk).
+
 ## Faction-honest chat
 
 Bot chat honors the faction wall (`AllowTwoSide.Interaction.Chat`).

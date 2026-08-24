@@ -1874,6 +1874,13 @@ AiPlayerbot.WpvpKillSwitchDefaultMinutes = 60
 # Default: 1 (enabled)
 AiPlayerbot.EnableBotDuels = 1
 
+# Canned duel chatter: the fixed challenge/solicitation/post-duel lines bots
+# say around duels ("Care for a duel?", "Anyone up for a duel?", "gg").
+# 0 keeps duels and their emotes but drops the spoken lines - meant for
+# setups where another module (e.g. mod-llm) voices these moments instead.
+# Default: 1 (enabled)
+AiPlayerbot.DuelChatter = 1
+
 # How far (yards) a bot looks for someone to challenge.
 # Default: 25
 AiPlayerbot.DuelChallengeRange = 25

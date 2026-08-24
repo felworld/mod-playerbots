@@ -203,7 +203,9 @@ bool NewRpgDuelSpotAction::Solicit(NewRpgInfo::DuelSpot& data)
     bot->SetFacingToObject(mark);
     bot->HandleEmoteCommand(SOLICIT_EMOTES[urand(0, std::size(SOLICIT_EMOTES) - 1)]);
 
-    if (urand(1, 100) <= 60)
+    // DuelChatter=0 keeps the performance wordless (Felworld's llm session
+    // mode voices duel spots through mod-llm instead - see mod-llm FEATURES).
+    if (sPlayerbotAIConfig.duelChatter && urand(1, 100) <= 60)
         bot->Say(SOLICIT_LINES[urand(0, std::size(SOLICIT_LINES) - 1)],
                  bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH);
 

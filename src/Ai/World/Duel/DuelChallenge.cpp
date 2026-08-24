@@ -45,8 +45,14 @@ char const* LOSER_LINES[] = {
     "I want a rematch sometime!",
 };
 
+// All canned duel speech funnels through here, so AiPlayerbot.DuelChatter=0
+// silences the lines in one place (emotes stay). Felworld's llm session mode
+// turns it off and lets mod-llm voice these moments instead.
 void BotSay(Player* bot, char const* line)
 {
+    if (!sPlayerbotAIConfig.duelChatter)
+        return;
+
     bot->Say(line, bot->GetTeamId() == TEAM_ALLIANCE ? LANG_COMMON : LANG_ORCISH);
 }
 

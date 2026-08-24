@@ -920,6 +920,7 @@ bool PlayerbotAIConfig::Initialize()
     wpvpKillSwitchDefaultMinutes = sConfigMgr->GetOption<uint32>("AiPlayerbot.WpvpKillSwitchDefaultMinutes", 60);
 
     enableBotDuels = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBotDuels", true);
+    duelChatter = sConfigMgr->GetOption<bool>("AiPlayerbot.DuelChatter", true);
     duelChallengeRange = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelChallengeRange", 25);
     duelChallengeCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelChallengeCooldown", 600);
     duelSpotChallengeCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.DuelSpotChallengeCooldown", 60);

@@ -539,6 +539,7 @@ public:
     uint32 wpvpTruceOathbreakerChance;
     uint32 wpvpKillSwitchDefaultMinutes;
     bool enableBotDuels;
+    bool duelChatter;
     uint32 duelChallengeRange;
     uint32 duelChallengeCooldown;
     uint32 duelSpotChallengeCooldown;
