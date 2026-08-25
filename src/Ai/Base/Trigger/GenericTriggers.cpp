@@ -10,6 +10,7 @@
 #include "Corpse.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
+#include "DungeonHoldValues.h"
 #include "EngineeringDeviceActions.h"
 #include "EngineeringTinkerActions.h"
 #include "GenericBuffUtils.h"
@@ -80,10 +81,60 @@ bool PetAttackTrigger::IsActive()
     if (pet->GetVictim() == target && charmInfo->IsCommandAttack())
         return false;
 
-    if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat())
+    // Assist only: in an instance with a group the pet never starts a fight, and it waits out the
+    // dungeon hold on top of that (Felworld).
+    if (IsInstancedGroupContent(bot) && (!target->IsInCombat() || ShouldHoldForTank(botAI, target)))
         return false;
 
     return true;
+}
+
+bool DungeonHoldReleaseTrigger::IsActive()
+{
+    // Deliberately not IsDungeonHoldActive: a main tank that dies mid-window releases the hold, and
+    // the bots it was holding still need to be told to start swinging.
+    if (!sPlayerbotAIConfig.dungeonHoldForTank || !IsInstancedGroupContent(bot))
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || bot->GetVictim() == target)
+        return false;
+
+    if (!bot->IsValidAttackTarget(target))
+        return false;
+
+    return !ShouldHoldForTank(botAI, target);
+}
+
+bool PetHoldReleaseTrigger::IsActive()
+{
+    if (!sPlayerbotAIConfig.dungeonHoldForTank || !IsInstancedGroupContent(bot))
+        return false;
+
+    Guardian* pet = bot->GetGuardianPet();
+    if (!pet || !pet->IsAlive())
+        return false;
+
+    // Uncontrollable guardians have no CharmInfo and cannot be commanded at all.
+    CharmInfo* charmInfo = pet->GetCharmInfo();
+    if (!charmInfo)
+        return false;
+
+    // A passive pet is either configured that way or parked by PullStrategy - do not fight it.
+    if (pet->GetReactState() == REACT_PASSIVE)
+        return false;
+
+    Unit* target = AI_VALUE(Unit*, "current target");
+    if (!target || !target->IsAlive() || !target->IsInCombat())
+        return false;
+
+    if (pet->GetVictim() == target && charmInfo->IsCommandAttack())
+        return false;
+
+    if (!bot->IsValidAttackTarget(target))
+        return false;
+
+    return !ShouldHoldForTank(botAI, target);
 }
 
 bool HighManaTrigger::IsActive()

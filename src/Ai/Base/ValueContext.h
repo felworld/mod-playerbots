@@ -18,6 +18,7 @@
 #include "AvailableLootValue.h"
 #include "BudgetValues.h"
 #include "BystanderValues.h"
+#include "DungeonHoldValues.h"
 #include "DungeonPullTargetValue.h"
 #include "SocialBuffValues.h"
 #include "StealthReactValues.h"
@@ -168,6 +169,7 @@ public:
         creators["old target"] = &ValueContext::old_target;
         creators["grind target"] = &ValueContext::grind_target;
         creators["dungeon pull target"] = &ValueContext::dungeon_pull_target;
+        creators["tank engage memory"] = &ValueContext::tank_engage_memory;
         creators["quest grind target"] = &ValueContext::quest_grind_target;
         creators["aggressive target"] = &ValueContext::aggressive_target;
         creators["rti target"] = &ValueContext::rti_target;
@@ -524,6 +526,7 @@ private:
     static UntypedValue* pet_target(PlayerbotAI* botAI) { return new PetTargetValue(botAI); }
     static UntypedValue* grind_target(PlayerbotAI* botAI) { return new GrindTargetValue(botAI); }
     static UntypedValue* dungeon_pull_target(PlayerbotAI* botAI) { return new DungeonPullTargetValue(botAI); }
+    static UntypedValue* tank_engage_memory(PlayerbotAI* botAI) { return new TankEngageMemoryValue(botAI); }
     static UntypedValue* quest_grind_target(PlayerbotAI* botAI) { return new QuestGrindTargetValue(botAI); }
     static UntypedValue* aggressive_target(PlayerbotAI* botAI) { return new AggressiveTargetValue(botAI); }
     static UntypedValue* rti_target(PlayerbotAI* botAI) { return new RtiTargetValue(botAI); }

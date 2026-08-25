@@ -315,6 +315,11 @@ void AiFactory::AddDefaultCombatStrategies(Player* player, PlayerbotAI* const fa
 
     engine->addStrategy("formation", false);
 
+    // Nobody but the main tank opens on a mob before the tank has it (Felworld). Attached to every
+    // bot, battlegrounds included: the multiplier and the release triggers self-gate on instanced
+    // group content and on there being a main tank other than this bot to wait for.
+    engine->addStrategy("dungeon hold", false);
+
     switch (player->getClass())
     {
         case CLASS_PRIEST:

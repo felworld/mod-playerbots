@@ -180,6 +180,8 @@ public:
         creators["trade deal pending"] = &TriggerContext::trade_deal_pending;
         creators["swimming"] = &TriggerContext::swimming;
         creators["target changed"] = &TriggerContext::target_changed;
+        creators["dungeon hold release"] = &TriggerContext::dungeon_hold_release;
+        creators["pet hold release"] = &TriggerContext::pet_hold_release;
 
         creators["critical aoe heal"] = &TriggerContext::critical_aoe_heal;
         creators["low aoe heal"] = &TriggerContext::low_aoe_heal;
@@ -356,6 +358,8 @@ private:
         return new AoeInGroupTrigger(ai, "medium group heal setting", "medium");
     }
     static Trigger* target_changed(PlayerbotAI* botAI) { return new TargetChangedTrigger(botAI); }
+    static Trigger* dungeon_hold_release(PlayerbotAI* botAI) { return new DungeonHoldReleaseTrigger(botAI); }
+    static Trigger* pet_hold_release(PlayerbotAI* botAI) { return new PetHoldReleaseTrigger(botAI); }
     static Trigger* swimming(PlayerbotAI* botAI) { return new IsSwimmingTrigger(botAI); }
     static Trigger* no_possible_targets(PlayerbotAI* botAI) { return new NoPossibleTargetsTrigger(botAI); }
     static Trigger* possible_adds(PlayerbotAI* botAI) { return new PossibleAddsTrigger(botAI); }

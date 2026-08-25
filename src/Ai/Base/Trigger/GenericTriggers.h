@@ -604,6 +604,26 @@ public:
     virtual bool IsActive() override;
 };
 
+// The dungeon hold (Felworld) releases mob by mob, minutes after the class strategies' edge-triggered
+// "target changed" fired, so the swing and the pet both need a level-based trigger to pick it up.
+// Half a second between checks: the grace period the hold is waiting out is measured in seconds, and
+// re-issuing either handler is idempotent.
+class DungeonHoldReleaseTrigger : public Trigger
+{
+public:
+    DungeonHoldReleaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "dungeon hold release", 500) {}
+
+    bool IsActive() override;
+};
+
+class PetHoldReleaseTrigger : public Trigger
+{
+public:
+    PetHoldReleaseTrigger(PlayerbotAI* botAI) : Trigger(botAI, "pet hold release", 500) {}
+
+    bool IsActive() override;
+};
+
 class ItemCountTrigger : public Trigger
 {
 public:

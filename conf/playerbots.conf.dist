@@ -545,6 +545,25 @@ AiPlayerbot.DungeonPullGroupRange = 30
 AiPlayerbot.DungeonPullMinHealth = 80
 AiPlayerbot.DungeonPullMinMana = 60
 
+# Hold fire until the tank has the mob (Felworld). In instanced group content
+# every bot but the main tank withholds offense against a mob - no attacks,
+# no offensive casts, no walking into melee or spell range, and no pet sent
+# in - until that mob counts as tank-engaged. A mob is tank-engaged once it
+# has stood in the main tank's melee range for DungeonHoldEngageDelay
+# milliseconds while attacking the tank, or the moment it turns on any other
+# group member (holding then would only be free damage), or once
+# DungeonHoldTimeout milliseconds have passed since the group entered combat
+# with it, which is how casters and ranged mobs that never walk into the
+# tank's melee get picked up. The window is per mob, so the melee half of a
+# pack releases on the grace period and a stray caster on the timeout.
+# Healing, buffing, following and defending itself are never held, and with
+# no main tank in the group nothing is held at all. 0 restores the upstream
+# behaviour (everyone opens the instant the pull lands).
+# Default: 1 (enabled)
+AiPlayerbot.DungeonHoldForTank = 1
+AiPlayerbot.DungeonHoldEngageDelay = 1500
+AiPlayerbot.DungeonHoldTimeout = 5000
+
 # Enable auto avoid aoe strategy
 # Default: 1 (enabled)
 AiPlayerbot.AutoAvoidAoe = 1

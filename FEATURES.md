@@ -160,6 +160,63 @@ whip around every time he turns. Outside dungeons and raids, and for
 bots that aren't grouped, following is unchanged. There are no config
 knobs: the buffers are internal.
 
+## Hold fire until the tank has it
+
+Spreading the group out stops the approach from body-pulling the room, but
+it does nothing about the pull itself. The instant a tank's opener landed,
+every DPS bot charged, opened fire and sent its pet in — on a mob that was
+still running across the room with no threat on anything. Whoever's spell
+landed first held it, the mob turned around mid-run, and a melee bot that
+had sprinted past the tank to reach it dragged the pack beside it in too.
+
+In instanced group content every bot that is not the main tank now
+withholds offense against a mob until that mob is *tank-engaged*
+(`AiPlayerbot.DungeonHoldForTank`, default 1). Held means held: no
+attacks, no offensive casts, no gap-closers, no walking into melee or
+spell range, and no pet sent in. It is decided per mob, not per pull, so
+the melee half of a pack releases on one clock and a stray caster on
+another. A mob counts as tank-engaged when any of these is true:
+
+- It has stood inside the main tank's melee range for
+  `AiPlayerbot.DungeonHoldEngageDelay` milliseconds (default 1500) and is
+  attacking the tank. This is the ordinary case — the tank opens, the pack
+  runs to it, and the tank gets its Sunder or its Consecration down before
+  anyone else touches anything.
+- It is attacking any other group member — a healer, a ranged bot, the bot
+  itself, or somebody's pet. Whatever the tank meant to happen has already
+  failed; holding would only give the mob free time on somebody who cannot
+  take it.
+- `AiPlayerbot.DungeonHoldTimeout` milliseconds (default 5000) have passed
+  since the group entered combat with it. Casters and ranged mobs shoot
+  the tank from where they stand and never walk into its melee, so melee
+  time alone would hold the group off them for the whole fight.
+
+What is never held: healing, buffing, cures, following, formation
+movement, and defending itself — a mob that turns on the bot is engaged by
+the second condition, so self-defence is automatic. The main tank is never
+held, and with no main tank in the group (nobody flagged, nobody tanking
+by role) nothing is held at all, so an ungrouped or tankless bot behaves
+exactly as before. Enemy players are never held either: a player has no
+threat table for a tank to build on.
+
+Bots keep taking and facing their target through the hold — only the swing
+is kept back — so the fight starts on the tick the hold releases instead of
+a target acquisition later. Since the class strategies dispatch the pet and
+start the swing from an edge-triggered "target changed" that has long since
+fired by then, both the pet and the bot's own attack are re-dispatched off
+level-based release triggers that re-check twice a second.
+
+Pets are on the same leash. Hunter and warlock pets, death knight ghouls,
+the frost mage's water elemental and the enhancement shaman's wolves are
+all dispatched through one shared assist action, so the gate is one gate:
+the pet is not sent until the mob is tank-engaged, and it *is* sent the
+moment it becomes so. Stance is untouched — a defensive pet whose owner is
+holding fire has nothing to react to, and taunt autocasts are already off
+in instances (see [Pet group etiquette](#pet-group-etiquette)).
+
+Setting `AiPlayerbot.DungeonHoldForTank` to 0 restores the upstream
+behaviour, where everyone opens the instant the pull lands.
+
 ## Dependable LFD port-in
 
 Bots that queue through the Dungeon Finder now reliably arrive in the

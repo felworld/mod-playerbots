@@ -11,6 +11,7 @@
 #include "AttackEnemyPlayersStrategy.h"
 #include "BattlegroundStrategy.h"
 #include "BystanderAssistStrategy.h"
+#include "DungeonHoldStrategy.h"
 #include "DungeonPullStrategy.h"
 #include "QuestCompetitionStrategy.h"
 #include "SocialBuffStrategy.h"
@@ -137,6 +138,7 @@ public:
         creators["guild"] = &StrategyContext::guild;
         creators["grind"] = &StrategyContext::grind;
         creators["dungeon pull"] = &StrategyContext::dungeon_pull;
+        creators["dungeon hold"] = &StrategyContext::dungeon_hold;
         creators["grind quests"] = &StrategyContext::grind_quests;
         creators["avoid aoe"] = &StrategyContext::avoid_aoe;
         creators["tank face"] = &StrategyContext::tank_face;
@@ -220,6 +222,7 @@ private:
     static Strategy* guild (PlayerbotAI* botAI) { return new GuildStrategy(botAI); }
     static Strategy* grind(PlayerbotAI* botAI) { return new GrindingStrategy(botAI); }
     static Strategy* dungeon_pull(PlayerbotAI* botAI) { return new DungeonPullStrategy(botAI); }
+    static Strategy* dungeon_hold(PlayerbotAI* botAI) { return new DungeonHoldStrategy(botAI); }
     static Strategy* grind_quests(PlayerbotAI* botAI) { return new GrindQuestsStrategy(botAI); }
     static Strategy* avoid_aoe(PlayerbotAI* botAI) { return new AvoidAoeStrategy(botAI); }
     static Strategy* tank_face(PlayerbotAI* botAI) { return new TankFaceStrategy(botAI); }

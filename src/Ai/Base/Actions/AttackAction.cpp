@@ -6,6 +6,7 @@
 
 #include "AttackAction.h"
 #include "CreatureAI.h"
+#include "DungeonHoldValues.h"
 #include "Event.h"
 #include "LastMovementValue.h"
 #include "LootObjectStack.h"
@@ -194,7 +195,9 @@ bool AttackAction::Attack(Unit* target, bool /*with_pet*/ /*true*/)
 
     botAI->ChangeEngine(BOT_STATE_COMBAT);
 
-    if (!WaitForAttackStrategy::ShouldWait(botAI))
+    // The dungeon hold (Felworld) lets the bot take the target and turn to it but keeps the swing
+    // back until the main tank has the mob - "dungeon hold release" starts it once that happens.
+    if (!WaitForAttackStrategy::ShouldWait(botAI) && !ShouldHoldForTank(botAI, target))
         bot->Attack(target, shouldMelee);
     /* prevent pet dead immediately in group */
     // if (bot->GetMap()->IsDungeon() && bot->GetGroup() && !target->IsInCombat())

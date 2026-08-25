@@ -650,6 +650,11 @@ bool PlayerbotAIConfig::Initialize()
     dungeonPullMinHealth = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonPullMinHealth", 80);
     dungeonPullMinMana = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonPullMinMana", 60);
 
+    // holding fire until the main tank has the mob (Felworld)
+    dungeonHoldForTank = sConfigMgr->GetOption<bool>("AiPlayerbot.DungeonHoldForTank", true);
+    dungeonHoldEngageDelay = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonHoldEngageDelay", 1500);
+    dungeonHoldTimeout = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonHoldTimeout", 5000);
+
     // bystander assist (Felworld)
     enableBystanderAssist = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBystanderAssist", true);
     bystanderAssistRadius = sConfigMgr->GetOption<float>("AiPlayerbot.BystanderAssistRadius", 40.0f);

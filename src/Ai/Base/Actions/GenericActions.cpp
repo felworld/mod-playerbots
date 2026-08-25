@@ -7,6 +7,7 @@
 #include "GenericActions.h"
 #include "CharmInfo.h"
 #include "CreatureAI.h"
+#include "DungeonHoldValues.h"
 #include "Pet.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
@@ -208,8 +209,9 @@ bool PetAttackAction::isUseful()
     if (!bot->IsValidAttackTarget(target))
         return false;
 
-    // Assist only: in an instance with a group the pet must never be the one starting a fight.
-    if (IsInstancedGroupContent(bot) && !target->IsInCombat())
+    // Assist only: in an instance with a group the pet must never be the one starting a fight, and
+    // it stays on its leash until the main tank has the mob (Felworld).
+    if (IsInstancedGroupContent(bot) && (!target->IsInCombat() || ShouldHoldForTank(botAI, target)))
         return false;
 
     return true;
@@ -238,8 +240,9 @@ bool PetAttackAction::Execute(Event /*event*/)
     if (!bot->IsValidAttackTarget(target))
         return false;
 
-    // Assist only: in an instance with a group the pet must never be the one starting a fight.
-    if (IsInstancedGroupContent(bot) && !target->IsInCombat())
+    // Assist only: in an instance with a group the pet must never be the one starting a fight, and
+    // it stays on its leash until the main tank has the mob (Felworld).
+    if (IsInstancedGroupContent(bot) && (!target->IsInCombat() || ShouldHoldForTank(botAI, target)))
         return false;
 
     // This section has been commented because it was overriding the

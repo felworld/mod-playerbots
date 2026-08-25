@@ -45,6 +45,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   range instead of 1.5 yards, so the tank's approach no longer walks them
   (and their pets) into the pack next door; the spot is aggro-checked and
   collapses toward the leader when the back isn't clear.
+- **[Hold fire until the tank has it](FEATURES.md#hold-fire-until-the-tank-has-it)** —
+  in instances every bot but the main tank holds attacks, casts, gap-closers
+  and its pet off a mob until the tank has had it in melee long enough to
+  hold it, it peels onto somebody else, or a per-mob timeout picks up the
+  casters that never walk in.
 - **[Dependable LFD port-in](FEATURES.md#dependable-lfd-port-in)** —
   bots stranded outside their Dungeon Finder instance retry the teleport
   until they land, and a mid-fight bot defers a group-ready proposal

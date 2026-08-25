@@ -217,6 +217,11 @@ public:
     uint32 dungeonPullMinHealth;
     uint32 dungeonPullMinMana;
 
+    // holding fire until the main tank has the mob (Felworld)
+    bool dungeonHoldForTank;
+    uint32 dungeonHoldEngageDelay;
+    uint32 dungeonHoldTimeout;
+
     // bystander assist (Felworld)
     bool enableBystanderAssist;
     float bystanderAssistRadius;
