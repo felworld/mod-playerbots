@@ -11,7 +11,9 @@
 class PlayerbotAI;
 
 // Silently invites the competing player found by QuestCompetitionInviteTrigger
-// and opens a quest-competition episode (see PlayerbotAI::UpdateQuestCompetition).
+// and opens a quest-competition episode - or, once the episode group holds a
+// real player, recruits another competing bot into it (see
+// PlayerbotAI::UpdateQuestCompetition).
 class QuestCompetitionInviteAction : public InviteToGroupAction
 {
 public:

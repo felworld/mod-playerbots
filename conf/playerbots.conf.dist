@@ -3180,6 +3180,12 @@ AiPlayerbot.QuestCompetitionInvite = 1
 # invites them again until it expires, so invite volume doesn't scale
 # with how many bots are nearby.
 AiPlayerbot.QuestCompetitionInviteCooldown = 600
+# How large the group is allowed to grow, counting the bot and the real
+# player. Once the real player is in the group, the bot recruits other
+# bots competing for the same spawns the same way it recruited them, and
+# those bots grind and leave as peers. Party sizes only (2-5); 2 leaves
+# no room, so the group stays the bot and the player.
+AiPlayerbot.QuestCompetitionGroupSize = 5
 
 # Stealth-spotting reactions (Felworld): when a bot's stealth detection
 # genuinely reaches a stealthed player nearby (the core detection math -

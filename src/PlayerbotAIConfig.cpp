@@ -639,6 +639,10 @@ bool PlayerbotAIConfig::Initialize()
     // quest competition groups (Felworld)
     questCompetitionInvite = sConfigMgr->GetOption<bool>("AiPlayerbot.QuestCompetitionInvite", true);
     questCompetitionInviteCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.QuestCompetitionInviteCooldown", 600);
+    // A party, never a raid: 2 is the bot and the player it grouped with,
+    // which leaves no room to recruit other bots.
+    questCompetitionGroupSize =
+        std::clamp<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.QuestCompetitionGroupSize", 5), 2, 5);
 
     // dungeon pulls by the main tank (Felworld)
     dungeonPullByTank = sConfigMgr->GetOption<bool>("AiPlayerbot.DungeonPullByTank", true);

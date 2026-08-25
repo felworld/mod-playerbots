@@ -319,8 +319,21 @@ extend the group's shared objectives — but unrelated shared quests two
 zones away never hold it together. Once nobody in the group needs any of those mobs, the bot
 says thanks in party chat and leaves. Declined invites go on a
 per-player cooldown so nobody gets pestered.
-`AiPlayerbot.QuestCompetitionInvite` (default on) and
-`AiPlayerbot.QuestCompetitionInviteCooldown` in `playerbots.conf.dist`.
+
+The group keeps growing the same way once you are in it: the bot
+recruits other bots it catches competing for the same spawns, up to a
+full party. Recruits are free-roaming random bots only — never someone
+else's altbot — and they run the episode themselves rather than tagging
+along, so they grind the shared objectives as peers and say their own
+goodbyes when the camp is done instead of staying glued to you after
+the bot that invited them leaves. Bots only recruit into a group you
+are already in: a bot-only grinding party has nobody to see it, and the
+random bot manager takes it apart anyway.
+`AiPlayerbot.QuestCompetitionInvite` (default on),
+`AiPlayerbot.QuestCompetitionInviteCooldown`, and
+`AiPlayerbot.QuestCompetitionGroupSize` (default 5, party sizes only —
+set it to 2 to keep the group to the bot and you) in
+`playerbots.conf.dist`.
 
 ## Chest roll-offs
 

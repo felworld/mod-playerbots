@@ -14,12 +14,18 @@ class PlayerbotAI;
 // this bot still needs for an in-progress quest - the moment a real player
 // would say "want to group for these?". checkInterval 5: spawn competition
 // develops over seconds, no need to scan every tick.
+// Once the group exists and holds a real player, the same scan recruits other
+// bots competing for the same spawns, up to
+// AiPlayerbot.QuestCompetitionGroupSize.
 class QuestCompetitionInviteTrigger : public Trigger
 {
 public:
     QuestCompetitionInviteTrigger(PlayerbotAI* botAI) : Trigger(botAI, "quest competition invite", 5) {}
 
     bool IsActive() override;
+
+private:
+    bool CanRecruit();
 };
 
 #endif

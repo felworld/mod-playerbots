@@ -67,7 +67,8 @@ is in [FEATURES.md](FEATURES.md). In brief:
   restealth.
 - **[Quest-competition groups](FEATURES.md#quest-competition-groups)** — a
   bot competing with you for spawns invites you to group and grinds
-  alongside you as a peer.
+  alongside you as a peer, pulling in other bots working the same camp
+  once you're in the party.
 - **[Chest roll-offs](FEATURES.md#chest-roll-offs)** — grouped bots `/roll`
   for world chests instead of ninja-looting them, and you can roll too;
   the highest roller opens it.

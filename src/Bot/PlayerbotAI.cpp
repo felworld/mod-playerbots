@@ -549,21 +549,34 @@ void PlayerbotAI::UpdateQuestCompetition()
 
     if (!info.pendingInvite.IsEmpty())
     {
-        if (group && group->IsMember(info.pendingInvite))
+        bool const joined = group && group->IsMember(info.pendingInvite);
+        if (joined || now - info.pendingSince > 90)
         {
-            info.active = true;
             info.pendingInvite.Clear();
             info.pendingSince = 0;
-            info.lastUpkeep = now;
-            // UpdateAIGroupMaster's master adoption applies the same switch,
-            // but only once a master is found; this is the guaranteed
-            // application point.
-            ChangeStrategy("+follow,+grind quests,-grind,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
-        }
-        else if (now - info.pendingSince > 90)
-            info.EndEpisode();
 
-        return;
+            // An unanswered invite only ends things when it was the invite
+            // that opens the episode: a recruit who never answers leaves the
+            // group that already formed running as it was.
+            if (!info.active && !joined)
+            {
+                info.EndEpisode();
+                return;
+            }
+
+            if (!info.active)
+            {
+                info.active = true;
+                info.lastUpkeep = now;
+                // UpdateAIGroupMaster's master adoption applies the same
+                // switch, but only once a master is found; this is the
+                // guaranteed application point.
+                ChangeStrategy("+follow,+grind quests,-grind,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
+            }
+        }
+
+        if (!info.active)
+            return;  // still waiting on the player the episode forms around
     }
 
     if (!group)
@@ -600,6 +613,37 @@ void PlayerbotAI::UpdateQuestCompetition()
         LeaveOrDisbandGroup();
         info.EndEpisode();
         return;
+    }
+
+    // Bots recruited into the group run the episode themselves: they grind the
+    // shared objectives as peers and say their own goodbyes once the camp is
+    // done, instead of being left glued to the player after the bot that
+    // invited them goes. Same map only - group members share the map thread
+    // that drives their AI.
+    for (Player* member : others)
+    {
+        PlayerbotAI* memberAI = GET_PLAYERBOT_AI(member);
+        if (!memberAI || member->GetMapId() != bot->GetMapId())
+            continue;
+
+        // Somebody's altbot is theirs to command, and a selfbot is a person.
+        if (!sRandomPlayerbotMgr.IsRandomBot(member) || IsSelfBot(member) || memberAI->IsAltBot())
+            continue;
+
+        QuestCompetitionInfo& memberInfo = memberAI->questCompetitionInfo;
+        if (memberInfo.active)
+            continue;
+
+        // Their own episode just ended: they are on their way out of the
+        // group (the leave is a queued packet), not a fresh recruit.
+        if (memberInfo.endedAt && now - memberInfo.endedAt < 60)
+            continue;
+
+        memberInfo.EndEpisode();  // drop any invite of their own still in flight
+        memberInfo.active = true;
+        memberInfo.entries = info.entries;
+        memberInfo.lastUpkeep = now;
+        memberAI->ChangeStrategy("+follow,+grind quests,-grind,-new rpg,-rpg,-move random", BOT_STATE_NON_COMBAT);
     }
 
     auto neededByGroup = [&](uint32 entry)

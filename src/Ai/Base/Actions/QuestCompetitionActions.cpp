@@ -35,7 +35,11 @@ bool QuestCompetitionInviteAction::Execute(Event /*event*/)
 
     info.pendingInvite = candidateGuid;
     info.pendingSince = time(nullptr);
-    info.entries.clear();
+    // Recruits joining an episode already in progress extend the shared
+    // objectives instead of resetting them.
+    if (!info.active)
+        info.entries.clear();
+
     info.entries.insert(candidateEntry);
     return true;
 }

@@ -209,6 +209,7 @@ public:
     // quest competition groups (Felworld)
     bool questCompetitionInvite;
     uint32 questCompetitionInviteCooldown;
+    uint32 questCompetitionGroupSize;
 
     // dungeon pulls by the main tank (Felworld)
     bool dungeonPullByTank;

@@ -394,17 +394,20 @@ private:
 // Quest-competition groups (Felworld): a solo random bot that sees a nearby
 // player fighting a mob it still needs invites them to a temporary group,
 // grinds the shared objectives, and leaves with a thank-you once nobody in
-// the group needs the mobs the group has been fighting. Lifecycle in
+// the group needs the mobs the group has been fighting. Once the real player
+// is in, the group also recruits other bots competing for the same spawns,
+// which run the episode themselves. Lifecycle in
 // PlayerbotAI::UpdateQuestCompetition.
 struct QuestCompetitionInfo
 {
     ObjectGuid pendingInvite;                            // invited player, not yet in the group
     time_t pendingSince = 0;
-    bool active = false;                                 // a group formed from our invite
+    bool active = false;                                 // a group formed from our invite, or we were recruited into one
     std::unordered_set<uint32> entries;                  // creature entries the group formed around
     ObjectGuid candidate;                                // scratch: trigger -> action handoff
     uint32 candidateEntry = 0;
     time_t lastUpkeep = 0;
+    time_t endedAt = 0;                                  // last episode end, so a bot on its way out isn't re-adopted
 
     // Ends the current invite/group episode. Invite cooldowns live in
     // RandomPlayerbotMgr (one per player, shared by all bots) and survive.
@@ -417,6 +420,7 @@ struct QuestCompetitionInfo
         candidate.Clear();
         candidateEntry = 0;
         lastUpkeep = 0;
+        endedAt = time(nullptr);
     }
 };
 
