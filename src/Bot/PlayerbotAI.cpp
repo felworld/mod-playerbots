@@ -592,6 +592,7 @@ void PlayerbotAI::UpdateQuestCompetition()
 
     std::vector<Player*> others;
     bool anyoneNear = false;
+    bool anyRealPlayer = false;
     for (auto const& slot : group->GetMemberSlots())
     {
         if (slot.guid == bot->GetGUID())
@@ -605,10 +606,15 @@ void PlayerbotAI::UpdateQuestCompetition()
         if (member->GetMapId() == bot->GetMapId() &&
             bot->GetDistance2d(member) < 2 * sPlayerbotAIConfig.rpgDistance)
             anyoneNear = true;
+
+        if (IsRealPlayer(member))
+            anyRealPlayer = true;
     }
 
-    // Everyone logged off or wandered far away: nothing left to stay for.
-    if (others.empty() || !anyoneNear)
+    // Everyone logged off or wandered far away: nothing left to stay for. The
+    // real player leaving counts too - what would be left is bots grinding in
+    // a party nobody can see.
+    if (others.empty() || !anyoneNear || !anyRealPlayer)
     {
         LeaveOrDisbandGroup();
         info.EndEpisode();
