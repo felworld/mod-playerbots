@@ -2374,10 +2374,14 @@ Position CombatFormationMoveAction::AverageGroupPos(float dis, bool ranged, bool
             ServerFacade::instance().GetDistance2d(bot, member) > dis)
             continue;
 
+        cnt++;
         averageX += member->GetPositionX();
         averageY += member->GetPositionY();
         averageZ += member->GetPositionZ();
     }
+    if (cnt == 0)
+        return Position();
+
     averageX /= cnt;
     averageY /= cnt;
     averageZ /= cnt;
