@@ -40,6 +40,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   in instances the main tank opens, never the bot that happens to be group
   leader; a bot tank pulls only once the group is in place and topped up,
   and a human tank is never pre-empted.
+- **[Dungeon follow spread](FEATURES.md#dungeon-follow-spread)** — in
+  instances ranged bots and healers follow at their own attack and heal
+  range instead of 1.5 yards, so the tank's approach no longer walks them
+  (and their pets) into the pack next door; the spot is aggro-checked and
+  collapses toward the leader when the back isn't clear.
 - **[Dependable LFD port-in](FEATURES.md#dependable-lfd-port-in)** —
   bots stranded outside their Dungeon Finder instance retry the teleport
   until they land, and a mid-fight bot defers a group-ready proposal

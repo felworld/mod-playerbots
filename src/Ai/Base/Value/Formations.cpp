@@ -6,12 +6,28 @@
 
 #include "Formations.h"
 #include "Arrow.h"
+#include "Creature.h"
 #include "Event.h"
 #include "Map.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
+#include <algorithm>
+#include <cmath>
 
 WorldLocation Formation::NullLocation = WorldLocation();
+
+namespace
+{
+    // Dungeon follow spread (Felworld) tuning. All internal - no config keys.
+    constexpr float DUNGEON_SPREAD_RANGED_BUFFER = 4.0f;    // stay comfortably inside spell range
+    constexpr float DUNGEON_SPREAD_HEAL_BUFFER = 4.5f;      // keep every group member in heal range
+    constexpr float DUNGEON_SPREAD_AGGRO_MARGIN = 3.0f;     // padding on top of a mob's aggro radius
+    constexpr float DUNGEON_SPREAD_STEP = 4.0f;             // collapse step when a spot is rejected
+    constexpr float DUNGEON_SPREAD_ARC = static_cast<float>(M_PI) / 3.0f;  // half-width of the rear fan
+    constexpr float DUNGEON_SPREAD_TOLERANCE = 5.0f;        // "in position" slack at spread radius
+    constexpr float DUNGEON_SPREAD_MASTER_MOVE = 10.0f;     // master travel that forces a re-check
+    constexpr time_t DUNGEON_SPREAD_RECHECK_SECONDS = 3;    // matches the chaos jitter cadence
+}  // namespace
 
 bool IsSameLocation(WorldLocation const& a, WorldLocation const& b)
 {
@@ -111,6 +127,10 @@ public:
         if (!ValidateTargetContext(master, bot, map))
             return Formation::NullLocation;
 
+        WorldLocation spread;
+        if (GetDungeonSpreadLocation(master, spread))
+            return spread;
+
         float range = sPlayerbotAIConfig.followDistance;
         float angle = GetFollowAngle();
         float x = master->GetPositionX() + cos(angle) * range;
@@ -127,7 +147,14 @@ public:
         return WorldLocation(master->GetMapId(), x, y, z);
     }
 
-    float GetMaxDistance() override { return sPlayerbotAIConfig.followDistance; }
+    float GetMaxDistance() override
+    {
+        float const spread = GetDungeonSpreadMaxDistance();
+        if (spread > 0.0f)
+            return spread;
+
+        return sPlayerbotAIConfig.followDistance;
+    }
 };
 
 class ChaosFormation : public MoveAheadFormation
@@ -141,6 +168,12 @@ public:
         Map* map = nullptr;
         if (!ValidateTargetContext(master, bot, map))
             return Formation::NullLocation;
+
+        // Dungeon follow spread supersedes the chaos jitter: the fanned-out slots already keep the
+        // bots off each other, and jitter would move a safety-checked spot after the fact.
+        WorldLocation spread;
+        if (GetDungeonSpreadLocation(master, spread))
+            return spread;
 
         float range = sPlayerbotAIConfig.followDistance;
         float angle = GetFollowAngle();
@@ -173,7 +206,14 @@ public:
         return WorldLocation(master->GetMapId(), x, y, z);
     }
 
-    float GetMaxDistance() override { return sPlayerbotAIConfig.followDistance + dr; }
+    float GetMaxDistance() override
+    {
+        float const spread = GetDungeonSpreadMaxDistance();
+        if (spread > 0.0f)
+            return spread;
+
+        return sPlayerbotAIConfig.followDistance + dr;
+    }
 
 private:
     time_t lastChangeTime;
@@ -501,6 +541,173 @@ float Formation::GetFollowAngle()
     // Return
     float start = (master ? master->GetOrientation() : 0.0f);
     return start + (0.125f + 1.75f * index / total + (total == 2 ? 0.125f : 0.0f)) * M_PI;
+}
+
+float Formation::GetDungeonSpreadRange()
+{
+    // Outside a dungeon/raid group the follow slot is unchanged: open-world packs are not layered the
+    // way instance pulls are, and spreading would just string the group out across the zone.
+    if (!IsInstancedGroupContent(bot))
+        return 0.0f;
+
+    // Tanks and melee dps have to close on the pack anyway - nothing to gain from hanging back.
+    if (botAI->IsTank(bot))
+        return 0.0f;
+
+    // Healers stand as far back as their heals still reach the whole group (checked per spot below).
+    if (botAI->IsHeal(bot))
+        return std::max(0.0f, botAI->GetRange("heal") - DUNGEON_SPREAD_HEAL_BUFFER);
+
+    // Ranged dps park at their own attack range: mobs are pulled to the tank, so they never need to
+    // step forward once the fight starts.
+    if (botAI->IsRanged(bot))
+        return std::max(0.0f, botAI->GetRange("spell") - DUNGEON_SPREAD_RANGED_BUFFER);
+
+    return 0.0f;
+}
+
+float Formation::GetDungeonSpreadAngle(Player* master)
+{
+    // Fold the normal formation's slot angles (which run all the way around to the master's flanks)
+    // into an arc behind him: at 25 yards a flank slot is a different room, and standing behind
+    // whoever is pulling is the whole point. Relative slot order is preserved, so the bots still fan
+    // out from each other instead of stacking.
+    float const slot = GetFollowAngle() - master->GetOrientation();
+    float const spot = std::clamp((slot / static_cast<float>(M_PI) - 0.125f) / 1.75f, 0.0f, 1.0f);
+    return master->GetOrientation() + static_cast<float>(M_PI) + (spot - 0.5f) * 2.0f * DUNGEON_SPREAD_ARC;
+}
+
+bool Formation::IsDungeonSpreadSpotSafe(Player* master, Map* map, float angle, float range)
+{
+    float x = master->GetPositionX() + std::cos(angle) * range;
+    float y = master->GetPositionY() + std::sin(angle) * range;
+    float z = master->GetPositionZ() + master->GetHoverHeight();
+
+    // Doubles as the line-of-sight and standable-ground check against the master: a spot through a
+    // wall, off a ledge or across a gap fails the raycast and gets rejected.
+    if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                              master->GetPositionZ(), x, y, z))
+        return false;
+
+    // A healer who cannot reach the whole group from back there does not get to stand back there.
+    if (botAI->IsHeal(bot))
+    {
+        float const healRange = botAI->GetRange("heal");
+        float const reach = healRange - DUNGEON_SPREAD_HEAL_BUFFER;
+
+        if (Group* group = bot->GetGroup())
+        {
+            for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+            {
+                Player* member = ref->GetSource();
+                if (!member || member == bot || !member->IsAlive() || member->GetMapId() != bot->GetMapId())
+                    continue;
+
+                // Stragglers far from the master are out of formation themselves - no reason to let
+                // one of them pull the healer up into the pull.
+                if (member->GetExactDist(master) > healRange)
+                    continue;
+
+                if (member->GetExactDist(x, y, z) > reach)
+                    return false;
+            }
+        }
+    }
+
+    // The point of standing back is not to move the proximity pull to the rear: reject any spot that
+    // sits inside the aggro radius of a mob that is not already part of the fight.
+    GuidVector const targets = AI_VALUE(GuidVector, "possible targets no los");
+    for (ObjectGuid const& guid : targets)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        Creature* creature = unit ? unit->ToCreature() : nullptr;
+        if (!creature || !creature->IsAlive() || creature->IsInCombat() || creature->IsCritter())
+            continue;
+
+        if (!creature->IsHostileTo(bot))
+            continue;
+
+        if (creature->GetExactDist(x, y, z) <= creature->GetAggroRange(bot) + DUNGEON_SPREAD_AGGRO_MARGIN)
+            return false;
+    }
+
+    WorldPosition spot(master->GetMapId(), x, y, z);
+    WorldPosition botPosition(bot);
+    return botPosition.canPathTo(spot, bot);
+}
+
+bool Formation::GetDungeonSpreadLocation(Player* master, WorldLocation& location)
+{
+    Map* map = nullptr;
+    if (!ValidateTargetContext(master, bot, map))
+    {
+        spreadRange = 0.0f;
+        return false;
+    }
+
+    float const desired = GetDungeonSpreadRange();
+    if (desired <= sPlayerbotAIConfig.followDistance)
+    {
+        spreadRange = 0.0f;
+        return false;
+    }
+
+    // Only re-resolve the slot periodically or once the master has actually travelled: both the angle
+    // and the safety scan are far too expensive - and far too jittery, since the angle rides the
+    // master's facing - to redo on every tick.
+    time_t const now = time(nullptr);
+    bool const masterMoved = master->GetMapId() != spreadMasterMapId ||
+                             master->GetExactDist2d(spreadMasterX, spreadMasterY) > DUNGEON_SPREAD_MASTER_MOVE;
+
+    if (!spreadTime || now - spreadTime >= DUNGEON_SPREAD_RECHECK_SECONDS || masterMoved)
+    {
+        spreadTime = now;
+        spreadMasterMapId = master->GetMapId();
+        spreadMasterX = master->GetPositionX();
+        spreadMasterY = master->GetPositionY();
+        spreadAngle = GetDungeonSpreadAngle(master);
+
+        float const previous = spreadRange;
+        spreadRange = 0.0f;
+
+        // Collapse toward the master until a spot passes; worst case nothing does and the bot keeps
+        // the normal tight follow slot.
+        for (float range = desired; range > sPlayerbotAIConfig.followDistance; range -= DUNGEON_SPREAD_STEP)
+        {
+            if (IsDungeonSpreadSpotSafe(master, map, spreadAngle, range))
+            {
+                spreadRange = range;
+                break;
+            }
+        }
+
+        if (std::fabs(spreadRange - previous) >= DUNGEON_SPREAD_STEP)
+            LOG_DEBUG("playerbots", "Bot {} dungeon follow spread: {} yd behind {} (wanted {} yd)", bot->GetName(),
+                      spreadRange, master->GetName(), desired);
+    }
+
+    if (spreadRange <= 0.0f)
+        return false;
+
+    float x = master->GetPositionX() + std::cos(spreadAngle) * spreadRange;
+    float y = master->GetPositionY() + std::sin(spreadAngle) * spreadRange;
+    float z = master->GetPositionZ() + master->GetHoverHeight();
+
+    // On a miss the coords have already been clamped back to the last reachable point, which is where
+    // the bot should stand anyway - only the height still needs settling.
+    if (!map->CheckCollisionAndGetValidCoords(master, master->GetPositionX(), master->GetPositionY(),
+                                              master->GetPositionZ(), x, y, z))
+        master->UpdateAllowedPositionZ(x, y, z);
+
+    location = WorldLocation(master->GetMapId(), x, y, z);
+    return true;
+}
+
+float Formation::GetDungeonSpreadMaxDistance() const
+{
+    // Anything within a few yards of the slot counts as in position, so the bot does not ping-pong
+    // between "too far from my slot" and "close enough" every time the master takes a step.
+    return spreadRange > 0.0f ? DUNGEON_SPREAD_TOLERANCE : 0.0f;
 }
 
 FormationValue::FormationValue(PlayerbotAI* botAI)

@@ -129,6 +129,37 @@ change has landed. Pulls are logged as `dungeon_pull` events. Without any
 tank in the group the leader keeps grinding as before; `0` restores the
 upstream behaviour everywhere.
 
+## Dungeon follow spread
+
+Following used to park every bot 1.5 yards from whoever it follows, no
+matter what it does in a fight. In a dungeon that meant the healer and
+every ranged DPS — and their hunter and warlock pets, which trail their
+owner at a couple of yards — walked into the pack with the tank, so
+approaching one group of mobs proximity-aggroed the ones beside it.
+
+Inside instanced group content the follow slot is now role-aware in
+distance, not just in angle. Ranged DPS hold their own attack range
+behind whoever they follow (spell range less a few yards, so about 25
+with the default `AiPlayerbot.SpellDistance`): mobs get pulled to the
+tank, so a bot standing at attack range never needs to step forward.
+Healers hang back as far as their heals still cover the group — heal
+range less a buffer, checked against where the other members actually
+are, so nobody drops out of reach. Tanks and melee DPS keep the tight
+follow slot, and the flank slots of the normal formation are folded into
+an arc behind the leader, since at 25 yards a flank slot is usually a
+different room.
+
+Standing back only helps if the back is empty, so a spot is taken only
+once it clears a safety check: line of sight and a walkable path to the
+leader, and no living, non-critter mob that isn't already in the fight
+within its own aggro radius (plus a margin) of it. A spot that fails
+collapses toward the leader in steps until one passes, and if none does
+the bot keeps the ordinary tight follow. The slot is re-resolved every
+few seconds or once the leader has actually travelled, so it doesn't
+whip around every time he turns. Outside dungeons and raids, and for
+bots that aren't grouped, following is unchanged. There are no config
+knobs: the buffers are internal.
+
 ## Dependable LFD port-in
 
 Bots that queue through the Dungeon Finder now reliably arrive in the

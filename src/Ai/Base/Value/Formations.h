@@ -12,6 +12,7 @@
 #include "PlayerbotAIConfig.h"
 #include "TravelMgr.h"
 
+class Map;
 class Player;
 class PlayerbotAI;
 
@@ -28,6 +29,26 @@ public:
 
 protected:
     float GetFollowAngle();
+
+    // Dungeon follow spread (Felworld): in instanced group content ranged bots and healers hold their
+    // own attack/heal range behind the master instead of stacking on him, so walking up to a pack does
+    // not drag the whole group - and their pets - into the packs next door.
+    // Returns false (and leaves location untouched) whenever the bot should keep the tight follow slot.
+    bool GetDungeonSpreadLocation(Player* master, WorldLocation& location);
+    // Slack for "close enough to my slot" while spread out; 0 when the bot is not spreading.
+    float GetDungeonSpreadMaxDistance() const;
+
+private:
+    float GetDungeonSpreadRange();
+    float GetDungeonSpreadAngle(Player* master);
+    bool IsDungeonSpreadSpotSafe(Player* master, Map* map, float angle, float range);
+
+    float spreadRange = 0.0f;  // resolved radius from the master, 0 while not spreading
+    float spreadAngle = 0.0f;  // absolute (world) angle of the spread slot
+    time_t spreadTime = 0;
+    uint32 spreadMasterMapId = 0;
+    float spreadMasterX = 0.0f;
+    float spreadMasterY = 0.0f;
 };
 
 class FollowFormation : public Formation
