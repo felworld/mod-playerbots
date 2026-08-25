@@ -200,6 +200,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   crowds don't reply in chorus.
 - **[Tunable unprompted emoting](FEATURES.md#tunable-unprompted-emoting)** —
   thin out idle emoting without touching reactions.
+- **[Group hellos and goodbyes that arrive one at a time](FEATURES.md#group-hellos-and-goodbyes-that-arrive-one-at-a-time)**
+  — canned join/leave lines are rationed per group: usually one bot
+  speaks, sometimes two, and never the whole party on the same tick.
 - **[Class service commands](FEATURES.md#class-service-commands)** —
   `!conjure food`/`!conjure water`, `!portal <city>`, `!ritual`: mage
   food and water walked over and handed to you, mage city portals, and

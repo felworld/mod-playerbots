@@ -3105,6 +3105,24 @@ AiPlayerbot.UnpromptedEmoteChance = 100
 AiPlayerbot.RandomBotSuggestDungeons = 1
 # Bots greet players when invited
 AiPlayerbot.EnableGreet = 0
+# Canned join/leave speech (Felworld): the hellos when a bot logs in, is
+# invited, or adopts you as master, the "Joining as healer, 2 healer spots
+# left." line, and the goodbyes when a bot leaves the group or logs out. Set
+# to 0 to silence all of it in one place - Felworld's llm session mode does,
+# and lets mod-llm voice these moments instead.
+AiPlayerbot.GroupChatter = 1
+# How many bots speak when a whole group notices the same thing at once (an
+# invite batch landing, you leaving the party, a quest camp finishing). Every
+# bot answering is the tell that they aren't people; exactly one answering
+# every time is a quieter one. So the first bot to reach the event rolls how
+# many will speak: GroupChatterChance is the chance anybody does at all, and
+# GroupChatterFalloff the chance of each additional speaker given the one
+# before it spoke. The rest stay quiet, and the speakers are staggered by a
+# second or two each so the second line reads as an answer, not an echo.
+# At the defaults that is 15% silence, 60% one bot, 18% two, 5% three - the
+# same shape in a party of two or a raid of twenty-five.
+AiPlayerbot.GroupChatterChance = 85
+AiPlayerbot.GroupChatterFalloff = 30
 # Chance to reply to toxic links with toxic links (0-100)
 AiPlayerbot.ToxicLinksRepliesChance = 30
 # Chance to reply to Thunderfury with Thunderfury (0-100)

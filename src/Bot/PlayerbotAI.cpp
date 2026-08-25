@@ -498,11 +498,13 @@ void PlayerbotAI::UpdateAIGroupMaster()
                     botAI->ChangeStrategy("+follow", BOT_STATE_NON_COMBAT);
 
                     if (botAI->GetMaster() == botAI->GetGroupLeader())
-                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                            "hello_follow", "Hello, I follow you!", {}));
+                        botAI->TellGroupChatter(GroupChatterKind::Greeting,
+                                                PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                                                    "hello_follow", "Hello, I follow you!", {}));
                     else
-                        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                            "hello", "Hello!", {}));
+                        botAI->TellGroupChatter(
+                            GroupChatterKind::Greeting,
+                            PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello!", {}));
                 }
             }
             else
@@ -684,9 +686,15 @@ void PlayerbotAI::UpdateQuestCompetition()
         if (neededByGroup(entry))
             return;
 
-    SayToParty(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "quest_competition_thanks", "Thanks for the group, that's everything I needed!", {}));
-    LeaveOrDisbandGroup();
+    // Everyone in the group finishes the camp on the same upkeep tick, so the
+    // thanks goes through the speaking order like any other group line: one
+    // bot says it for the party, the rest just go.
+    if (!TellGroupChatter(GroupChatterKind::Farewell,
+                          PlayerbotTextMgr::instance().GetBotTextOrDefault(
+                              "quest_competition_thanks", "Thanks for the group, that's everything I needed!", {}),
+                          PLAYERBOT_SECURITY_ALLOW_ALL, /*party=*/true, /*leaveAfter=*/true))
+        LeaveOrDisbandGroup();
+
     info.EndEpisode();
 }
 
@@ -3473,6 +3481,63 @@ bool PlayerbotAI::TellMaster(std::string const text, PlayerbotSecurityLevel secu
     }
 
     return true;
+}
+
+bool PlayerbotAI::TellGroupChatter(GroupChatterKind kind, std::string const& text,
+                                   PlayerbotSecurityLevel securityLevel, bool party, bool leaveAfter)
+{
+    if (!sPlayerbotAIConfig.groupChatter || !bot)
+        return false;
+
+    int32 const slot = GroupChatterBoard::instance().ClaimSpeaker(GroupChatterRoom(this), kind);
+    if (slot < 0)
+        return false;
+
+    ObjectGuid const botGuid = bot->GetGUID();
+    std::string const line = text;
+
+    AddTimedEvent(
+        [botGuid, line, securityLevel, party, leaveAfter]()
+        {
+            Player* speaker = ObjectAccessor::FindPlayer(botGuid);
+            if (!speaker)
+                return;
+
+            PlayerbotAI* speakerAI = GET_PLAYERBOT_AI(speaker);
+            if (!speakerAI)
+                return;
+
+            if (party)
+            {
+                // The group the line belonged to can be gone by the time the
+                // stagger runs out (disbanded, kicked, left another way):
+                // with nobody left to hear it, the line is dropped.
+                if (Group* group = speaker->GetGroup())
+                    group->isRaidGroup() ? speakerAI->SayToRaid(line) : speakerAI->SayToParty(line);
+            }
+            else
+            {
+                speakerAI->TellMaster(line, securityLevel);
+            }
+
+            if (leaveAfter)
+                speakerAI->LeaveOrDisbandGroup();
+        },
+        GroupChatterDelayMs(slot));
+
+    return true;
+}
+
+bool PlayerbotAI::SayGroupChatterNow(GroupChatterKind kind, std::string const& text,
+                                     PlayerbotSecurityLevel securityLevel)
+{
+    if (!sPlayerbotAIConfig.groupChatter || !bot)
+        return false;
+
+    if (GroupChatterBoard::instance().ClaimSpeaker(GroupChatterRoom(this), kind) < 0)
+        return false;
+
+    return TellMaster(text, securityLevel);
 }
 
 bool IsRealAura(Player* bot, AuraEffect const* aurEff, Unit const* unit)

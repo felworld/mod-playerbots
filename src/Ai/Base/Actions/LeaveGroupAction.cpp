@@ -85,11 +85,16 @@ bool LeaveGroupAction::Leave()
     if (!botAI)
         return false;
 
-    Player* master = botAI -> GetMaster();
-    if (master)
-        botAI->TellMaster(
-            PlayerbotTextMgr::instance().GetBotTextOrDefault("goodbye", "Goodbye!", {}),
-            PLAYERBOT_SECURITY_TALK);
+    // The whole group is usually leaving off the same packet (the master left,
+    // the party disbanded), so the goodbye takes its turn in the speaking
+    // order: whoever wins a slot says it and leaves once it lands, the rest
+    // leave straight away.
+    Player* master = botAI->GetMaster();
+    if (master && botAI->TellGroupChatter(
+                      GroupChatterKind::Farewell,
+                      PlayerbotTextMgr::instance().GetBotTextOrDefault("goodbye", "Goodbye!", {}),
+                      PLAYERBOT_SECURITY_TALK, /*party=*/false, /*leaveAfter=*/true))
+        return true;
 
     botAI->LeaveOrDisbandGroup();
     return true;

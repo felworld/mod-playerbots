@@ -266,6 +266,11 @@ public:
     bool enableBroadcasts;
     bool enableGreet;
     bool randomBotSayWithoutMaster;
+    // Canned join/leave speech (hellos, goodbyes, "joining as healer"), and
+    // how many bots in one group say it - see GroupChatterBoard.
+    bool groupChatter;
+    uint32 groupChatterChance;
+    uint32 groupChatterFalloff;
 
     uint32 broadcastChanceMaxValue;
 

@@ -1549,6 +1549,35 @@ another module voices these moments instead, as Felworld's llm session
 mode does with
 [mod-llm's duel talk](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#duel-talk).
 
+## Group hellos and goodbyes that arrive one at a time
+
+Bots say canned lines around group changes: a hello when one logs in, is
+invited, or adopts you as its master, "Joining as healer, 2 healer spots
+left." when answering `lfg`, a goodbye when it leaves the group or logs
+out, and a thanks when a
+[quest-competition group](#quest-competition-groups) finishes its camp.
+Every one of those events is noticed by the whole group on the same tick,
+so upstream produced a wall: add five alts and get five hellos at once,
+leave the party and get five goodbyes.
+
+Speaking is now rationed per group. The first bot to reach the event
+rolls how many bots will speak at all — `AiPlayerbot.GroupChatterChance`
+(default 85) that anybody does, then `AiPlayerbot.GroupChatterFalloff`
+(default 30) for each speaker after the first — and the rest of the group
+claims slots against that quota until it runs out. The count comes out
+geometric: at the defaults, 15% of the time nobody says anything, 60% one
+bot does, 18% two, 5% three, and the shape is the same in a party of two
+or a raid of twenty-five. Speakers are staggered a second or two apart
+(and never answer on the event's own tick), so a second hello reads as an
+answer to the first rather than an echo of it.
+
+`AiPlayerbot.GroupChatter = 0` silences the whole family in one place, for
+setups where another module voices these moments instead — as Felworld's
+llm session mode does with
+[mod-llm's group greetings](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#group-greetings).
+`AiPlayerbot.EnableGreet` still gates the invite-accept hello on top of
+this.
+
 ## Faction-honest chat
 
 Bot chat honors the faction wall (`AllowTwoSide.Interaction.Chat`).

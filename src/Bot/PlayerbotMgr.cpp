@@ -398,9 +398,10 @@ void PlayerbotHolder::LogoutPlayerBot(ObjectGuid guid)
 */
         // Instant logout (the only option right now)
         {
-            std::string message = PlayerbotTextMgr::instance().GetBotTextOrDefault(
-                "goodbye", "Goodbye!", {});
-            botAI->TellMaster(message);
+            // Said on the spot rather than staggered: the session below is torn
+            // down in this same block, so a delayed line would never run.
+            botAI->SayGroupChatterNow(GroupChatterKind::Farewell,
+                                      PlayerbotTextMgr::instance().GetBotTextOrDefault("goodbye", "Goodbye!", {}));
             RemoveFromPlayerbotsMap(guid);              // deletes bot player ptr inside this WorldSession PlayerBotMap
             botWorldSessionPtr->LogoutPlayer(true);     // this will delete the bot Player object and PlayerbotAI object
             delete botWorldSessionPtr;                  // finally delete the bot's WorldSession
@@ -417,8 +418,8 @@ void PlayerbotHolder::DisablePlayerBot(ObjectGuid guid)
         {
             return;
         }
-        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "goodbye", "Goodbye!", {}));
+        botAI->SayGroupChatterNow(GroupChatterKind::Farewell,
+                                  PlayerbotTextMgr::instance().GetBotTextOrDefault("goodbye", "Goodbye!", {}));
         bot->StopMoving();
         bot->GetMotionMaster()->Clear();
 
@@ -538,8 +539,9 @@ void PlayerbotHolder::OnBotLogin(Player* const bot)
     // set delay on login
     botAI->SetNextCheckDelay(urand(2000, 4000));
 
-    botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "hello", "Hello!", {}), PLAYERBOT_SECURITY_TALK);
+    botAI->TellGroupChatter(GroupChatterKind::Greeting,
+                            PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello!", {}),
+                            PLAYERBOT_SECURITY_TALK);
 
     // Queue group operations for world thread
     if (master && master->GetGroup() && !group)

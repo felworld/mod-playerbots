@@ -11,6 +11,7 @@
 #include "ChatHelper.h"
 #include "CreatureData.h"
 #include "Event.h"
+#include "GroupChatter.h"
 #include "Item.h"
 #include "NewRpgInfo.h"
 #include "NewRpgStrategy.h"
@@ -536,6 +537,19 @@ public:
     }
     bool SayToParty(const std::string& msg);
     bool SayToRaid(const std::string& msg);
+    // Canned join/leave speech. The bot claims its place in the group's
+    // speaking order (GroupChatterBoard) and, if it won one, says the line
+    // after its stagger delay - so a batch of bots joining or leaving
+    // together produces a hello or two, not five on the same tick. Returns
+    // whether the bot is going to speak; `leaveAfter` leaves the group once
+    // the line lands, which is the caller's job when it does not.
+    bool TellGroupChatter(GroupChatterKind kind, std::string const& text,
+                          PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL, bool party = false,
+                          bool leaveAfter = false);
+    // The same claim, said immediately: for the logout paths, where the bot
+    // and its session are torn down before any delay could run out.
+    bool SayGroupChatterNow(GroupChatterKind kind, std::string const& text,
+                            PlayerbotSecurityLevel securityLevel = PLAYERBOT_SECURITY_ALLOW_ALL);
     bool Yell(const std::string& msg);
     bool Say(const std::string& msg);
     bool Whisper(const std::string& msg, const std::string& receiverName);

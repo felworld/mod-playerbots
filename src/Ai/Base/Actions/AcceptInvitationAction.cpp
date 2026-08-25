@@ -57,7 +57,8 @@ bool AcceptInvitationAction::Execute(Event event)
     botAI->Reset();
 
     if (sPlayerbotAIConfig.enableGreet)
-        botAI->TellMaster(PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello", {}));
+        botAI->TellGroupChatter(GroupChatterKind::Greeting,
+                                PlayerbotTextMgr::instance().GetBotTextOrDefault("hello", "Hello", {}));
 
     if (sPlayerbotAIConfig.summonWhenGroup && bot->GetDistance(inviter) > sPlayerbotAIConfig.sightDistance)
     {
