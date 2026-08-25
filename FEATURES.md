@@ -122,7 +122,16 @@ sitting to eat or drink, and above `AiPlayerbot.DungeonPullMinHealth` /
 `AiPlayerbot.DungeonPullMinMana` percent (defaults 80 / 60). That gate is
 the ready check done the way a human at the keyboard reads it — standing
 back holds the tank, walking up releases it — with no popups; `!stay` and
-`passive` remain the hard stop. In all-bot groups the leader hands
+`passive` remain the hard stop. A ranged opener is taken from the pull
+spell's own range rather than walked in from across the room: the tank
+opens from where the ready check found it — with the group, since everyone
+is inside `DungeonPullGroupRange` of it — and returns to that spot once the
+pack is on it, so the fight is dragged back to the party instead of being
+had where the pack stood, next to its neighbours. A pack further off than
+that is not opened on at all while the tank has someone to follow, since
+the party's pace is the master's; leading an all-bot group there is nobody
+to wait for, so the tank walks up to its own pull range first. In all-bot
+groups the leader hands
 leadership to the tank ("Thrallok, you lead.") since bots follow their
 leader, and the ex-leader now sheds its grind kit only after the leader
 change has landed. Pulls are logged as `dungeon_pull` events. Without any

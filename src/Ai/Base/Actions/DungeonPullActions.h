@@ -10,6 +10,7 @@
 #include "ChooseTargetActions.h"
 
 class PlayerbotAI;
+class PullStrategy;
 
 // The group's main tank opens on the next pack in instanced group content once the whole group is
 // ready - with its ranged pull ability when it has one, by walking in otherwise (Felworld).
@@ -24,6 +25,10 @@ public:
 
     // Everyone the tank would be pulling for is in place and topped up.
     static bool IsGroupReady(PlayerbotAI* botAI);
+
+private:
+    // Closes the last stretch to the pull spell's range when the tank leads the group itself.
+    bool StepUpToPullRange(Unit* target, PullStrategy* strategy);
 };
 
 // In an all-bot group the leader hands leadership to the main tank, so the group follows the puller.

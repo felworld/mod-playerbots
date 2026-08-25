@@ -14,6 +14,19 @@
 #include "PullStrategy.h"
 #include "StringFormat.h"
 
+#include <algorithm>
+
+namespace
+{
+// How far out the tank opens on a pack: the range of its own pull spell. Measured the way
+// MovementAction::MoveTo measures (combat reaches excluded) so stepping up converges on it, and
+// floored at melee range for a strategy whose spell reports no usable range.
+float GetStandoffDistance(PullStrategy* strategy)
+{
+    return std::max(strategy->GetRange(), ATTACK_DISTANCE);
+}
+}
+
 bool DungeonPullAction::isUseful()
 {
     if (!sPlayerbotAIConfig.dungeonPullByTank || !IsInstancedGroupContent(bot))
@@ -83,9 +96,14 @@ bool DungeonPullAction::Execute(Event event)
     // Tank classes carry a PullStrategy (shoot, Icy Touch, Judgement, Faerie Fire); a bot flagged
     // main tank without one, or without the weapon for it, walks in instead.
     PullStrategy* strategy = PullStrategy::Get(botAI);
-    bool const ranged = strategy && strategy->CanDoPullAction(target) &&
-                        bot->GetDistance(target) <= sPlayerbotAIConfig.reactDistance * 3.0f;
+    bool const ranged = strategy && strategy->CanDoPullAction(target);
 
+    if (ranged && bot->GetDistance(target) > GetStandoffDistance(strategy))
+        return StepUpToPullRange(target, strategy);
+
+    // The opener goes off from here, and "return to pull position" brings the tank back to here once
+    // the pack is on it - the ready check just placed the rest of the group around this spot, so the
+    // fight is dragged back to the party instead of being fought where the pack stood.
     bool const result = ranged ? PullRequestAction::BeginPull(botAI, target) : AttackAnythingAction::Execute(event);
     if (result)
     {
@@ -96,6 +114,18 @@ bool DungeonPullAction::Execute(Event event)
     }
 
     return result;
+}
+
+bool DungeonPullAction::StepUpToPullRange(Unit* target, PullStrategy* strategy)
+{
+    // The pack is further off than the tank can open on. Following a master, the party's pace is his:
+    // hold the formation and pull once he has walked it up. Leading an all-bot group there is nobody
+    // to wait for, so the tank walks up to its own pull range instead - the ready check keeps the
+    // rest of the group with it while it does, so the opener still goes off next to the party.
+    if (GetMaster())
+        return false;
+
+    return MoveTo(target, GetStandoffDistance(strategy));
 }
 
 bool GiveLeaderToTankAction::isUseful()
