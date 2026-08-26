@@ -350,6 +350,7 @@ public:
         creators["estimated group dps"] = &ValueContext::expected_group_dps;
         creators["area debuff"] = &ValueContext::area_debuff;
         creators["nearest trap with damage"] = &ValueContext::nearest_trap_with_damange;
+        creators["nearest damaging dynamic objects"] = &ValueContext::nearest_damaging_dyn_objects;
         creators["disperse distance"] = &ValueContext::disperse_distance;
         creators["last flee angle"] = &ValueContext::last_flee_angle;
         creators["last flee timestamp"] = &ValueContext::last_flee_timestamp;
@@ -639,6 +640,10 @@ private:
     static UntypedValue* expected_group_dps(PlayerbotAI* botAI) { return new EstimatedGroupDpsValue(botAI); }
     static UntypedValue* area_debuff(PlayerbotAI* botAI) { return new AreaDebuffValue(botAI); }
     static UntypedValue* nearest_trap_with_damange(PlayerbotAI* botAI) { return new NearestTrapWithDamageValue(botAI); }
+    static UntypedValue* nearest_damaging_dyn_objects(PlayerbotAI* botAI)
+    {
+        return new NearestDamagingDynObjectsValue(botAI);
+    }
     static UntypedValue* disperse_distance(PlayerbotAI* botAI) { return new DisperseDistanceValue(botAI); }
     static UntypedValue* last_flee_angle(PlayerbotAI* botAI) { return new LastFleeAngleValue(botAI); }
     static UntypedValue* last_flee_timestamp(PlayerbotAI* botAI) { return new LastFleeTimestampValue(botAI); }

@@ -9,6 +9,7 @@
 
 #include "Action.h"
 #include "LastMovementValue.h"
+#include "ObjectGuid.h"
 #include "PlayerbotAIConfig.h"
 #include <cmath>
 
@@ -121,6 +122,8 @@ public:
     bool Execute(Event event) override;
 
 protected:
+    ObjectGuid FindDamagingDynamicObject();
+    bool AvoidDynamicObjectWithDamage();
     bool AvoidAuraWithDynamicObj();
     bool AvoidGameObjectWithDamage();
     bool AvoidUnitWithDamageAura();

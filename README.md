@@ -58,7 +58,8 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Threat discipline in unscripted dungeons](FEATURES.md#threat-discipline-in-unscripted-dungeons)** —
   classic and TBC five-mans had no instance strategies at all; bots there
   now throttle offense below the tank's threat and dodge AoE
-  automatically.
+  automatically — spotting hostile ground hazards themselves instead of
+  waiting for the debuff to land, in and out of combat.
 - **[Crowd control that knows when to stop](FEATURES.md#crowd-control-that-knows-when-to-stop)** —
   bots no longer re-sheep a mob the group is already killing: crowd
   control is reserved for untouched mobs nobody is attacking, with a

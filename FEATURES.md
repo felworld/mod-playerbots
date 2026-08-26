@@ -301,6 +301,20 @@ instead of nothing:
   bots whose master is a real player, which leaves a bot-only party
   standing in the fire. In a dungeon every bot dodges, master or no
   master (`AiPlayerbot.AutoAvoidAoe` still turns the whole thing off).
+  Two gaps in what "the fire" means are closed with it. Upstream only
+  notices a ground hazard once its debuff has already landed on the
+  bot, so a cloud the bot is immune to, or one it has only just walked
+  into, is invisible; bots now look for the hazard itself — any hostile
+  ground effect within `AiPlayerbot.MaxAoeAvoidRadius` that deals
+  damage, directly or through what it periodically triggers — and step
+  clear of it with a few yards of slack rather than stopping on its
+  edge. And dodging now runs out of combat as well as in it: a cloud
+  outlives the caster that dropped it, so it is at its most lethal
+  exactly when the pull is over and the party is standing in it
+  looting and drinking. This is generic — no spell or map is named
+  anywhere in it — but the case that prompted it was Maraudon's
+  Noxious Cloud, 150 damage a second in a five-yard puddle centred on
+  a slime the melee were hitting.
 
 Maps with a bespoke pack are left alone — the raid and Wrath five-man
 scripts manage priority through their own multipliers. Everything else

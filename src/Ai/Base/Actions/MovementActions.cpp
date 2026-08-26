@@ -6,7 +6,9 @@
 
 #include "MovementActions.h"
 #include "AiFactory.h"
+#include "AoeValues.h"
 #include "Corpse.h"
+#include "DynamicObject.h"
 #include "Event.h"
 #include "FleeManager.h"
 #include "GameObject.h"
@@ -1894,6 +1896,9 @@ bool AvoidAoeAction::isUseful()
     if (getMSTime() - moveInterval < uint32(lastMoveTimer))
         return false;
 
+    if (!FindDamagingDynamicObject().IsEmpty())
+        return true;
+
     GuidVector traps = AI_VALUE(GuidVector, "nearest trap with damage");
     GuidVector triggers = AI_VALUE(GuidVector, "possible triggers");
     return AI_VALUE(Aura*, "area debuff") || !traps.empty() || !triggers.empty();
@@ -1901,19 +1906,82 @@ bool AvoidAoeAction::isUseful()
 
 bool AvoidAoeAction::Execute(Event /*event*/)
 {
-    // Case #1: Aura with dynamic object (e.g. rain of fire)
+    // Case #1: Hostile dynamic object underfoot (e.g. noxious cloud, rain of fire). Checked before
+    // the aura cases below because it sees the hazard itself, so it fires whether or not the cloud
+    // has had time to land its debuff on the bot.
+    if (AvoidDynamicObjectWithDamage())
+    {
+        return true;
+    }
+    // Case #2: Aura with dynamic object (e.g. rain of fire)
     if (AvoidAuraWithDynamicObj())
     {
         return true;
     }
-    // Case #2: Trap game object with spell (e.g. lava bomb)
+    // Case #3: Trap game object with spell (e.g. lava bomb)
     if (AvoidGameObjectWithDamage())
     {
         return true;
     }
-    // Case #3: Trigger npc (e.g. Lesser shadow fissure)
+    // Case #4: Trigger npc (e.g. Lesser shadow fissure)
     if (AvoidUnitWithDamageAura())
     {
+        return true;
+    }
+    return false;
+}
+
+// GUIDs only: the cached list survives across ticks and map-update threads, so every dynamic object
+// is resolved through the map at the moment it is used.
+ObjectGuid AvoidAoeAction::FindDamagingDynamicObject()
+{
+    for (ObjectGuid const& guid : AI_VALUE(GuidVector, "nearest damaging dynamic objects"))
+    {
+        DynamicObject* dynObj = bot->GetMap()->GetDynamicObject(guid);
+        if (!dynObj || !dynObj->IsInWorld())
+        {
+            continue;
+        }
+        // The list is up to a second old and the bot has been moving through it since; whether this
+        // one is actually underfoot is decided here, every tick, without another grid search.
+        if (bot->GetDistance(dynObj) > dynObj->GetRadius() + AOE_DYNOBJ_SAFETY_MARGIN)
+        {
+            continue;
+        }
+        return guid;
+    }
+    return ObjectGuid::Empty;
+}
+
+bool AvoidAoeAction::AvoidDynamicObjectWithDamage()
+{
+    ObjectGuid const guid = FindDamagingDynamicObject();
+    if (guid.IsEmpty())
+    {
+        return false;
+    }
+    DynamicObject* dynObj = bot->GetMap()->GetDynamicObject(guid);
+    if (!dynObj || !dynObj->IsInWorld())
+    {
+        return false;
+    }
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
+    if (!spellInfo)
+    {
+        return false;
+    }
+    float const radius = dynObj->GetRadius() + AOE_DYNOBJ_SAFETY_MARGIN;
+    if (FleePosition(dynObj->GetPosition(), radius))
+    {
+        if (sPlayerbotAIConfig.tellWhenAvoidAoe && lastTellTimer < time(NULL) - 10)
+        {
+            lastTellTimer = time(NULL);
+            lastMoveTimer = getMSTime();
+            std::ostringstream out;
+            out << "I'm avoiding " << spellInfo->SpellName[LOCALE_enUS] << " (" << spellInfo->Id << ")" << " Radius "
+                << radius << " - [DynObj]";
+            bot->Say(out.str(), PlayerbotAI::GetChatLanguage(bot));
+        }
         return true;
     }
     return false;

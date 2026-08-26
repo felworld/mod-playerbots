@@ -5,9 +5,15 @@
  */
 
 #include "AoeValues.h"
+#include "CellImpl.h"
+#include "DynamicObject.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
 #include "Playerbots.h"
 #include "ServerFacade.h"
 #include "SpellAuraEffects.h"
+#include "SpellInfo.h"
+#include "SpellMgr.h"
 
 GuidVector FindMaxDensity(Player* bot)
 {
@@ -157,4 +163,103 @@ Aura* AreaDebuffValue::Calculate()
         }
     }
     return nullptr;
+}
+
+namespace
+{
+    bool SpellDealsDamage(SpellInfo const* spellInfo)
+    {
+        if (!spellInfo)
+            return false;
+
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (spellInfo->Effects[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE)
+                return true;
+
+            switch (spellInfo->Effects[i].ApplyAuraName)
+            {
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                case SPELL_AURA_PERIODIC_LEECH:
+                    return true;
+                default:
+                    break;
+            }
+        }
+
+        return false;
+    }
+
+    // The damage of a ground hazard sits either on the persistent area aura itself (Noxious Cloud)
+    // or on the spell that aura periodically triggers (Rain of Fire). A hostile field that only
+    // snares or silences is not worth scattering the party over, so the trigger is followed through.
+    bool IsHarmfulAreaAura(SpellInfo const* spellInfo)
+    {
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (spellInfo->Effects[i].Effect != SPELL_EFFECT_PERSISTENT_AREA_AURA)
+                continue;
+
+            switch (spellInfo->Effects[i].ApplyAuraName)
+            {
+                case SPELL_AURA_PERIODIC_DAMAGE:
+                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                case SPELL_AURA_PERIODIC_LEECH:
+                    return true;
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL:
+                case SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE:
+                    if (SpellDealsDamage(sSpellMgr->GetSpellInfo(spellInfo->Effects[i].TriggerSpell)))
+                        return true;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return false;
+    }
+}  // namespace
+
+GuidVector NearestDamagingDynObjectsValue::Calculate()
+{
+    float const range = sPlayerbotAIConfig.maxAoeAvoidRadius + AOE_DYNOBJ_SAFETY_MARGIN;
+
+    std::list<WorldObject*> objects;
+    Acore::AllWorldObjectsInRange check(bot, range);
+    Acore::WorldObjectListSearcher<Acore::AllWorldObjectsInRange> searcher(bot, objects, check,
+                                                                          GRID_MAP_TYPE_MASK_DYNAMICOBJECT);
+    Cell::VisitObjects(bot, searcher, range);
+
+    GuidVector result;
+    for (WorldObject* object : objects)
+    {
+        DynamicObject* dynObj = object->ToDynObject();
+        if (!dynObj)
+            continue;
+
+        // Same guard the other detectors use: a hazard wider than the bot can reasonably run out of
+        // is a fight mechanic to be healed through, not dodged.
+        float const radius = dynObj->GetRadius();
+        if (radius <= 0.0f || radius > sPlayerbotAIConfig.maxAoeAvoidRadius)
+            continue;
+
+        // A friendly ground effect (Consecration, Healing Stream) is a place to stand, not to leave.
+        // A caster that has already left the world leaves its cloud behind, and that still hurts.
+        Unit* caster = dynObj->GetCaster();
+        if (caster && caster->IsFriendlyTo(bot))
+            continue;
+
+        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(dynObj->GetSpellId());
+        if (!spellInfo || spellInfo->IsPositive() || !IsHarmfulAreaAura(spellInfo))
+            continue;
+
+        if (sPlayerbotAIConfig.aoeAvoidSpellWhitelist.find(spellInfo->Id) !=
+            sPlayerbotAIConfig.aoeAvoidSpellWhitelist.end())
+            continue;
+
+        result.push_back(dynObj->GetGUID());
+    }
+
+    return result;
 }

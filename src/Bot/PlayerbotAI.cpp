@@ -2049,6 +2049,7 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
 void PlayerbotAI::ApplyGenericDungeonStrategies(uint32 mapId, bool hasInstanceStrategy)
 {
     Engine* combatEngine = engines[BOT_STATE_COMBAT];
+    Engine* nonCombatEngine = engines[BOT_STATE_NON_COMBAT];
     if (!combatEngine)
         return;
 
@@ -2066,10 +2067,22 @@ void PlayerbotAI::ApplyGenericDungeonStrategies(uint32 mapId, bool hasInstanceSt
     // selfbot), which leaves a bot-only party standing in the fire. Standing out of it is not a
     // courtesy the master extends - in a dungeon every bot dodges. Off these maps the upstream rule
     // is restored verbatim, because this runs on map change too, with no AiFactory pass behind it.
-    if (sPlayerbotAIConfig.autoAvoidAoe && (generic || HasGameClientMaster()))
-        combatEngine->addStrategy("avoid aoe");
-    else
-        combatEngine->removeStrategy("avoid aoe");
+    //
+    // The non-combat engine gets it too: a ground hazard outlives whatever cast it (dynamic objects
+    // are torn down in Unit::RemoveFromWorld, not on the caster's death), so the cloud a pull leaves
+    // behind is at its most lethal exactly when the fight is over and the bots are standing around
+    // looting and drinking with no combat engine running.
+    bool const avoidAoe = sPlayerbotAIConfig.autoAvoidAoe && (generic || HasGameClientMaster());
+    for (Engine* engine : {combatEngine, nonCombatEngine})
+    {
+        if (!engine)
+            continue;
+
+        if (avoidAoe)
+            engine->addStrategy("avoid aoe");
+        else
+            engine->removeStrategy("avoid aoe");
+    }
 }
 
 bool PlayerbotAI::HasTargetExclusions() const
