@@ -27,10 +27,12 @@ constexpr float GATHER_GROUP_COMBAT_RANGE = 60.0f;  // a group member fighting t
 constexpr float GATHER_AGGRO_MARGIN = 5.0f;         // padding over a mob's aggro radius for approach error
 constexpr float GATHER_HOSTILE_SCAN_RANGE = 50.0f;  // the widest aggro radius worth scanning around a node
 
-// A herb or a vein is optional loot, so it never justifies a pull: bots that ran off mid-dungeon to
-// pick something and dragged a pack back with them are the whole reason this exists. Herbing between
-// pulls is fine and human - the two things that are not are gathering while the fight is still on,
-// and gathering something whose approach walks into a mob's aggro radius (in a dungeon or outdoors).
+// A herb, a vein or a skin is optional loot, so it never justifies a pull: bots that ran off
+// mid-dungeon to pick something and dragged a pack back with them are the whole reason this exists.
+// Gathering between pulls is fine and human - the two things that are not are gathering while the
+// fight is still on, and gathering something whose approach walks into a mob's aggro radius (in a
+// dungeon or outdoors). Corpses only become skinnable once their regular loot is emptied, so this
+// never delays picking up the kill's own loot.
 bool IsGatheringSafe(Player* bot, WorldObject* node)
 {
     if (bot->IsInCombat())
@@ -403,11 +405,13 @@ bool LootObject::IsLootPossible(Player* bot)
         return false;  // Bot is missing a skinning knife
     }
 
-    // Gathering nodes only: corpse loot (including skinning the pack the group just killed) is
-    // where the fight already was, but a herb or a vein is somewhere else, and walking over to it
-    // is what pulls. Every path that queues or pursues a node runs through here, so a node that
-    // was safe when it was spotted still gets dropped once a pack wanders near it.
-    if ((skillId == SKILL_HERBALISM || skillId == SKILL_MINING) && !IsGatheringSafe(bot, worldObj))
+    // Gathering only: regular corpse loot stays ungated (skillId is SKILL_NONE until the corpse is
+    // emptied, and picking up the kill is where the fight already was), but a herb, a vein or a
+    // corpse left skinnable behind the group is a walk somewhere else, and the walk is what pulls.
+    // Every path that queues or pursues a node runs through here, so a node that was safe when it
+    // was spotted still gets dropped once a pack wanders near it.
+    if ((skillId == SKILL_HERBALISM || skillId == SKILL_MINING || skillId == SKILL_SKINNING) &&
+        !IsGatheringSafe(bot, worldObj))
         return false;
 
     return true;

@@ -596,18 +596,21 @@ unblocks tank-led dungeon pulls, whose ready check waits on group mana.
 
 ## Gathering that never pulls
 
-Herbing and mining between pulls is fine — dragging a pack back to the
-group because a node was on the far side of it is not. A bot skips a
-gathering node while it is in combat, while any group member on the same
-map within 60 yards is in combat, and whenever an alive mob that isn't
-already fighting sits within its own aggro radius (plus a 5 yard margin
-for approach error) of the node. The aggro test is the one the dungeon
-follow spread uses for its standing spots, and it's applied at the node,
-not at the bot, since that's where the pull would happen. It runs both
-when a node is first noticed and again on the way over, so a node that
-was safe when spotted is abandoned once a patrol wanders past it. Corpse
-looting and skinning are unaffected — those are where the fight already
-was. Applies in dungeons and outdoors alike; no config option.
+Herbing, mining and skinning between pulls is fine — dragging a pack
+back to the group because a node was on the far side of it is not. A bot
+skips a gathering node while it is in combat, while any group member on
+the same map within 60 yards is in combat, and whenever an alive mob
+that isn't already fighting sits within its own aggro radius (plus a 5
+yard margin for approach error) of the node. The aggro test is the one
+the dungeon follow spread uses for its standing spots, and it's applied
+at the node, not at the bot, since that's where the pull would happen.
+It runs both when a node is first noticed and again on the way over, so
+a node that was safe when spotted is abandoned once a patrol wanders
+past it. Skinnable corpses count as nodes: a corpse only becomes
+skinnable once its regular loot is out, so picking up the kill itself is
+never delayed — but going back to skin it through a respawn, or while
+the group is still fighting, is. Applies in dungeons and outdoors alike;
+no config option.
 
 ## World PvP excursions
 
