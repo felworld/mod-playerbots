@@ -42,14 +42,31 @@ is in [FEATURES.md](FEATURES.md). In brief:
   and a human tank is never pre-empted.
 - **[Dungeon follow spread](FEATURES.md#dungeon-follow-spread)** — in
   instances ranged bots and healers follow at their own attack and heal
-  range instead of 1.5 yards, so the tank's approach no longer walks them
-  (and their pets) into the pack next door; the spot is aggro-checked and
-  collapses toward the leader when the back isn't clear.
+  range instead of 1.5 yards, every follow slot sits in a rear arc behind
+  the leader so nobody walks point next to the tank, and the spot is
+  aggro-checked, collapsing toward the leader when the back isn't clear.
 - **[Hold fire until the tank has it](FEATURES.md#hold-fire-until-the-tank-has-it)** —
   in instances every bot but the main tank holds attacks, casts, gap-closers
   and its pet off a mob until the tank has had it in melee long enough to
   hold it, it peels onto somebody else, or a per-mob timeout picks up the
   casters that never walk in.
+- **[Attack what the tank is attacking](FEATURES.md#attack-what-the-tank-is-attacking)** —
+  in instances DPS bots assist the tank's current target (human tanks
+  included) instead of each scoring the pack for itself, still yielding to
+  skull marks and fleeing runners, and stop picking freshly
+  crowd-controlled mobs.
+- **[Threat discipline in unscripted dungeons](FEATURES.md#threat-discipline-in-unscripted-dungeons)** —
+  classic and TBC five-mans had no instance strategies at all; bots there
+  now throttle offense below the tank's threat and dodge AoE
+  automatically.
+- **[Crowd control that knows when to stop](FEATURES.md#crowd-control-that-knows-when-to-stop)** —
+  bots no longer re-sheep a mob the group is already killing: crowd
+  control is reserved for untouched mobs nobody is attacking, with a
+  per-fight recast budget per target.
+- **[Off-role bots do not main-heal](FEATURES.md#off-role-bots-do-not-main-heal)** —
+  non-healer specs stick to their rotation in combat, healing another
+  party member only when they're nearly dead and no healer can cover
+  them; out-of-combat top-ups are unchanged.
 - **[Dependable LFD port-in](FEATURES.md#dependable-lfd-port-in)** —
   bots stranded outside their Dungeon Finder instance retry the teleport
   until they land, and a mid-fight bot defers a group-ready proposal
