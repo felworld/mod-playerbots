@@ -274,6 +274,40 @@ excluded on purpose — a rooted mob is what kiting classes want to keep
 shooting — and if a controlled mob is the last hostile standing,
 breaking it beats waiting the control out.
 
+## Threat discipline in unscripted dungeons
+
+Upstream ships a per-map table of instance strategies, and outside the
+raids it stops at Wrath: every classic and Burning Crusade five-man —
+all of Maraudon, Scholomance, Sunken Temple, every Auchindoun wing —
+fell through it and ran the bots' open-world kit. That kit has no
+notion of a threat table, so a mage that had been told to attack the
+tank's target simply cast until the mob turned around, and the first
+pull of a Maraudon run had three mobs loose on the healer.
+
+Any non-raid dungeon map with no bespoke script now gets a generic kit
+instead of nothing:
+
+- **Threat discipline.** Every bot that is not the tank stops offense
+  against a mob once its own threat reaches 90% of the main tank's on
+  that mob (60% for anything that hits the whole pack, since one AoE
+  takes every mob at once). Melee bots keep auto-attacking through the
+  throttle and everyone keeps their target — only abilities and casts
+  stop, the way a player watching the threat meter stops, and they
+  resume as the tank's lead grows back. Heals, shields and buffs are
+  never throttled. Mobs the tank has not touched at all are not this
+  rule's business: whether anyone may open on those is decided by
+  [Hold fire until the tank has it](#hold-fire-until-the-tank-has-it).
+- **Automatic AoE dodging.** Upstream hands out AoE dodging only to
+  bots whose master is a real player, which leaves a bot-only party
+  standing in the fire. In a dungeon every bot dodges, master or no
+  master (`AiPlayerbot.AutoAvoidAoe` still turns the whole thing off).
+
+Maps with a bespoke pack are left alone — the raid and Wrath five-man
+scripts manage priority through their own multipliers. Everything else
+carries over unchanged: the tank still makes the pull
+([Dungeon pulls by the tank](#dungeon-pulls-by-the-tank)) and nobody
+opens before it lands.
+
 ## Dependable LFD port-in
 
 Bots that queue through the Dungeon Finder now reliably arrive in the

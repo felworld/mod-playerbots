@@ -15,6 +15,7 @@
 #include "CheckMountStateAction.h"
 #include "Common.h"
 #include "CreatureData.h"
+#include "DBCStores.h"
 #include "EmoteAction.h"
 #include "Engine.h"
 #include "EventProcessor.h"
@@ -2019,6 +2020,8 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
             break;
     }
 
+    ApplyGenericDungeonStrategies(mapId, !strategyName.empty());
+
     if (strategyName.empty())
         return;
 
@@ -2031,6 +2034,42 @@ void PlayerbotAI::ApplyInstanceStrategies(uint32 mapId, bool tellMaster)
         out << "Added " << strategyName << " instance strategy";
         TellMasterNoFacing(out.str());
     }
+}
+
+// The switch above covers the raids and the Wrath 5-mans and nothing else, so every classic and
+// Burning Crusade dungeon used to run the bots' open-world kit: no threat discipline, and automatic
+// AoE dodging only for bots that happen to answer to a real player. That is the whole of why a
+// Maraudon pull looks nothing like a party (Felworld).
+//
+// Non-raid dungeons only, and only where no bespoke pack applies: the raid packs manage AoE dodging
+// and action priority themselves through their own multipliers, and a second multiplier vetoing
+// their scripted casts is not something to add blind. The "dungeon hold" and "dungeon pull"
+// strategies are not re-applied here - AiFactory attaches them to every bot and they self-gate on
+// instanced group content, so they are already live on these maps.
+void PlayerbotAI::ApplyGenericDungeonStrategies(uint32 mapId, bool hasInstanceStrategy)
+{
+    Engine* combatEngine = engines[BOT_STATE_COMBAT];
+    if (!combatEngine)
+        return;
+
+    MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
+    bool const generic = !hasInstanceStrategy && mapEntry && mapEntry->IsNonRaidDungeon();
+
+    // Threat discipline is for the bots feeding the tank. The tank is the one meant to be at the top
+    // of every threat table, and a bot off-tanking has to out-threat the main tank on its own adds.
+    if (generic && !IsTank(bot))
+        combatEngine->addStrategy("dungeon threat");
+    else
+        combatEngine->removeStrategy("dungeon threat");
+
+    // Upstream only hands out automatic AoE dodging to bots whose master is a real player (or a
+    // selfbot), which leaves a bot-only party standing in the fire. Standing out of it is not a
+    // courtesy the master extends - in a dungeon every bot dodges. Off these maps the upstream rule
+    // is restored verbatim, because this runs on map change too, with no AiFactory pass behind it.
+    if (sPlayerbotAIConfig.autoAvoidAoe && (generic || HasGameClientMaster()))
+        combatEngine->addStrategy("avoid aoe");
+    else
+        combatEngine->removeStrategy("avoid aoe");
 }
 
 bool PlayerbotAI::HasTargetExclusions() const

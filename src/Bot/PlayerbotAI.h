@@ -458,6 +458,8 @@ public:
     std::vector<std::string> GetStrategies(BotState type);
     Strategy* GetStrategy(std::string const name, BotState type);
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
+    // The kit every 5-man gets when no bespoke instance pack covers the map (Felworld).
+    void ApplyGenericDungeonStrategies(uint32 mapId, bool hasInstanceStrategy);
     bool HasTargetExclusions() const;
     void EvaluateHealerDpsStrategy();
     bool ContainsStrategy(StrategyType type);
