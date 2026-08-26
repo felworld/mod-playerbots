@@ -5,7 +5,12 @@
  */
 
 #include "LootObjectStack.h"
+#include "CellImpl.h"
 #include "ChestRollMgr.h"
+#include "Creature.h"
+#include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "Group.h"
 #include "LootMgr.h"
 #include "Object.h"
 #include "ObjectAccessor.h"
@@ -13,6 +18,58 @@
 #include "Unit.h"
 
 #define MAX_LOOT_OBJECT_COUNT 200
+
+namespace
+{
+// Aggro-safe gathering (Felworld) tuning. Internal - deliberately not configurable, like the
+// dungeon spread constants in Formations.cpp.
+constexpr float GATHER_GROUP_COMBAT_RANGE = 60.0f;  // a group member fighting this close is the bot's fight too
+constexpr float GATHER_AGGRO_MARGIN = 5.0f;         // padding over a mob's aggro radius for approach error
+constexpr float GATHER_HOSTILE_SCAN_RANGE = 50.0f;  // the widest aggro radius worth scanning around a node
+
+// A herb or a vein is optional loot, so it never justifies a pull: bots that ran off mid-dungeon to
+// pick something and dragged a pack back with them are the whole reason this exists. Herbing between
+// pulls is fine and human - the two things that are not are gathering while the fight is still on,
+// and gathering something whose approach walks into a mob's aggro radius (in a dungeon or outdoors).
+bool IsGatheringSafe(Player* bot, WorldObject* node)
+{
+    if (bot->IsInCombat())
+        return false;
+
+    if (Group* group = bot->GetGroup())
+    {
+        for (GroupReference* ref = group->GetFirstMember(); ref; ref = ref->next())
+        {
+            Player* member = ref->GetSource();
+            if (!member || member == bot || !member->IsInWorld() || member->GetMapId() != bot->GetMapId())
+                continue;
+
+            if (member->IsInCombat() && bot->GetDistance(member) < GATHER_GROUP_COMBAT_RANGE)
+                return false;
+        }
+    }
+
+    // Same test the dungeon spread spots use (Formation::IsDungeonSpreadSpotSafe): reject the node if
+    // a mob that is not already part of a fight would notice a player standing on it. The check is on
+    // the node's position, not the bot's - the pull happens at the other end of the walk.
+    std::list<Unit*> hostiles;
+    Acore::AnyUnfriendlyUnitInObjectRangeCheck check(node, bot, GATHER_HOSTILE_SCAN_RANGE);
+    Acore::UnitListSearcher<Acore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(node, hostiles, check);
+    Cell::VisitObjects(node, searcher, GATHER_HOSTILE_SCAN_RANGE);
+
+    for (Unit* hostile : hostiles)
+    {
+        Creature* creature = hostile->ToCreature();
+        if (!creature || creature->IsInCombat())
+            continue;
+
+        if (creature->GetExactDist(node) <= creature->GetAggroRange(bot) + GATHER_AGGRO_MARGIN)
+            return false;
+    }
+
+    return true;
+}
+}  // namespace
 
 LootTarget::LootTarget(ObjectGuid guid) : guid(guid), asOfTime(time(nullptr)) {}
 
@@ -345,6 +402,13 @@ bool LootObject::IsLootPossible(Player* bot)
     {
         return false;  // Bot is missing a skinning knife
     }
+
+    // Gathering nodes only: corpse loot (including skinning the pack the group just killed) is
+    // where the fight already was, but a herb or a vein is somewhere else, and walking over to it
+    // is what pulls. Every path that queues or pursues a node runs through here, so a node that
+    // was safe when it was spotted still gets dropped once a pack wanders near it.
+    if ((skillId == SKILL_HERBALISM || skillId == SKILL_MINING) && !IsGatheringSafe(bot, worldObj))
+        return false;
 
     return true;
 }
