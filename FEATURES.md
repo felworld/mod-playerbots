@@ -582,6 +582,33 @@ answers arrive spread out rather than in unison. Everything else that puts
 a bot on the ground (its own meal, the `sit` command, idle roleplay sits)
 is unchanged. No config option.
 
+## Meals finish before the loot run
+
+A bot that sits down out of combat drinks or eats to full before it picks
+anything up. Looting outranked the "keep sitting" hold, and every movement
+action stands a bot up, so a corpse or a herb noticed mid-drink yanked the
+bot off its water; it re-drank, got yanked again, and a dungeon healer
+could ride that loop from empty to empty. The hold now outranks the whole
+loot chain and releases itself the moment the bot is full or enters
+combat, after which the loot the bot was queuing up happens normally.
+Chat commands and combat reactions still cut a meal short. This also
+unblocks tank-led dungeon pulls, whose ready check waits on group mana.
+
+## Gathering that never pulls
+
+Herbing and mining between pulls is fine — dragging a pack back to the
+group because a node was on the far side of it is not. A bot skips a
+gathering node while it is in combat, while any group member on the same
+map within 60 yards is in combat, and whenever an alive mob that isn't
+already fighting sits within its own aggro radius (plus a 5 yard margin
+for approach error) of the node. The aggro test is the one the dungeon
+follow spread uses for its standing spots, and it's applied at the node,
+not at the bot, since that's where the pull would happen. It runs both
+when a node is first noticed and again on the way over, so a node that
+was safe when spotted is abandoned once a patrol wanders past it. Corpse
+looting and skinning are unaffected — those are where the fight already
+was. Applies in dungeons and outdoors alike; no config option.
+
 ## World PvP excursions
 
 Random bots occasionally travel to enemy or contested
