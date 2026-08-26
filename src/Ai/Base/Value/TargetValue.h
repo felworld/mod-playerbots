@@ -8,6 +8,7 @@
 #define PLAYERBOTS_TARGETVALUE_H
 
 #include "NamedObjectContext.h"
+#include "ObjectGuid.h"
 #include "TravelMgr.h"
 #include "Value.h"
 
@@ -23,10 +24,13 @@ GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionT
 enum class TargetPriority : uint8
 {
     Normal = 0,
+    // Whatever the group's tank is swinging at (Felworld). Damage dealers in instanced group content
+    // follow the tank across switches instead of each picking its own add off the tank's back.
+    AssistTank = 1,
     // A creature that broke off combat to fetch reinforcements - kill it before the adds arrive.
-    FleeingForAssistance = 1,
+    FleeingForAssistance = 2,
     // Deliberate picks: skull mark, prioritized targets, world-PvP assailants.
-    Marked = 2
+    Marked = 3
 };
 
 // True when the unit is a creature running for reinforcements (Creature::DoFleeToGetAssistance, i.e.
@@ -48,17 +52,26 @@ public:
     void GetPlayerCount(Unit* creature, uint32* tankCount, uint32* dpsCount);
     TargetPriority GetPriority(Unit* attacker);
     bool IsHighPriority(Unit* attacker);
+    // True when this search picks what a damage dealer opens on, as opposed to a tank's pickup list
+    // or a crowd-control candidate. Only these searches assist the tank and skip controlled mobs.
+    bool IsDpsSearch();
 
 protected:
     // Applies the priority override for this attacker. Returns true when a priority target has been
     // locked in and the caller should skip its own scoring.
     bool CheckPriority(Unit* attacker);
 
+    // The mob the group's tank is on, resolved once per search and empty when there is nothing to
+    // assist (no instanced group content, no tank, no reachable victim). GUID, never a pointer.
+    ObjectGuid const& GetTankAssistTarget();
+
     Unit* result;
     PlayerbotAI* botAI;
     std::map<Unit*, uint32> tankCountCache;
     std::map<Unit*, uint32> dpsCountCache;
     TargetPriority highestPriority = TargetPriority::Normal;
+    ObjectGuid tankAssistTarget;
+    bool tankAssistResolved = false;
 };
 
 class FindNonCcTargetStrategy : public FindTargetStrategy

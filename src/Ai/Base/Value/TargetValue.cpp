@@ -5,6 +5,7 @@
  */
 
 #include "TargetValue.h"
+#include "AttackersValue.h"
 #include "CombatManager.h"
 #include "Creature.h"
 #include "LastMovementValue.h"
@@ -16,6 +17,13 @@
 #include "ScriptedCreature.h"
 #include "Strategy.h"
 #include "ThreatManager.h"
+
+namespace
+{
+    // Past this the tank is off fighting something the bot cannot reasonably join - the next pack, a
+    // runner it chased down - so the bot scores locally instead of trailing after it (Felworld).
+    constexpr float TANK_ASSIST_MAX_DISTANCE = 40.0f;
+}
 
 GuidSet GatherStrategyTargetExclusions(PlayerbotAI* botAI, TargetValueExclusionType type)
 {
@@ -73,10 +81,36 @@ Unit* TargetValue::FindTarget(FindTargetStrategy* strategy)
 {
     GuidVector attackers = botAI->GetAiObjectContext()->GetValue<GuidVector>("attackers")->Get();
     GuidSet const dynamicExclusions = GatherStrategyTargetExclusions(botAI, strategy->GetExclusionType());
+    bool const skipCrowdControlled = strategy->IsDpsSearch();
+    GuidVector controlled;
+
     for (ObjectGuid const guid : attackers)
     {
         Unit* unit = botAI->GetUnit(guid);
         if (!unit || dynamicExclusions.find(guid) != dynamicExclusions.end())
+            continue;
+
+        // "attackers" is recomputed once a second and lets marked units through unfiltered, so a mob
+        // sheeped a moment ago is still on the list (Felworld). Re-checking live is what keeps a whole
+        // row of damage dealers from retargeting onto a fresh Polymorph and starting the re-sheep loop.
+        if (skipCrowdControlled && AttackersValue::IsCrowdControlled(unit))
+        {
+            controlled.push_back(guid);
+            continue;
+        }
+
+        ThreatManager& threatMgr = unit->GetThreatMgr();
+        strategy->CheckAttacker(unit, &threatMgr);
+    }
+
+    if (Unit* result = strategy->GetResult())
+        return result;
+
+    // Nothing else is left standing: breaking the control beats standing around waiting for it to fade.
+    for (ObjectGuid const guid : controlled)
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit)
             continue;
 
         ThreatManager& threatMgr = unit->GetThreatMgr();
@@ -191,10 +225,54 @@ TargetPriority FindTargetStrategy::GetPriority(Unit* attacker)
             return TargetPriority::FleeingForAssistance;
     }
 
+    // Assist the tank (Felworld): whatever it is swinging at is the group's target, and the bot moves
+    // with it when it switches. Ranked below a runner, which is still worth peeling off for, and below
+    // a mark, which is the group saying otherwise out loud.
+    if (IsDpsSearch() && attacker->GetGUID() == GetTankAssistTarget())
+        return TargetPriority::AssistTank;
+
     return TargetPriority::Normal;
 }
 
 bool FindTargetStrategy::IsHighPriority(Unit* attacker) { return GetPriority(attacker) != TargetPriority::Normal; }
+
+bool FindTargetStrategy::IsDpsSearch() { return GetExclusionType() == TargetValueExclusionType::Dps; }
+
+ObjectGuid const& FindTargetStrategy::GetTankAssistTarget()
+{
+    if (tankAssistResolved)
+        return tankAssistTarget;
+
+    tankAssistResolved = true;
+
+    Player* bot = botAI->GetBot();
+
+    // Instanced group content only. Out in the world there is no pull order to hold to, and funnelling
+    // every bot onto one mob would turn open-world fights into a single-minded blob.
+    if (!IsInstancedGroupContent(bot))
+        return tankAssistTarget;
+
+    ObjectGuid const tankGuid = PlayerbotAI::GetMainTankGuid(bot->GetGroup());
+    if (tankGuid.IsEmpty() || tankGuid == bot->GetGUID())
+        return tankAssistTarget;
+
+    Player* tank = ObjectAccessor::FindPlayer(tankGuid);
+    if (!tank || !tank->IsInWorld() || !tank->IsAlive() || tank->GetMap() != bot->GetMap())
+        return tankAssistTarget;
+
+    // Falling through to the normal scoring covers every "the tank has nothing usable" case: between
+    // pulls, dead or despawned victim, a victim this bot may not hit, and one just crowd-controlled.
+    Unit* victim = tank->GetVictim();
+    if (!victim || !victim->IsAlive() || !bot->IsValidAttackTarget(victim) ||
+        AttackersValue::IsCrowdControlled(victim))
+        return tankAssistTarget;
+
+    if (bot->GetDistance(victim) > TANK_ASSIST_MAX_DISTANCE)
+        return tankAssistTarget;
+
+    tankAssistTarget = victim->GetGUID();
+    return tankAssistTarget;
+}
 
 bool FindTargetStrategy::CheckPriority(Unit* attacker)
 {

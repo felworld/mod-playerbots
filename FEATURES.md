@@ -236,6 +236,44 @@ in instances (see [Pet group etiquette](#pet-group-etiquette)).
 Setting `AiPlayerbot.DungeonHoldForTank` to 0 restores the upstream
 behaviour, where everyone opens the instant the pull lands.
 
+## Attack what the tank is attacking
+
+Holding fire settles who opens; it says nothing about what to open on.
+Once the pull landed, each DPS bot scored the pack for itself — nearest,
+lowest health, longest expected life — so five bots routinely came up
+with five different answers, and the adds they picked were the ones
+already walking to the tank. The tank spent the fight chasing threat on
+mobs that were being killed behind its back.
+
+In instanced group content DPS bots now assist the group's tank:
+whatever the tank is swinging at is the group's target, and the bots
+move with it the moment the tank switches. The tank is whoever carries
+the main-tank raid flag, or failing that the first alive member tanking
+by role — a human counts, read from the Dungeon Finder role badge and
+falling back to spec. Tanks and off-tanks are unaffected; they keep
+picking up what nobody else has.
+
+The preference yields in the cases where it should. A skull mark still
+outranks it — a deliberate kill order is never overridden. A mob fleeing
+for reinforcements still outranks it, since the adds it is fetching cost
+more than the tank's current target (see
+[Runner focus fire](#runner-focus-fire)). And when the tank has nothing
+usable — between pulls, dead, out of the room, or its target crowd
+controlled or untouchable — the bot scores the pack for itself exactly
+as before. Open-world and PvP targeting is unchanged: there is no pull
+order to hold to out there, and funnelling every bot onto one mob would
+read as a single-minded blob.
+
+Damage dealers also stop picking crowd-controlled mobs. Sheeped, sapped,
+shackled and hibernated targets were already dropped from the attacker
+list, but the list is rebuilt once a second and lets raid-marked mobs
+through unfiltered, so a mob polymorphed a moment ago stayed on the menu
+just long enough for a row of DPS to break it and set off the re-sheep
+loop. The check is now re-run live at target selection. Roots stay
+excluded on purpose — a rooted mob is what kiting classes want to keep
+shooting — and if a controlled mob is the last hostile standing,
+breaking it beats waiting the control out.
+
 ## Dependable LFD port-in
 
 Bots that queue through the Dungeon Finder now reliably arrive in the
