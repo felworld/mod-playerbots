@@ -25,5 +25,11 @@ void UseFoodStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     // In battlegrounds eating runs on short AI ticks instead of one long sleep; this hold keeps
     // the bot seated while it is safe, and simply not firing lets higher-priority actions
     // (objectives, combat) stand the bot up and break the regen aura.
-    triggers.push_back(new TriggerNode("consuming food or drink", { NextAction("continue eating", 3.5f) }));
+    //
+    // The hold outranks the whole loot chain ("can loot" @8.0 down to "add all loot" @5.0):
+    // every movement action force-stands the bot, so a corpse or a herb noticed mid-drink used
+    // to yank a healer off the water over and over and it never reached full mana. The trigger
+    // only fires while the bot is already consuming and goes false in combat or at 100%, so the
+    // hold self-terminates and looting resumes right after the meal.
+    triggers.push_back(new TriggerNode("consuming food or drink", { NextAction("continue eating", 8.5f) }));
 }
