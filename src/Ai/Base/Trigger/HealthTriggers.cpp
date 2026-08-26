@@ -5,7 +5,88 @@
  */
 
 #include "HealthTriggers.h"
+#include "Group.h"
+#include "ObjectAccessor.h"
 #include "Playerbots.h"
+
+namespace
+{
+// An off-role heal is only ever an emergency stopgap: below this the target is a global or two from
+// dead, and a wasted rotation is cheaper than a corpse.
+constexpr float OFF_ROLE_HEAL_EMERGENCY_PCT = 35.0f;
+
+// A healer this far into its mana bar cannot be counted on to cover the target, so the off-role bot
+// steps in anyway.
+constexpr float OFF_ROLE_HEAL_HEALER_MIN_MANA_PCT = 15.0f;
+
+// Somebody whose job this is can still take the heal: a living healer-spec group member, on our map,
+// within heal range of the target, with mana left to cast. Spec, not assigned strategy - a DPS bot
+// carrying an offheal overlay is exactly who this gate is for.
+bool HealerCoversTarget(PlayerbotAI* botAI, Player* bot, Unit* target)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    float const healRange = botAI->GetRange("heal");
+
+    Group::MemberSlotList const& groupSlot = group->GetMemberSlots();
+    for (Group::member_citerator itr = groupSlot.begin(); itr != groupSlot.end(); ++itr)
+    {
+        Player* member = ObjectAccessor::FindPlayer(itr->guid);
+        if (!member || member == bot || !member->IsAlive() || member->GetMap() != bot->GetMap())
+            continue;
+
+        if (!PlayerbotAI::IsHeal(member, true))
+            continue;
+
+        if (member->getPowerType() == POWER_MANA &&
+            member->GetPowerPct(POWER_MANA) < OFF_ROLE_HEAL_HEALER_MIN_MANA_PCT)
+            continue;
+
+        if (member->GetDistance(target) > healRange)
+            continue;
+
+        return true;
+    }
+
+    return false;
+}
+}  // namespace
+
+bool OffRoleHealBlocked(PlayerbotAI* botAI, Unit* target)
+{
+    if (!botAI || !target)
+        return false;
+
+    Player* bot = botAI->GetBot();
+    if (!bot)
+        return false;
+
+    if (PlayerbotAI::IsHeal(bot, true))
+        return false;
+
+    // "party member to heal" resolves to the bot itself when it is the worst off (and always when
+    // solo). Patching its own health is survival, not main-healing.
+    if (target == bot)
+        return false;
+
+    if (!bot->IsInCombat())
+        return false;
+
+    if (target->GetHealthPct() >= OFF_ROLE_HEAL_EMERGENCY_PCT)
+        return true;
+
+    return HealerCoversTarget(botAI, bot, target);
+}
+
+bool PartyMemberLowHealthTrigger::IsActive()
+{
+    if (!HealthInRangeTrigger::IsActive())
+        return false;
+
+    return !OffRoleHealBlocked(botAI, GetTarget());
+}
 
 bool HealthInRangeTrigger::IsActive()
 {
@@ -40,6 +121,12 @@ bool HealerLowManaTrigger::IsActive()
 
 bool AoeInGroupTrigger::IsActive()
 {
+    // An off-role bot has no business dropping a group heal mid-fight either. Unlike a single-target
+    // heal there is no one dying party member to make an emergency exception for, so the rotation
+    // simply wins (Felworld).
+    if (bot->IsInCombat() && !PlayerbotAI::IsHeal(bot, true))
+        return false;
+
     int32 member = botAI->GetNearGroupMemberCount();
     if (member < 5)
         return false;

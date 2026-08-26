@@ -12,6 +12,16 @@
 #include <stdexcept>
 
 class PlayerbotAI;
+class Unit;
+
+// A bot whose spec is not a healing spec has no business main-healing (Felworld). It may still cover
+// a genuine emergency - somebody a global or two from dead with nobody whose job it is able to reach
+// them - but anything short of that has to lose to its own rotation, so a boomkin nukes instead of
+// topping the tank up mid-fight. Returns true when the heal must be withheld.
+//
+// Healer specs never answer true, and neither does anything out of combat: topping the party up
+// between pulls is exactly what an off-spec healer is good for.
+bool OffRoleHealBlocked(PlayerbotAI* botAI, Unit* target);
 
 class ValueInRangeTrigger : public Trigger
 {
@@ -93,6 +103,8 @@ public:
         : HealthInRangeTrigger(botAI, name, value, minValue)
     {
     }
+
+    bool IsActive() override;
 
     std::string const GetTargetName() override { return "party member to heal"; }
 };

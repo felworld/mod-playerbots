@@ -308,6 +308,63 @@ carries over unchanged: the tank still makes the pull
 ([Dungeon pulls by the tank](#dungeon-pulls-by-the-tank)) and nobody
 opens before it lands.
 
+## Crowd control that knows when to stop
+
+A mage watching its Polymorph break would simply cast it again, and
+again, on a mob the tank had already picked up and the group was
+already burning. The recast trigger refires the instant the control
+drops, and nothing in it ever asked whether the mob was still worth
+controlling — so a sheep that broke to a stray cleave came straight
+back, broke again on the next tick, and the mage spent the whole fight
+re-sheeping a mob at 40% health instead of doing damage.
+
+Crowd control is now offered only against a mob the group has not
+committed to killing. A candidate is refused when it has dropped below
+90% health — "untouched", not merely "healthy": anything the group has
+already chipped should just die — or when any group member or their pet
+is swinging at it, which covers the tank's current victim and a human
+tank equally. It deliberately does not ask who the *mob* is attacking:
+on a pull the whole pack runs at the tank, and those adds are exactly
+what the control is for.
+
+On top of that each bot carries a per-fight recast budget of three
+applications per mob. A control that breaks to bad luck comes back once
+or twice; past that the mob has proved it will not stay controlled and
+the bot moves on. The ledger is keyed by GUID, wiped when the bot
+leaves combat, and ages out on its own so chain pulls that never drop
+combat still reset.
+
+Enemy players answer to the budget alone — diminishing returns already
+price their re-controls, and the solo breather Polymorph wants an
+opponent that is losing. A raid icon set for crowd control buys no
+exemption: a marked mob the group has started killing is still not
+re-sheeped.
+
+## Off-role bots do not main-heal
+
+A boomkin spent a dungeon fight throwing Rejuvenations at the tank.
+Every druid, shaman and paladin carries party-heal actions regardless
+of spec, and because a bot's non-combat engine keeps running while it
+is in combat — it flips back the moment its current mob dies — those
+heals fire mid-fight. A ret or prot paladin would likewise Lay on Hands
+a party member straight from its combat rotation. Nothing in the
+trigger, the target selection or the heal action ever asked whether the
+bot was a healer.
+
+A bot whose spec is not a healing spec now withholds heals on other
+party members while in combat unless it is a genuine emergency: the
+target is below 35% health *and* no healer-spec group member is alive,
+on the map, within heal range of them and holding at least 15% mana.
+Anything short of that loses to the bot's own rotation, so a boomkin
+nukes and a ret paladin swings. Group heals get no exception at all —
+there is no one dying member to make it for.
+
+Healer specs are untouched, and so is everything out of combat: topping
+the party up between pulls is exactly what an off-spec healer is good
+for. A bot healing itself is untouched too — that is survival, not
+main-healing. Human healers count as cover through their Dungeon Finder
+role, so a DPS bot in a party with a human healer stays on damage.
+
 ## Dependable LFD port-in
 
 Bots that queue through the Dungeon Finder now reliably arrive in the

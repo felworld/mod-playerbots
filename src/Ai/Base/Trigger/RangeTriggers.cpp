@@ -5,6 +5,7 @@
  */
 
 #include "RangeTriggers.h"
+#include "HealthTriggers.h"
 #include "MoveSplineInit.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
@@ -201,6 +202,12 @@ bool PartyMemberToHealOutOfSpellRangeTrigger::IsActive()
 {
     Unit* target = AI_VALUE(Unit*, GetTargetName());
     if (!target)
+        return false;
+
+    // Chasing someone down to heal them is main-healing too, so it answers to the same off-role gate
+    // as the heal itself (Felworld) - a boomkin does not abandon its rotation to close on a wounded
+    // ally the party healer already has covered.
+    if (OffRoleHealBlocked(botAI, target))
         return false;
 
     return target && (ServerFacade::instance().GetDistance2d(bot, target) > (distance + sPlayerbotAIConfig.contactDistance) ||
