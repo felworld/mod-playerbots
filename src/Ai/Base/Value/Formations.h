@@ -29,6 +29,9 @@ public:
 
 protected:
     float GetFollowAngle();
+    // Angle of the tight follow slot: the rear arc behind the master in instanced group content, the
+    // plain formation ring everywhere else.
+    float GetFollowSlotAngle();
 
     // Dungeon follow spread (Felworld): in instanced group content ranged bots and healers hold their
     // own attack/heal range behind the master instead of stacking on him, so walking up to a pack does
@@ -40,8 +43,13 @@ protected:
 
 private:
     float GetDungeonSpreadRange();
-    float GetDungeonSpreadAngle(Player* master);
     bool IsDungeonSpreadSpotSafe(Player* master, Map* map, float angle, float range);
+
+    // Rear-arc following (Felworld): the bot's slot folded into a fan behind the master, keyed on a
+    // smoothed "behind" direction rather than his live facing so the group does not orbit him every
+    // time he glances at a wall.
+    float GetDungeonRearAngle(Player* master);
+    float GetDungeonRearFacing(Player* master);
 
     float spreadRange = 0.0f;  // resolved radius from the master, 0 while not spreading
     float spreadAngle = 0.0f;  // absolute (world) angle of the spread slot
@@ -49,6 +57,12 @@ private:
     uint32 spreadMasterMapId = 0;
     float spreadMasterX = 0.0f;
     float spreadMasterY = 0.0f;
+
+    bool rearFacingKnown = false;   // false until the first sample of the master's heading
+    float rearFacing = 0.0f;        // smoothed direction the master is heading/looking
+    uint32 rearFacingMapId = 0;
+    float rearFacingX = 0.0f;       // master's position when rearFacing was last resampled
+    float rearFacingY = 0.0f;
 };
 
 class FollowFormation : public Formation

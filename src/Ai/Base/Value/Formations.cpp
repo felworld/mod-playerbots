@@ -23,10 +23,27 @@ namespace
     constexpr float DUNGEON_SPREAD_HEAL_BUFFER = 4.5f;      // keep every group member in heal range
     constexpr float DUNGEON_SPREAD_AGGRO_MARGIN = 3.0f;     // padding on top of a mob's aggro radius
     constexpr float DUNGEON_SPREAD_STEP = 4.0f;             // collapse step when a spot is rejected
-    constexpr float DUNGEON_SPREAD_ARC = static_cast<float>(M_PI) / 3.0f;  // half-width of the rear fan
     constexpr float DUNGEON_SPREAD_TOLERANCE = 5.0f;        // "in position" slack at spread radius
     constexpr float DUNGEON_SPREAD_MASTER_MOVE = 10.0f;     // master travel that forces a re-check
     constexpr time_t DUNGEON_SPREAD_RECHECK_SECONDS = 3;    // matches the chaos jitter cadence
+
+    // Rear-arc following (Felworld): in instanced group content every follow slot - tight or spread -
+    // is folded into a fan behind the master, so nobody but whoever is pulling ever walks point.
+    constexpr float DUNGEON_REAR_ARC = static_cast<float>(M_PI) / 3.0f;  // half-width of the rear fan
+    constexpr float DUNGEON_REAR_SAMPLE_DISTANCE = 5.0f;    // master travel that re-derives "behind" from his path
+    constexpr float DUNGEON_REAR_TURN_ARC = static_cast<float>(M_PI) / 3.0f;  // standing turn that re-forms the fan
+
+    // Shortest signed difference between two angles, in (-pi, pi].
+    float AngleDelta(float a, float b)
+    {
+        float delta = std::fmod(a - b, 2.0f * static_cast<float>(M_PI));
+        if (delta > static_cast<float>(M_PI))
+            delta -= 2.0f * static_cast<float>(M_PI);
+        else if (delta <= -static_cast<float>(M_PI))
+            delta += 2.0f * static_cast<float>(M_PI);
+
+        return delta;
+    }
 }  // namespace
 
 bool IsSameLocation(WorldLocation const& a, WorldLocation const& b)
@@ -132,7 +149,7 @@ public:
             return spread;
 
         float range = sPlayerbotAIConfig.followDistance;
-        float angle = GetFollowAngle();
+        float angle = GetFollowSlotAngle();
         float x = master->GetPositionX() + cos(angle) * range;
         float y = master->GetPositionY() + sin(angle) * range;
         float z = master->GetPositionZ() + master->GetHoverHeight();
@@ -176,7 +193,7 @@ public:
             return spread;
 
         float range = sPlayerbotAIConfig.followDistance;
-        float angle = GetFollowAngle();
+        float angle = GetFollowSlotAngle();
 
         time_t now = time(nullptr);
         if (!lastChangeTime || now - lastChangeTime >= 3)
@@ -566,15 +583,66 @@ float Formation::GetDungeonSpreadRange()
     return 0.0f;
 }
 
-float Formation::GetDungeonSpreadAngle(Player* master)
+float Formation::GetDungeonRearFacing(Player* master)
 {
-    // Fold the normal formation's slot angles (which run all the way around to the master's flanks)
-    // into an arc behind him: at 25 yards a flank slot is a different room, and standing behind
-    // whoever is pulling is the whole point. Relative slot order is preserved, so the bots still fan
-    // out from each other instead of stacking.
+    float const orientation = master->GetOrientation();
+
+    // Nothing cached yet, or the master is somewhere else entirely: take his facing as it stands.
+    if (!rearFacingKnown || master->GetMapId() != rearFacingMapId)
+    {
+        rearFacingKnown = true;
+        rearFacingMapId = master->GetMapId();
+        rearFacing = orientation;
+        rearFacingX = master->GetPositionX();
+        rearFacingY = master->GetPositionY();
+        return rearFacing;
+    }
+
+    // While the master is covering ground, "behind" is where he came from rather than where his mouse
+    // is pointing: a heading averaged over his last few yards of path does not twitch when he glances
+    // at a wall mid-run, so the fan behind him stays put instead of swinging around him every tick.
+    if (master->GetExactDist2d(rearFacingX, rearFacingY) >= DUNGEON_REAR_SAMPLE_DISTANCE)
+    {
+        rearFacing = std::atan2(master->GetPositionY() - rearFacingY, master->GetPositionX() - rearFacingX);
+        rearFacingX = master->GetPositionX();
+        rearFacingY = master->GetPositionY();
+        return rearFacing;
+    }
+
+    // Standing still or shuffling on the spot: only re-form once he has actually turned to look
+    // somewhere new. Below that the group holds the fan it already walked into.
+    if (std::fabs(AngleDelta(orientation, rearFacing)) > DUNGEON_REAR_TURN_ARC)
+    {
+        rearFacing = orientation;
+        rearFacingX = master->GetPositionX();
+        rearFacingY = master->GetPositionY();
+    }
+
+    return rearFacing;
+}
+
+float Formation::GetDungeonRearAngle(Player* master)
+{
+    // Fold the normal formation's slot angles (which run all the way around to the master's flanks,
+    // and for some group sizes right past his nose) into an arc behind him: walking abreast of the
+    // puller body-pulls the next pack, and at spread range a flank slot is a different room. Relative
+    // slot order is preserved, so the bots still fan out from each other instead of stacking.
+    float const facing = GetDungeonRearFacing(master);
     float const slot = GetFollowAngle() - master->GetOrientation();
     float const spot = std::clamp((slot / static_cast<float>(M_PI) - 0.125f) / 1.75f, 0.0f, 1.0f);
-    return master->GetOrientation() + static_cast<float>(M_PI) + (spot - 0.5f) * 2.0f * DUNGEON_SPREAD_ARC;
+    return facing + static_cast<float>(M_PI) + (spot - 0.5f) * 2.0f * DUNGEON_REAR_ARC;
+}
+
+float Formation::GetFollowSlotAngle()
+{
+    Player* master = GetMaster();
+
+    // Open-world follow slots are unchanged: the full ring around the master is fine when there is no
+    // corridor of layered packs to body-pull.
+    if (master && IsInstancedGroupContent(bot))
+        return GetDungeonRearAngle(master);
+
+    return GetFollowAngle();
 }
 
 bool Formation::IsDungeonSpreadSpotSafe(Player* master, Map* map, float angle, float range)
@@ -665,7 +733,7 @@ bool Formation::GetDungeonSpreadLocation(Player* master, WorldLocation& location
         spreadMasterMapId = master->GetMapId();
         spreadMasterX = master->GetPositionX();
         spreadMasterY = master->GetPositionY();
-        spreadAngle = GetDungeonSpreadAngle(master);
+        spreadAngle = GetDungeonRearAngle(master);
 
         float const previous = spreadRange;
         spreadRange = 0.0f;

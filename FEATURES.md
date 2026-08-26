@@ -154,16 +154,26 @@ tank, so a bot standing at attack range never needs to step forward.
 Healers hang back as far as their heals still cover the group — heal
 range less a buffer, checked against where the other members actually
 are, so nobody drops out of reach. Tanks and melee DPS keep the tight
-follow slot, and the flank slots of the normal formation are folded into
-an arc behind the leader, since at 25 yards a flank slot is usually a
-different room.
+follow slot, but every slot — tight or spread — is folded into a
+120°–240° fan behind the leader: the stock formation ring runs all the
+way around to the leader's flanks (and, in a two-man, straight past his
+nose), which walks a bot point next to the puller and body-pulls the
+next pack. Relative slot order is preserved, so bots still fan out from
+each other instead of stacking.
+
+"Behind" is tracked with hysteresis rather than read off the leader's
+live facing: while he is covering ground it is derived from his path
+(resampled every few yards), so mouse-look mid-run doesn't send the
+group orbiting him; standing still, the fan only re-forms once he has
+turned more than 60°.
 
 Standing back only helps if the back is empty, so a spot is taken only
 once it clears a safety check: line of sight and a walkable path to the
 leader, and no living, non-critter mob that isn't already in the fight
 within its own aggro radius (plus a margin) of it. A spot that fails
 collapses toward the leader in steps until one passes, and if none does
-the bot keeps the ordinary tight follow. The slot is re-resolved every
+the bot keeps the tight follow slot — itself in the rear arc, so the
+degraded case still stays off the leader's toes. The slot is re-resolved every
 few seconds or once the leader has actually travelled, so it doesn't
 whip around every time he turns. Outside dungeons and raids, and for
 bots that aren't grouped, following is unchanged. There are no config
