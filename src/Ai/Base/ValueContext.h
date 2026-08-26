@@ -164,6 +164,7 @@ public:
         creators["least hp target"] = &ValueContext::least_hp_target;
         creators["enemy player target"] = &ValueContext::enemy_player_target;
         creators["cc target"] = &ValueContext::cc_target;
+        creators["cc recast memory"] = &ValueContext::cc_recast_memory;
         creators["current cc target"] = &ValueContext::current_cc_target;
         creators["pet target"] = &ValueContext::pet_target;
         creators["old target"] = &ValueContext::old_target;
@@ -522,6 +523,7 @@ private:
     static UntypedValue* least_hp_target(PlayerbotAI* botAI) { return new LeastHpTargetValue(botAI); }
     static UntypedValue* enemy_player_target(PlayerbotAI* botAI) { return new EnemyPlayerValue(botAI); }
     static UntypedValue* cc_target(PlayerbotAI* botAI) { return new CcTargetValue(botAI); }
+    static UntypedValue* cc_recast_memory(PlayerbotAI* botAI) { return new CcRecastMemoryValue(botAI); }
     static UntypedValue* current_cc_target(PlayerbotAI* botAI) { return new CurrentCcTargetValue(botAI); }
     static UntypedValue* pet_target(PlayerbotAI* botAI) { return new PetTargetValue(botAI); }
     static UntypedValue* grind_target(PlayerbotAI* botAI) { return new GrindTargetValue(botAI); }

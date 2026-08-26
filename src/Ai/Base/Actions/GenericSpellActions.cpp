@@ -5,6 +5,7 @@
  */
 
 #include "GenericSpellActions.h"
+#include "CcTargetValue.h"
 #include "Chat.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
@@ -525,7 +526,17 @@ Value<Unit*>* CastCrowdControlSpellAction::GetTargetValue()
     return context->GetValue<Unit*>("cc target", getName());
 }
 
-bool CastCrowdControlSpellAction::Execute(Event /*event*/) { return botAI->CastSpell(getName(), GetTarget()); }
+bool CastCrowdControlSpellAction::Execute(Event /*event*/)
+{
+    Unit* target = GetTarget();
+    if (!botAI->CastSpell(getName(), target))
+        return false;
+
+    // Spend a slot of this fight's recast budget so a control that keeps getting broken is not
+    // re-applied forever (Felworld).
+    NoteCrowdControlCast(botAI, target);
+    return true;
+}
 
 bool CastCrowdControlSpellAction::isPossible() { return botAI->CanCastSpell(getName(), GetTarget()); }
 

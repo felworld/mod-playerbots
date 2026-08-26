@@ -5,6 +5,7 @@
  */
 
 #include "RtiTriggers.h"
+#include "CcTargetValue.h"
 #include "Playerbots.h"
 
 bool NoRtiTrigger::IsActive()
@@ -34,5 +35,5 @@ bool RtiCcTrigger::IsActive()
     if (ccTarget && ccTarget == rtiCcTarget)
         return HasCcTargetTrigger::IsActive();
 
-    return botAI->CanCastSpell(getName(), rtiCcTarget);
+    return IsWorthCrowdControlling(botAI, rtiCcTarget) && botAI->CanCastSpell(getName(), rtiCcTarget);
 }

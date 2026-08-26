@@ -12,9 +12,48 @@
 #include "PlayerbotAI.h"
 #include "ServerFacade.h"
 #include "SpellMgr.h"
+#include "Timer.h"
 
 namespace
 {
+// A mob missing more than a sliver of its health is one the group has already committed to burning
+// down - controlling it now only delays the kill, and the next tick of damage breaks the control
+// again. Deliberately high: the point is "untouched", not "healthy".
+constexpr uint8 CC_TARGET_MIN_HEALTH_PCT = 90;
+
+// A control that gets broken can be re-applied a couple of times - a stray cleave or a dot tick is
+// bad luck, not a verdict. Past that the mob has proved it will not stay controlled, and further
+// recasts are the loop players notice.
+constexpr uint32 CC_MAX_CASTS_PER_TARGET = 3;
+
+// Chain pulls can keep a bot in combat indefinitely, so entries also age out on their own.
+constexpr uint32 CC_RECAST_ENTRY_LIFETIME = 60 * IN_MILLISECONDS;
+constexpr uint32 CC_RECAST_PRUNE_INTERVAL = 10 * IN_MILLISECONDS;
+
+// Somebody in the group has already committed to killing this mob: a group member, or a pet of one,
+// is swinging at it. That covers the tank's current victim, which is what a bot with an eye on the
+// fight would read first. It deliberately does not ask who the mob is attacking - on a pull the
+// whole pack runs at the tank, and those adds are exactly what the control is for.
+bool IsGroupCommittedTo(Player* bot, Unit* target)
+{
+    Group* group = bot->GetGroup();
+    if (!group)
+        return false;
+
+    for (Unit* attacker : target->getAttackers())
+    {
+        if (!attacker || !attacker->IsAlive() || attacker == bot)
+            continue;
+
+        Unit* owner = attacker->GetCharmerOrOwner();
+        Player* member = owner ? owner->ToPlayer() : attacker->ToPlayer();
+        if (member && member != bot && group->IsMember(member->GetGUID()))
+            return true;
+    }
+
+    return false;
+}
+
 // A control effect the target would shrug off: third application in the diminishing-returns
 // window (25% duration) or outright immune. Only players and pets diminish, so creatures always
 // pass.
@@ -59,6 +98,80 @@ bool PassesCommonGuards(PlayerbotAI* botAI, std::string const& spell, Unit* targ
 }
 }  // namespace
 
+void CcRecastMemory::Refresh(bool inCombat, uint32 now)
+{
+    if (!inCombat)
+    {
+        // One wipe on the way out of combat, not one per tick: a control landed on an opener has to
+        // survive until the fight it opened actually ends.
+        if (wasInCombat)
+            entries.clear();
+
+        wasInCombat = false;
+        return;
+    }
+
+    wasInCombat = true;
+
+    if (lastPrune && getMSTimeDiff(lastPrune, now) < CC_RECAST_PRUNE_INTERVAL)
+        return;
+
+    lastPrune = now;
+
+    for (auto itr = entries.begin(); itr != entries.end();)
+    {
+        if (getMSTimeDiff(itr->second.lastCastMs, now) >= CC_RECAST_ENTRY_LIFETIME)
+            itr = entries.erase(itr);
+        else
+            ++itr;
+    }
+}
+
+uint32 CcRecastMemory::Casts(ObjectGuid guid) const
+{
+    auto itr = entries.find(guid);
+    return itr == entries.end() ? 0 : itr->second.casts;
+}
+
+void CcRecastMemory::Note(ObjectGuid guid, uint32 now)
+{
+    CcRecastInfo& info = entries[guid];
+    ++info.casts;
+    info.lastCastMs = now;
+}
+
+bool IsWorthCrowdControlling(PlayerbotAI* botAI, Unit* target)
+{
+    if (!botAI || !target || !target->IsAlive())
+        return false;
+
+    Player* bot = botAI->GetBot();
+    uint32 const now = getMSTime();
+
+    CcRecastMemory& memory = botAI->GetAiObjectContext()->GetValue<CcRecastMemory&>("cc recast memory")->Get();
+    memory.Refresh(bot->IsInCombat(), now);
+
+    if (memory.Casts(target->GetGUID()) >= CC_MAX_CASTS_PER_TARGET)
+        return false;
+
+    if (target->IsPlayer())
+        return true;
+
+    if (static_cast<uint8>(target->GetHealthPct()) < CC_TARGET_MIN_HEALTH_PCT)
+        return false;
+
+    return !IsGroupCommittedTo(bot, target);
+}
+
+void NoteCrowdControlCast(PlayerbotAI* botAI, Unit* target)
+{
+    if (!botAI || !target)
+        return;
+
+    CcRecastMemory& memory = botAI->GetAiObjectContext()->GetValue<CcRecastMemory&>("cc recast memory")->Get();
+    memory.Note(target->GetGUID(), getMSTime());
+}
+
 class FindTargetForCcStrategy : public FindTargetStrategy
 {
 public:
@@ -75,7 +188,8 @@ public:
 
         if (*context->GetValue<Unit*>("rti cc target") == creature)
         {
-            if (botAI->CanCastSpell(spell, creature))
+            // A raid icon still does not license re-controlling a mob the group is already killing.
+            if (IsWorthCrowdControlling(botAI, creature) && botAI->CanCastSpell(spell, creature))
                 result = creature;
             return;
         }
@@ -84,7 +198,7 @@ public:
         if (*context->GetValue<Unit*>("current target") == creature)
             return;
 
-        if (!PassesCommonGuards(botAI, spell, creature))
+        if (!PassesCommonGuards(botAI, spell, creature) || !IsWorthCrowdControlling(botAI, creature))
             return;
 
         Group* group = bot->GetGroup();
@@ -180,7 +294,7 @@ Unit* CcTargetValue::FindBreatherTarget()
     if (!lowHealth && !lowMana)
         return nullptr;
 
-    if (!PassesCommonGuards(botAI, qualifier, target))
+    if (!PassesCommonGuards(botAI, qualifier, target) || !IsWorthCrowdControlling(botAI, target))
         return nullptr;
 
     return target;

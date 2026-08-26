@@ -7,6 +7,7 @@
 #include "GenericTriggers.h"
 #include "BattlegroundWS.h"
 #include "BotDeathSafety.h"
+#include "CcTargetValue.h"
 #include "Corpse.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
@@ -749,9 +750,16 @@ bool IsNotFacingTargetTrigger::IsActive()
     return !AI_VALUE2(bool, "facing", "current target");
 }
 
+// The recast side of the loop players see as a mage re-sheeping a mob the group is burning: the
+// trigger refires the instant the control breaks, so it also has to ask whether the mob is still
+// worth controlling and whether this bot has budget left on it (Felworld).
 bool HasCcTargetTrigger::IsActive()
 {
-    return AI_VALUE2(Unit*, "cc target", getName()) && !AI_VALUE2(Unit*, "current cc target", getName());
+    if (AI_VALUE2(Unit*, "current cc target", getName()))
+        return false;
+
+    Unit* target = AI_VALUE2(Unit*, "cc target", getName());
+    return target && IsWorthCrowdControlling(botAI, target);
 }
 
 bool MovingFillerTrigger::IsActive()
