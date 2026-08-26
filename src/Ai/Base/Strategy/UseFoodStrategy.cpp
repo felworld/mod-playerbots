@@ -22,6 +22,11 @@ void UseFoodStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         triggers.push_back(new TriggerNode("low mana", { NextAction("drink", 3.0f) }));
     }
 
+    // The master sitting down is the group taking a breather: take the opportunity to top off even
+    // if the usual low-resource bar was not hit. The trigger staggers each bot by its own delay, so
+    // the party does not drop to the floor in unison - bots never sit for any other reason.
+    triggers.push_back(new TriggerNode("master is resting", { NextAction("drink", 3.2f), NextAction("food", 3.1f) }));
+
     // In battlegrounds eating runs on short AI ticks instead of one long sleep; this hold keeps
     // the bot seated while it is safe, and simply not firing lets higher-priority actions
     // (objectives, combat) stand the bot up and break the regen aura.

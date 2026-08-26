@@ -69,6 +69,7 @@ public:
         creators["low energy"] = &TriggerContext::LowEnergy;
         creators["high mana"] = &TriggerContext::HighMana;
         creators["consuming food or drink"] = &TriggerContext::ConsumingFoodOrDrink;
+        creators["master is resting"] = &TriggerContext::MasterIsResting;
         creators["almost full mana"] = &TriggerContext::AlmostFullMana;
         creators["enough mana"] = &TriggerContext::EnoughMana;
 
@@ -398,6 +399,7 @@ private:
     static Trigger* TargetCriticalHealth(PlayerbotAI* botAI) { return new TargetCriticalHealthTrigger(botAI); }
     static Trigger* LowMana(PlayerbotAI* botAI) { return new LowManaTrigger(botAI); }
     static Trigger* ConsumingFoodOrDrink(PlayerbotAI* botAI) { return new ConsumingFoodOrDrinkTrigger(botAI); }
+    static Trigger* MasterIsResting(PlayerbotAI* botAI) { return new MasterIsRestingTrigger(botAI); }
     static Trigger* MediumMana(PlayerbotAI* botAI) { return new MediumManaTrigger(botAI); }
     static Trigger* LowEnergy(PlayerbotAI* botAI) { return new LowEnergyTrigger(botAI); }
     static Trigger* HighMana(PlayerbotAI* botAI) { return new HighManaTrigger(botAI); }

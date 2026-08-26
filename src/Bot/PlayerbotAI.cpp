@@ -1808,12 +1808,12 @@ void PlayerbotAI::DoNextAction(bool min)
         else
             bot->m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_WALKING);
 
-        if (master->IsSitState() && nextAICheckDelay < 1000)
-        {
-            if (!bot->isMoving() && distance < 10.0f)
-                bot->SetStandState(UNIT_STAND_STATE_SIT);
-        }
-        else if (nextAICheckDelay < 1000)
+        // A bot has no reason to sit unless it is eating or drinking: mirroring the master's sit
+        // put the whole party on the floor on the same tick, which reads as a script rather than
+        // as people. Eating and drinking bots hold a check delay of at least 1000ms (see
+        // ContinueEatingAction) and so are never stood up here; the master resting is instead
+        // picked up by the "master is resting" trigger, which sends them for a drink.
+        if (nextAICheckDelay < 1000)
             bot->SetStandState(UNIT_STAND_STATE_STAND);
     }
     else if (bot->m_movementInfo.HasMovementFlag(MOVEMENTFLAG_WALKING))

@@ -563,6 +563,22 @@ progress when the bot crosses the city border still finishes. Inns and
 taverns outside capitals are unaffected. No config option — it's always
 on.
 
+## Sitting means eating or drinking
+
+Bots have no reason to sit unless they are having a meal. Upstream mirrored
+the party leader: the moment you sat down, every bot within 10 yards
+dropped to the floor on the same server tick and stood back up with you —
+a synchronized tell no group of people produces. That mirroring is gone.
+
+The leader resting is still read as a signal, just a different one: it's
+the group stopping, so it's the moment to top off. A bot within 20 yards
+of a resting master, out of combat and below 95% mana (or health), breaks
+out food or water even though its usual low-resource bar hasn't been hit —
+each bot after its own deterministic delay of up to 4 seconds, so the
+answers arrive spread out rather than in unison. Everything else that puts
+a bot on the ground (its own meal, the `sit` command, idle roleplay sits)
+is unchanged. No config option.
+
 ## World PvP excursions
 
 Random bots occasionally travel to enemy or contested

@@ -313,6 +313,19 @@ public:
     bool IsActive() override;
 };
 
+// The master sitting down is the group's "we are stopping here" signal: a chance to top off before
+// the next pull, not a reason to sit around. Each bot takes it after its own small delay.
+class MasterIsRestingTrigger : public Trigger
+{
+public:
+    MasterIsRestingTrigger(PlayerbotAI* botAI) : Trigger(botAI, "master is resting") {}
+
+    bool IsActive() override;
+
+private:
+    uint32 masterSatDownAt = 0;  // ms stamp of the first tick this bot saw the master resting
+};
+
 class LightAoeTrigger : public AoeTrigger
 {
 public:

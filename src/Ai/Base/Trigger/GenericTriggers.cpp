@@ -386,6 +386,48 @@ bool ConsumingFoodOrDrinkTrigger::IsActive()
            (BotConsumables::IsDrinking(bot) && bot->GetPowerPct(POWER_MANA) < 100.0f);
 }
 
+namespace
+{
+// "Master is resting" tuning (Felworld). Internal - deliberately not configurable, like the dungeon
+// spread constants in Formations.cpp.
+constexpr float MASTER_REST_RANGE = 20.0f;         // close enough that his break is the bot's break
+constexpr float MASTER_REST_TOPUP_PCT = 95.0f;     // worth a drink even if the usual low bar is not hit
+constexpr uint32 MASTER_REST_STAGGER_MS = 4000;    // widest personal delay before taking the hint
+
+// Each bot answers the master sitting down on its own beat instead of the whole party dropping at
+// once. Deterministic per bot, so the same bot is always the eager one or the slow one.
+uint32 MasterRestReactionDelay(Player* bot)
+{
+    return uint32((bot->GetGUID().GetRawValue() * 2654435761ULL) % MASTER_REST_STAGGER_MS);
+}
+}  // namespace
+
+bool MasterIsRestingTrigger::IsActive()
+{
+    Player* master = botAI->GetMaster();
+    if (!master || master == bot || !master->IsInWorld() || !master->IsSitState() ||
+        master->GetMapId() != bot->GetMapId() || bot->GetExactDist(master) > MASTER_REST_RANGE)
+    {
+        masterSatDownAt = 0;
+        return false;
+    }
+
+    if (!bot->IsAlive() || bot->IsInCombat() || master->IsInCombat())
+        return false;
+
+    uint32 const now = getMSTime();
+    if (!masterSatDownAt)
+        masterSatDownAt = now;
+
+    if (getMSTimeDiff(masterSatDownAt, now) < MasterRestReactionDelay(bot))
+        return false;
+
+    if (bot->getPowerType() == POWER_MANA && bot->GetPowerPct(POWER_MANA) < MASTER_REST_TOPUP_PCT)
+        return true;
+
+    return bot->GetHealthPct() < MASTER_REST_TOPUP_PCT;
+}
+
 bool SelfResurrectTrigger::IsActive()
 {
     // Once the enemy-wait hold expires, use the self-res even with the enemy still
