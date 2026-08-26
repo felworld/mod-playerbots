@@ -41,6 +41,21 @@ bool ChestRollMgr::IsRollableChest(GameObject* go, uint32 lootSkillId)
     if (goInfo->chest.groupLootRules || goInfo->chest.questId)
         return false;
 
+    // Only a chest that is emptied once is worth contesting. A chest that
+    // is not consumed by looting (chest.consumable == 0) goes straight back
+    // to GO_READY when the looter is done, and one with a restock timer
+    // (chest.chestRestockTime) re-arms after that many seconds; either way
+    // the core rolls fresh personal loot for the next player who opens it
+    // (Player::SendLoot -> Loot::FillLoot with personal = true), so every
+    // group member can take their own copy and a roll decides nothing.
+    // Scarlet Monastery's "Red Rocket" (entry 103820, chestRestockTime 1)
+    // is one of these - bots rolled over its Red Fireworks Rocket, which
+    // everyone standing there could simply loot. Ambiguous chests belong on
+    // this side of the line: a skipped roll is invisible, a pointless
+    // roll-off is a robotic tell.
+    if (!goInfo->chest.consumable || goInfo->chest.chestRestockTime)
+        return false;
+
     // Gathering nodes are chests too; those stay first-come-first-served.
     switch (lootSkillId)
     {

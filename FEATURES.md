@@ -442,9 +442,12 @@ too by typing `/roll` within the ~5-second window — and if they win,
 the bots leave the chest alone (bots re-consider it after 60 seconds if
 the winner never collects, so a passed-up chest doesn't stay locked
 forever). Only genuinely contested chests get a roll-off: gathering
-nodes, quest chests, and chests with group loot rules (whose contents
-already go through real need/greed rolls) are exempt, as are all-bot
-groups, which loot the way they always did.
+nodes, quest chests, chests with group loot rules (whose contents
+already go through real need/greed rolls), and chests that everyone can
+loot anyway — the ones that aren't consumed by looting or that restock
+on a timer, so the next player who opens them gets their own copy (the
+Scarlet Monastery fireworks rockets are the classic case) — are exempt,
+as are all-bot groups, which loot the way they always did.
 `AiPlayerbot.ChestRollEnable` in `playerbots.conf.dist` (default off
 upstream-style; enabled in the Felworld config tree).
 
