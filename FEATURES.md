@@ -503,6 +503,34 @@ buffed by already-flagged bots. `AiPlayerbot.EnableSocialBuffing` and
 `AiPlayerbot.EnableHealThanks` (both default on) plus radius/cooldown
 knobs in `playerbots.conf.dist`.
 
+## Buff requests that stick
+
+Ask a paladin for Wisdom and upstream gives it to you once, then quietly
+paves over it with the role default on the next re-bless — one blessing
+per paladin per target means every refresh re-decides, and the bot has no
+memory of what you asked for. `!prefer buff <name>` records the choice
+instead: the bot resolves the name against its own spellbook (so it
+refuses buffs it never trained), remembers it for you specifically, and
+its blessing upkeep casts that one from then on. `!prefer buff` with no
+argument reports what's on file, `!prefer buff none` clears it.
+
+The preference lives for the lifetime of the party you share — long
+enough for a dungeon run, gone by the next group, never written to the
+database and never a config option. It's stored in a mutex-guarded board
+keyed by (bot, requester), written from the world thread and read from
+the map-update threads that run bot upkeep. Two guards keep it from
+fighting the
+[stacking rules](https://github.com/felworld/mod-playerbots/blob/main/FEATURES.md#social-buffing):
+greater blessings stay out of the single-blessing path, and a blessing
+already up on you from a different paladin is left alone rather than
+overwritten. Paladins are the case that needed this — classes that stack
+all their buffs anyway have no choice to remember.
+
+mod-llm's `buff_player` tool writes the same board when a player names a
+buff in plain language, so "can I get BoW?" sticks exactly like the
+command does. See
+[mod-llm's FEATURES](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#buff-requests).
+
 ## Stealth-spotting reactions
 
 Upstream bots walked straight past a rogue they could technically see
@@ -2046,6 +2074,10 @@ with the `!` prefix described above:
   issue it, but only world (random) bots accept — your own alt bots ignore
   it. This is also the hook behind mod-llm's `go_defend` tool, so in LLM
   mode you can simply ask a bot in plain language to go help.
+- `!prefer buff <name>` / `!prefer buff none` — tell a bot which buff to
+  keep on you instead of the one it would pick by role, for as long as
+  you share a party. Detailed in
+  [Buff requests that stick](#buff-requests-that-stick).
 - `!conjure food` / `!conjure water`, `!portal <city>`, `!ritual` — the
   mage and warlock class services described in
   [Class service commands](#class-service-commands).

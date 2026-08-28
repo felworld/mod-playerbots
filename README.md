@@ -85,6 +85,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
   keep the heals coming once committed.
 - **[Social buffing](FEATURES.md#social-buffing)** — idle bots buff
   passers-by, return buffs, and thank strangers for heals.
+- **[Buff requests that stick](FEATURES.md#buff-requests-that-stick)** —
+  `!prefer buff <name>` makes a bot keep the buff you asked for on you
+  instead of re-picking its own default every refresh.
 - **[Stealth-spotting reactions](FEATURES.md#stealth-spotting-reactions)** —
   a bot that detects someone stealthed nearby freezes and snaps around to
   face them, sometimes waving at a friendly sneak or calling out a hostile
@@ -264,6 +267,8 @@ Spoken to a bot (with the `!` prefix, like every
 - `!grind quests` — switch to the quest-aware grind strategy.
 - `!wpvp defend [zone]` — order a random bot to come defend a zone (the one
   you're standing in if omitted).
+- `!prefer buff <name>` / `!prefer buff none` — pick which buff a bot keeps
+  on you, for as long as you share a party.
 - `!conjure food` / `!conjure water`, `!portal <city>`, `!ritual` — mage
   and warlock class services (conjured goods handed to you, city portals,
   summoning rituals).

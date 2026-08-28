@@ -6,12 +6,18 @@
 
 #include "PaladinActions.h"
 #include "AiFactory.h"
+#include "BuffPreference.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
 #include "PaladinGreaterBlessingAction.h"
 #include "PaladinHelper.h"
 #include "Playerbots.h"
 #include "SharedDefines.h"
+#include "SpellInfo.h"
+#include "SpellMgr.h"
+
+#include <algorithm>
+#include <cctype>
 
 namespace ai::paladin
 {
@@ -241,6 +247,48 @@ inline std::string const GetActualBlessingOfSanctuary(Unit* target, Player* bot)
     return "";
 }
 
+// One blessing per paladin per target means every re-bless is a fresh choice,
+// so a blessing someone asked for has to be re-chosen every time or it gets
+// paved over by the role default a minute later. `fallback` is what this bot
+// would have picked on its own.
+static std::string const PreferredBlessing(
+    Player* bot, PlayerbotAI* botAI, Unit* target, std::string const& fallback)
+{
+    Player* targetPlayer = target ? target->ToPlayer() : nullptr;
+    if (!targetPlayer)
+        return fallback;
+
+    uint32 const preferred = BuffPreferenceBoard::instance().Get(bot, targetPlayer);
+    if (!preferred)
+        return fallback;
+
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(preferred);
+    if (!spellInfo || !spellInfo->SpellName[0])
+        return fallback;
+
+    std::string name = spellInfo->SpellName[0];
+    std::transform(name.begin(), name.end(), name.begin(),
+                   [](unsigned char c) { return std::tolower(c); });
+
+    // Greater blessings belong to the group-wide assignment path, and a
+    // preference for some other class's buff is not this bot's to honour.
+    if (name.rfind("blessing of ", 0) != 0)
+        return fallback;
+
+    // Someone else already has it up on them - take the fallback rather than
+    // trade overwrites with the other paladin.
+    if (botAI->HasAura(name, target) || botAI->HasAura("greater " + name, target))
+        return fallback;
+
+    for (uint32 id = preferred; id; id = sSpellMgr->GetNextSpellInChain(id))
+    {
+        if (bot->HasSpell(id))
+            return name;
+    }
+
+    return fallback;
+}
+
 Unit* CastBlessingOfMightOnPartyAction::GetTarget()
 {
     if (IsGreaterBlessingMode(bot))
@@ -261,7 +309,7 @@ bool CastBlessingOfMightAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    std::string castName = GetActualBlessingOfMight(target);
+    std::string castName = PreferredBlessing(bot, botAI, target, GetActualBlessingOfMight(target));
     return botAI->CastSpell(castName, target);
 }
 
@@ -283,7 +331,7 @@ bool CastBlessingOfMightOnPartyAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    std::string castName = GetActualBlessingOfMight(target);
+    std::string castName = PreferredBlessing(bot, botAI, target, GetActualBlessingOfMight(target));
     return botAI->CastSpell(castName, target);
 }
 
@@ -293,7 +341,7 @@ bool CastBlessingOfWisdomAction::Execute(Event /*event*/)
     if (!target)
         return false;
 
-    std::string castName = GetActualBlessingOfWisdom(target);
+    std::string castName = PreferredBlessing(bot, botAI, target, GetActualBlessingOfWisdom(target));
     return botAI->CastSpell(castName, target);
 }
 
@@ -341,7 +389,7 @@ bool CastBlessingOfWisdomOnPartyAction::Execute(Event /*event*/)
         targetPlayer && IsTankRole(targetPlayer))
         return false;
 
-    std::string castName = GetActualBlessingOfWisdom(target);
+    std::string castName = PreferredBlessing(bot, botAI, target, GetActualBlessingOfWisdom(target));
     if (castName.empty())
         return false;
 
@@ -431,7 +479,8 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
         if (targetPlayer)
         {
             if (IsTankRole(targetPlayer))
-                return botAI->CastSpell("blessing of sanctuary", target);
+                return botAI->CastSpell(
+                    PreferredBlessing(bot, botAI, target, "blessing of sanctuary"), target);
             else
                 return false;
         }
@@ -439,7 +488,7 @@ bool CastBlessingOfSanctuaryOnPartyAction::Execute(Event /*event*/)
             return false;
     }
 
-    return botAI->CastSpell("blessing of sanctuary", target);
+    return botAI->CastSpell(PreferredBlessing(bot, botAI, target, "blessing of sanctuary"), target);
 }
 
 Unit* CastBlessingOfSanctuaryOnPartyAction::GetTarget()
@@ -547,7 +596,7 @@ bool CastBlessingOfKingsOnPartyAction::Execute(Event /*event*/)
             return false;
     }
 
-    return botAI->CastSpell("blessing of kings", target);
+    return botAI->CastSpell(PreferredBlessing(bot, botAI, target, "blessing of kings"), target);
 }
 
 bool CastSealSpellAction::isUseful()

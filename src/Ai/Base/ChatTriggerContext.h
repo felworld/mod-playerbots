@@ -81,6 +81,7 @@ public:
         creators["destroy"] = &ChatTriggerContext::destroy;
         creators["emote"] = &ChatTriggerContext::emote;
         creators["buff"] = &ChatTriggerContext::buff;
+        creators["prefer buff"] = &ChatTriggerContext::prefer_buff;
         creators["help"] = &ChatTriggerContext::help;
         creators["gb"] = &ChatTriggerContext::gb;
         creators["gbank"] = &ChatTriggerContext::gb;
@@ -236,6 +237,7 @@ private:
     static Trigger* bank(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "bank"); }
     static Trigger* help(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "help"); }
     static Trigger* buff(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "buff"); }
+    static Trigger* prefer_buff(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "prefer buff"); }
     static Trigger* emote(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "emote"); }
     static Trigger* destroy(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "destroy"); }
     static Trigger* home(PlayerbotAI* botAI) { return new ChatCommandTrigger(botAI, "home"); }

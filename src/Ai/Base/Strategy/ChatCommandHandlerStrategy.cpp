@@ -123,6 +123,7 @@ ChatCommandHandlerStrategy::ChatCommandHandlerStrategy(PlayerbotAI* botAI) : Pas
     supported.push_back("reset botAI");
     supported.push_back("emote");
     supported.push_back("buff");
+    supported.push_back("prefer buff");
     supported.push_back("help");
     supported.push_back("gb");
     supported.push_back("bank");

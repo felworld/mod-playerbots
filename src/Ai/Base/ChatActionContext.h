@@ -11,6 +11,7 @@
 #include "AttackAction.h"
 #include "BankAction.h"
 #include "BuffAction.h"
+#include "BuffPreferenceAction.h"
 #include "BuyAction.h"
 #include "CastCustomSpellAction.h"
 #include "ClassServiceActions.h"
@@ -156,6 +157,7 @@ public:
         creators["destroy"] = &ChatActionContext::destroy;
         creators["reset botAI"] = &ChatActionContext::reset_ai;
         creators["buff"] = &ChatActionContext::buff;
+        creators["prefer buff"] = &ChatActionContext::prefer_buff;
         creators["help"] = &ChatActionContext::help;
         creators["gb"] = &ChatActionContext::gb;
         creators["bank"] = &ChatActionContext::bank;
@@ -281,6 +283,7 @@ private:
     static Action* bank(PlayerbotAI* botAI) { return new BankAction(botAI); }
     static Action* help(PlayerbotAI* botAI) { return new HelpAction(botAI); }
     static Action* buff(PlayerbotAI* botAI) { return new BuffAction(botAI); }
+    static Action* prefer_buff(PlayerbotAI* botAI) { return new BuffPreferenceAction(botAI); }
     static Action* destroy(PlayerbotAI* botAI) { return new DestroyItemAction(botAI); }
     static Action* home(PlayerbotAI* botAI) { return new SetHomeAction(botAI); }
     static Action* chat(PlayerbotAI* botAI) { return new ChangeChatAction(botAI); }
