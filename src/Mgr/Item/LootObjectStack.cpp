@@ -496,9 +496,10 @@ LootObject LootObjectStack::GetNearest(float maxDistance)
     }
 
     // Reaching here means the bot could open it, so only a capable opener
-    // enters the contest. Losing it (or still waiting on an earlier roll)
-    // costs this pass rather than pushing the bot on to the next chest,
-    // which is what turned one sighting into a burst of rolls.
+    // enters the contest. Losing it (or holding off while the group's one
+    // open contest runs) costs this pass rather than pushing the bot on to
+    // the next chest, which is what turned one sighting into a burst of
+    // rolls.
     if (!nearest.IsEmpty())
         if (WorldObject* worldObj = ObjectAccessor::GetWorldObject(*bot, nearest.guid))
             if (GameObject* go = worldObj->ToGameObject())

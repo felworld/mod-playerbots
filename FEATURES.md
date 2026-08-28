@@ -590,11 +590,12 @@ set it to 2 to keep the group to the bot and you) in
 In a group that contains a real player, bots don't ninja-loot world
 chests anymore: when the group spots a lootable chest, every bot that
 could open it does a visible `/roll` (1–100) and only the highest
-roller walks over and opens it. A bot rolls for one chest at a time —
-the one it has actually settled on as its next loot target — and holds
-its next roll until that one is settled, so a cluster of chests draws
-one roll rather than a burst. The real player can enter the contest
-too by typing `/roll` within the ~5-second window — and if they win,
+roller walks over and opens it. One contest per group runs at a time,
+and the bot that opens it first announces the chest in group chat
+("Rolling for Battered Chest"), so the rolls that follow always
+unambiguously refer to the announced chest — a cluster of chests draws
+one contest after another, never a burst. The real player can enter the
+contest too by typing `/roll` within the ~5-second window — and if they win,
 the bots leave the chest alone (bots re-consider it after 60 seconds if
 the winner never collects, so a passed-up chest doesn't stay locked
 forever). Only genuinely contested chests get a roll-off: gathering

@@ -20,7 +20,9 @@ class Player;
 // range ninja-looting, every bot that could open the chest performs a visible
 // /roll (1-100) and only the highest roller opens it. A real player in the
 // group can join the contest by typing /roll during the window; if the player
-// wins, the bots leave the chest alone.
+// wins, the bots leave the chest alone. One contest per group runs at a time,
+// and the bot that opens it announces the chest in group chat, so every roll
+// on screen unambiguously refers to the announced chest.
 class ChestRollMgr
 {
 public:
@@ -34,10 +36,12 @@ public:
 
     // Gate called once the bot has settled on the gameobject as its loot
     // target. Returns true when it may loot now; for an eligible chest this
-    // starts or joins a roll-off (side effect: the bot /rolls once) and
-    // returns false while the contest is undecided or was lost to someone
-    // else. A bot with a roll already in the air never opens a second
-    // contest, so one sighting produces one roll.
+    // starts or joins a roll-off (side effect: the bot /rolls once, and the
+    // opener first announces the chest to the group) and returns false while
+    // the contest is undecided or was lost to someone else. Contests are
+    // serialized per group: no new one opens while another is running, so
+    // one sighting produces one roll and chat never interleaves two
+    // contests.
     bool MayLoot(Player* bot, GameObject* go, uint32 lootSkillId);
 
     // Record a real player's /roll observed via MSG_RANDOM_ROLL so it
@@ -68,8 +72,9 @@ private:
     // The group whose roll-off governs this chest for the bot, or nullptr
     // when the chest isn't arbitrated at all.
     static Group* ArbitratingGroup(Player* bot, GameObject* go, uint32 lootSkillId);
-    // Whether the bot is already waiting on a roll it made in this group.
-    bool HasRollInTheAir(ObjectGuid botGuid, ObjectGuid groupGuid, time_t now) const;
+    // Whether the group already has an undecided contest inside its roll
+    // window - if so, nobody opens another.
+    bool GroupHasOpenContest(ObjectGuid groupGuid, time_t now) const;
     void Prune(time_t now);
 
     std::mutex _mutex;

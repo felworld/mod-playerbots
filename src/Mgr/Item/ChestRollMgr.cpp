@@ -98,16 +98,11 @@ Group* ChestRollMgr::ArbitratingGroup(Player* bot, GameObject* go, uint32 lootSk
     return group;
 }
 
-bool ChestRollMgr::HasRollInTheAir(ObjectGuid botGuid, ObjectGuid groupGuid, time_t now) const
+bool ChestRollMgr::GroupHasOpenContest(ObjectGuid groupGuid, time_t now) const
 {
     for (auto const& [chestGuid, session] : _sessions)
-    {
-        if (session.decided || session.groupGuid != groupGuid || now > session.rollsCloseAt)
-            continue;
-
-        if (session.rolls.find(botGuid) != session.rolls.end())
+        if (!session.decided && session.groupGuid == groupGuid && now <= session.rollsCloseAt)
             return true;
-    }
 
     return false;
 }
@@ -156,15 +151,26 @@ bool ChestRollMgr::MayLoot(Player* bot, GameObject* go, uint32 lootSkillId)
     auto it = _sessions.find(go->GetGUID());
     if (it == _sessions.end())
     {
-        // Nobody has contested this chest yet. Opening the contest is a
-        // visible /roll, so a bot already waiting on one holds off rather
-        // than rolling for every chest it walks past.
-        if (HasRollInTheAir(botGuid, groupGuid, now))
+        // Contests are serialized per group: while one is open, nobody
+        // opens another, so the rolls in chat always refer to the one
+        // announced chest (and the human's /roll, recorded into every open
+        // session of the group, can only mean one thing). This bot simply
+        // retries on a later loot pass; the wait is at most one window.
+        if (GroupHasOpenContest(groupGuid, now))
             return false;
 
         Session& fresh = _sessions[go->GetGUID()];
         fresh.groupGuid = groupGuid;
         fresh.rollsCloseAt = now + ROLL_WINDOW_SECS;
+        // The opener anchors the contest for any humans watching: without
+        // this line the rolls that follow are uninterpretable, and it
+        // doubles as the invitation to type /roll and join in. Sent under
+        // the lock, but chat delivery never calls back into this manager.
+        if (PlayerbotAI* botAI = GET_PLAYERBOT_AI(bot))
+        {
+            std::string announce = "Rolling for " + go->GetGOInfo()->name;
+            group->isRaidGroup() ? botAI->SayToRaid(announce) : botAI->SayToParty(announce);
+        }
         // Safe under the lock: the group broadcast reaches the other bots'
         // packet handlers synchronously, but those discard playerbot
         // rollers before calling back into this manager.
@@ -180,8 +186,7 @@ bool ChestRollMgr::MayLoot(Player* bot, GameObject* go, uint32 lootSkillId)
     {
         if (now <= session.rollsCloseAt)
         {
-            if (session.rolls.find(botGuid) == session.rolls.end() &&
-                !HasRollInTheAir(botGuid, groupGuid, now))
+            if (session.rolls.find(botGuid) == session.rolls.end())
                 session.rolls[botGuid] = { bot->DoRandomRoll(1, 100), session.nextOrder++ };
 
             return false;
