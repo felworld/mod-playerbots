@@ -6,7 +6,11 @@
 
 #include "PriestActions.h"
 #include "Event.h"
+#include "FelworldEvents.h"
+#include "ImmunitySpells.h"
+#include "Metric.h"
 #include "Playerbots.h"
+#include "StringFormat.h"
 
 bool CastRemoveShadowformAction::Execute(Event /*event*/)
 {
@@ -108,4 +112,48 @@ bool CastPowerWordShieldOnNotFullAction::isUseful()
 Value<Unit*>* CastPowerInfusionOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>("party member to boost");
+}
+
+bool CastMassDispelAction::isUseful()
+{
+    // "spell id" reads the bot's own spellbook - zero until the priest has learned Mass Dispel.
+    if (!AI_VALUE2(uint32, "spell id", "mass dispel"))
+        return false;
+
+    // The spell is a third of base mana - a priest that would be left dry is better off with the
+    // plain standoff (backing away and drinking) one relevance step below.
+    if (AI_VALUE2(uint8, "mana", "self target") < sPlayerbotAIConfig.mediumMana)
+        return false;
+
+    Unit* enemy = AI_VALUE(Unit*, "immune enemy near");
+    return enemy && ai::immunity::HasDispellableImmunity(enemy) &&
+           bot->IsWithinDistInMap(enemy, botAI->GetRange("spell"));
+}
+
+bool CastMassDispelAction::Execute(Event /*event*/)
+{
+    Unit* enemy = AI_VALUE(Unit*, "immune enemy near");
+    if (!enemy || !ai::immunity::HasDispellableImmunity(enemy))
+        return false;
+
+    uint32 const spellId = AI_VALUE2(uint32, "spell id", "mass dispel");
+    if (!spellId)
+        return false;
+
+    // Cast at the enemy's position: the unit-target cast path refuses immune targets, the dest
+    // path has no such gate, and stripping through the bubble is Mass Dispel's own privilege
+    // (SPELL_ATTR0_UNAFFECTED_BY_INVULNERABILITY in its spell data).
+    float x = enemy->GetPositionX();
+    float y = enemy->GetPositionY();
+    float z = enemy->GetPositionZ();
+    bot->UpdateAllowedPositionZ(x, y, z);
+
+    if (!botAI->CanCastSpell(spellId, x, y, z) || !botAI->CastSpell(spellId, x, y, z))
+        return false;
+
+    LOG_DEBUG("playerbots", "Bot {} mass dispels the immunity off {}", bot->GetName(), enemy->GetName());
+    Felworld::LogEvent(bot->GetGUID(), "mass_dispel_immunity",
+                       Acore::StringFormat("{{\"target\":\"{}\"}}", enemy->GetName()));
+    METRIC_VALUE("playerbots_mass_dispel_immunity", 1);
+    return true;
 }

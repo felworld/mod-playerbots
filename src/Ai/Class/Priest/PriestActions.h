@@ -52,7 +52,18 @@ public:
         : GroupBuffOnPartyAction(botAI, "divine spirit") {}
 };
 // disc 2.4.3
-SPELL_ACTION(CastMassDispelAction, "mass dispel");
+// Offensive Mass Dispel: strip the immunity off a bubbled enemy player (Divine Shield, Ice
+// Block) instead of waiting it out. Cast at the enemy's position - the unit-target cast path
+// rejects immune targets, the dest path does not, and Mass Dispel's own spell data is what
+// lets it pierce the bubble (Felworld).
+class CastMassDispelAction : public CastSpellAction
+{
+public:
+    CastMassDispelAction(PlayerbotAI* botAI) : CastSpellAction(botAI, "mass dispel") {}
+
+    bool isUseful() override;
+    bool Execute(Event event) override;
+};
 
 // disc talents
 BUFF_ACTION(CastPowerInfusionAction, "power infusion");

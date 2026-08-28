@@ -52,6 +52,12 @@ void PriestNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
         new TriggerNode("group heal setting",{ NextAction("circle of healing on party", 27.0f) }));
     triggers.push_back(new TriggerNode("new pet",
                                       { NextAction("set pet stance", 10.0f) }));
+
+    // A priest doesn't wait a bubble out - Mass Dispel strips it and the fight resumes now
+    // (above the shared "immunity standoff" peel at 43). The action's own gates cover knowing
+    // the spell, mana and range; when any fails, the plain standoff takes over (Felworld).
+    triggers.push_back(new TriggerNode("immune enemy near",
+                                       { NextAction("mass dispel", 46.0f) }));
 }
 
 void PriestBuffStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
