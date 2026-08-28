@@ -13,6 +13,7 @@
 #include "ChatHelper.h"
 #include "ChestRollMgr.h"
 #include "CheckMountStateAction.h"
+#include "CombatDirective.h"
 #include "Common.h"
 #include "CreatureData.h"
 #include "DBCStores.h"
@@ -285,6 +286,12 @@ void PlayerbotAI::UpdateAI(uint32 elapsed, bool minimal)
     if (Unit* selected = bot->GetSelectedUnit())
         if (!bot->CanSeeOrDetect(selected))
             bot->SetSelection(ObjectGuid());
+
+    // Take up combat orders given to this bot ("no AoE here") and give back
+    // what an ended party left behind. Done here, on the thread that owns the
+    // bot, so no other thread ever reaches into its engines. Costs an atomic
+    // read while nobody has given an order.
+    CombatDirectiveBoard::instance().Sync(bot, this);
 
     if (!CanUpdateAI())
         return;

@@ -531,6 +531,53 @@ buff in plain language, so "can I get BoW?" sticks exactly like the
 command does. See
 [mod-llm's FEATURES](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#buff-requests).
 
+## Combat orders that expire with the party
+
+`co -aoe` typed at a bot already turns its AoE off, and that path is
+unchanged — real players keep driving strategies directly. What it isn't
+is an *order*: it's one bot's setting, permanent until someone
+countermands it, still in force long after the party that asked for it
+disbanded. A bot told "no AoE" in Scarlet Monastery would spend the rest
+of the night refusing to AoE alone in Un'Goro.
+
+The directive board records the order instead of burning it into the
+bot. Each bot reconciles itself against the board on its own update
+tick: it applies an order it hasn't taken up yet, and undoes exactly what
+it applied once the issuer is no longer in its group. Doing the strategy
+work on the bot's own thread means no other thread ever reaches into its
+engines, and the reconciliation costs one atomic read per tick while
+nobody has given an order. Nothing is persisted — the saved strategy list
+stays whatever `co`/`nc` last wrote.
+
+Orders come in opposed pairs, and a new one replaces its pair's previous
+order rather than stacking, so set and clear are both idempotent:
+
+| Order | Effect |
+| --- | --- |
+| no AoE | removes the bot's AoE combat strategy |
+| AoE ok | lifts an earlier no-AoE order |
+| conserve mana | adds the `save mana` strategy |
+| mana free | removes the `save mana` strategy |
+
+AoE has no single strategy name — most classes file theirs as `aoe`,
+priests as `shadow aoe`, death knights split it by spec, and paladins
+have none at all — so a no-AoE order names every candidate and only the
+ones a given bot actually runs are touched, recording each so it can be
+handed back exactly. That asymmetry is why "AoE ok" is a pure
+countermand: there's no class-independent way to switch AoE back on, and
+blindly adding every candidate would hand a frost death knight the unholy
+rotation.
+
+The board is mutex-guarded, keyed by bot, written from the world thread
+and read from the map-update threads. A bot that logs out holding an
+order takes nothing with it (none of this was persisted), so the sweep
+only drops the entry.
+
+mod-llm's `combat_directive` tool writes this board when a player says it
+in plain language — "no AoE on this pull" — with the party-wide fan-out
+driven by who was addressed. See
+[mod-llm's FEATURES](https://github.com/felworld/mod-llm/blob/main/FEATURES.md#combat-orders).
+
 ## Stealth-spotting reactions
 
 Upstream bots walked straight past a rogue they could technically see

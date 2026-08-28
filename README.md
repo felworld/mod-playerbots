@@ -88,6 +88,9 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Buff requests that stick](FEATURES.md#buff-requests-that-stick)** —
   `!prefer buff <name>` makes a bot keep the buff you asked for on you
   instead of re-picking its own default every refresh.
+- **[Combat orders that expire with the party](FEATURES.md#combat-orders-that-expire-with-the-party)** —
+  a directive board for standing instructions ("no AoE") that toggles the
+  matching strategies and hands them back when the party ends.
 - **[Stealth-spotting reactions](FEATURES.md#stealth-spotting-reactions)** —
   a bot that detects someone stealthed nearby freezes and snaps around to
   face them, sometimes waving at a friendly sneak or calling out a hostile
