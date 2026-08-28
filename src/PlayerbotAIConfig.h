@@ -247,6 +247,9 @@ public:
     bool enableHealThanks;
     uint32 socialThankCooldown;
 
+    // standoff against damage-immune enemy players (Felworld)
+    bool enableImmunityStandoff;
+
     // stealth-spotting reactions (Felworld)
     bool enableStealthReactions;
     uint32 stealthReactionCooldown;

@@ -8,6 +8,7 @@
 #define PLAYERBOTS_IMMUNITYACTIONS_H
 
 #include "GenericSpellActions.h"
+#include "MovementActions.h"
 
 #include <vector>
 
@@ -80,6 +81,19 @@ class CancelBanishAction : public Action
 public:
     CancelBanishAction(PlayerbotAI* botAI) : Action(botAI, "cancel banish") {}
 
+    bool Execute(Event event) override;
+};
+
+// Backs away from a damage-immune enemy player instead of standing in their reach: a bubbled
+// paladin still swings, and the bot cannot swing back. Repeats while the enemy stays close; once
+// the gap is opened the node goes quiet and the ordinary recovery triggers (food, drink,
+// self-heals) take the rest of the window (Felworld).
+class ImmunityStandoffAction : public MovementAction
+{
+public:
+    ImmunityStandoffAction(PlayerbotAI* botAI) : MovementAction(botAI, "immunity standoff") {}
+
+    bool isUseful() override;
     bool Execute(Event event) override;
 };
 

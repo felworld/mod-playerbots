@@ -681,6 +681,9 @@ bool PlayerbotAIConfig::Initialize()
     enableHealThanks = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableHealThanks", true);
     socialThankCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.SocialThankCooldown", 180);
 
+    // standoff against damage-immune enemy players (Felworld)
+    enableImmunityStandoff = sConfigMgr->GetOption<bool>("AiPlayerbot.ImmunityStandoff", true);
+
     // stealth-spotting reactions (Felworld)
     enableStealthReactions = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableStealthReactions", true);
     stealthReactionCooldown = sConfigMgr->GetOption<uint32>("AiPlayerbot.StealthReactionCooldown", 180);

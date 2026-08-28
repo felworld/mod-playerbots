@@ -65,3 +65,20 @@ bool CancelBanishAction::Execute(Event /*event*/)
     // cast has to be retried, and a landed one already reads as "nothing banished".
     return botAI->CastSpell(banished.spellId, banished.unit);
 }
+
+bool ImmunityStandoffAction::isUseful()
+{
+    // Past the retreat step the gap is already open - stop walking and let the recovery
+    // triggers have the window.
+    Unit* enemy = AI_VALUE(Unit*, "immune enemy near");
+    return enemy && bot->GetDistance(enemy) < ai::immunity::STANDOFF_RETREAT_STEP;
+}
+
+bool ImmunityStandoffAction::Execute(Event /*event*/)
+{
+    Unit* enemy = AI_VALUE(Unit*, "immune enemy near");
+    if (!enemy)
+        return false;
+
+    return MoveAway(enemy, ai::immunity::STANDOFF_RETREAT_STEP, false);
+}

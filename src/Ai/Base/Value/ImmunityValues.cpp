@@ -6,6 +6,7 @@
 
 #include "ImmunityValues.h"
 
+#include "ImmunitySpells.h"
 #include "PlayerbotAIConfig.h"
 #include "Playerbots.h"
 #include "SpellAuras.h"
@@ -96,6 +97,56 @@ bool SafeToDropImmunityValue::EnemyPlayerInSight()
     }
 
     return false;
+}
+
+bool ImmuneEnemyPlayersValue::AcceptUnit(Unit* unit)
+{
+    // Deliberately NOT routed through PossibleTargetsValue::AcceptUnit: the AttackersValue filter
+    // it applies rejects every all-damage-immune unit, and those are exactly what this value is
+    // for.
+    Player* enemy = unit->ToPlayer();
+    if (!enemy || !enemy->IsAlive() || !enemy->IsVisible() || !bot->CanSeeOrDetect(enemy) ||
+        enemy->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE))
+        return false;
+
+    if (!ai::immunity::IsFullyDamageImmune(enemy))
+        return false;
+
+    // A duel opponent is a live threat wherever the duel happens (and may be same-faction).
+    if (bot->duel && bot->duel->Opponent == enemy)
+        return true;
+
+    if (!botAI->IsOpposing(enemy) || !(enemy->IsPvP() || enemy->IsFFAPvP()))
+        return false;
+
+    // Where the fight could not resume anyway (either side in a PvP-prohibited spot), there is
+    // nothing to wait out.
+    return !sPlayerbotAIConfig.IsPvpProhibited(enemy->GetZoneId(), enemy->GetAreaId()) &&
+           !sPlayerbotAIConfig.IsPvpProhibited(bot->GetZoneId(), bot->GetAreaId());
+}
+
+Unit* ImmuneEnemyNearValue::Calculate()
+{
+    if (!sPlayerbotAIConfig.enableImmunityStandoff)
+        return nullptr;
+
+    Unit* nearest = nullptr;
+    float nearestDist = 0.0f;
+    for (ObjectGuid const guid : AI_VALUE(GuidVector, "immune enemy players"))
+    {
+        Unit* unit = botAI->GetUnit(guid);
+        if (!unit || !unit->IsAlive())
+            continue;
+
+        float const dist = bot->GetDistance(unit);
+        if (!nearest || dist < nearestDist)
+        {
+            nearest = unit;
+            nearestDist = dist;
+        }
+    }
+
+    return nearest;
 }
 
 BanishedTarget FindBanishedTarget(PlayerbotAI* botAI)

@@ -3229,6 +3229,16 @@ AiPlayerbot.QuestCompetitionInviteCooldown = 600
 # no room, so the group stays the bot and the player.
 AiPlayerbot.QuestCompetitionGroupSize = 5
 
+# Immunity standoff (Felworld): when an enemy player nearby goes fully
+# damage-immune (Divine Shield, Ice Block), the bot can no longer touch
+# them - but a bubbled paladin can still swing at the bot. Instead of
+# shrugging and pulling a mob next to an armed enemy, the bot does what a
+# player does: holds its pulls, backs out of reach, and recovers (food,
+# drink, self-heals) until the immunity runs out and the fight resumes on
+# its own. Rogues being beaten on by a bubbled enemy Vanish; priests who
+# know Mass Dispel strip the bubble outright. Open world only.
+AiPlayerbot.ImmunityStandoff = 1
+
 # Stealth-spotting reactions (Felworld): when a bot's stealth detection
 # genuinely reaches a stealthed player nearby (the core detection math -
 # level and stealth/detect auras, up to 30 yards - but in all directions,

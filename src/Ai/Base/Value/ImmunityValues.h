@@ -8,6 +8,7 @@
 #define PLAYERBOTS_IMMUNITYVALUES_H
 
 #include "ObjectGuid.h"
+#include "PossibleTargetsValue.h"
 #include "Value.h"
 
 #include <ctime>
@@ -16,6 +17,14 @@
 class Aura;
 class PlayerbotAI;
 class Unit;
+
+namespace ai::immunity
+{
+    // How close a damage-immune enemy has to be to hold the bot's attention (and its pulls).
+    constexpr float STANDOFF_NOTICE_RANGE = 40.0f;
+    // How far the bot backs off from one while waiting the immunity out.
+    constexpr float STANDOFF_RETREAT_STEP = 30.0f;
+}
 
 // The bot's last own immunity cast (Ice Block, Divine Shield, Dispersion): which trigger asked for
 // it and when. "cancel immunity" only manages an aura it can match to a survival cast this way; an
@@ -79,6 +88,34 @@ private:
     bool FightIsOver();
     bool MobWouldReturn();
     bool EnemyPlayerInSight();
+};
+
+// Nearby opposing players the bot cannot currently hurt: PvP-flagged (or the bot's duel opponent)
+// and immune to all damage (Divine Shield, Ice Block, ...). The upstream immune filter
+// (AttackersValue) removes exactly these from every other target list, so the standoff needs its
+// own eyes (Felworld).
+class ImmuneEnemyPlayersValue : public PossibleTargetsValue
+{
+public:
+    ImmuneEnemyPlayersValue(PlayerbotAI* botAI)
+        : PossibleTargetsValue(botAI, "immune enemy players", ai::immunity::STANDOFF_NOTICE_RANGE)
+    {
+    }
+
+protected:
+    bool AcceptUnit(Unit* unit) override;
+};
+
+// The nearest of the above, or nullptr - the one enemy the standoff faces. Cached for a second:
+// the pull gate (AttackAnythingAction) consults it every tick and grid scans are not free.
+// Reads as nullptr while AiPlayerbot.ImmunityStandoff is off, which switches off the trigger and
+// the pull gate in one place (Felworld).
+class ImmuneEnemyNearValue : public UnitCalculatedValue
+{
+public:
+    ImmuneEnemyNearValue(PlayerbotAI* botAI) : UnitCalculatedValue(botAI, "immune enemy near", 1 * 1000) {}
+
+    Unit* Calculate() override;
 };
 
 #endif

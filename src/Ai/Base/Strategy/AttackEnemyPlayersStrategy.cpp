@@ -16,6 +16,12 @@ void AttackEnemyPlayersStrategy::InitTriggers(std::vector<TriggerNode*>& trigger
     // own guards keep it from drinking in an armed enemy's face (Felworld).
     triggers.push_back(new TriggerNode("wpvp drink up",
                                        { NextAction("drink", 4.25f), NextAction("food", 4.24f) }));
+    // An enemy behind a full damage immunity (Divine Shield, Ice Block)
+    // cannot be touched but may still swing - back out of their reach and
+    // recover until the bubble runs out, instead of tagging a mob next to
+    // them (Felworld).
+    triggers.push_back(new TriggerNode("immune enemy near",
+                                       { NextAction("immunity standoff", 43.0f) }));
     // An avoidant-grudge killer coming near outranks the salutes and
     // callouts below - the bot pleads and gets out of their way (Felworld).
     triggers.push_back(new TriggerNode("wpvp avoid killer",

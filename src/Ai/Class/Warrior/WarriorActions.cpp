@@ -6,6 +6,7 @@
 
 #include "WarriorActions.h"
 #include "AiFactory.h"
+#include "ImmunitySpells.h"
 #include "Playerbots.h"
 
 namespace
@@ -16,20 +17,8 @@ constexpr uint32 SPELL_SHATTERING_THROW = 64382;
 
 bool CastShatteringThrowAction::HasShatterableImmunity(Unit const* target)
 {
-    constexpr uint32 SPELL_DIVINE_SHIELD = 642;
-    constexpr uint32 SPELL_ICE_BLOCK = 45438;
-    // Hand of Protection, all three ranks - the pre-3.0 "Blessing of Protection" id never
-    // matched what a 3.3.5 paladin actually casts.
-    constexpr uint32 SPELL_HAND_OF_PROTECTION_RANKS[] = { 1022, 5599, 10278 };
-
-    if (target->HasAura(SPELL_DIVINE_SHIELD) || target->HasAura(SPELL_ICE_BLOCK))
-        return true;
-
-    for (uint32 spellId : SPELL_HAND_OF_PROTECTION_RANKS)
-        if (target->HasAura(spellId))
-            return true;
-
-    return false;
+    // Shattering Throw breaks exactly the immunities Mass Dispel strips (ImmunitySpells.h).
+    return ai::immunity::HasDispellableImmunity(target);
 }
 
 bool CastBerserkerRageAction::isPossible()

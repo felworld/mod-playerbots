@@ -88,6 +88,7 @@ public:
         creators["divine intervention outlived"] = &TriggerContext::divine_intervention_outlived;
         creators["hand of protection outlived"] = &TriggerContext::hand_of_protection_outlived;
         creators["banish outlived"] = &TriggerContext::banish_outlived;
+        creators["immune enemy near"] = &TriggerContext::immune_enemy_near;
         creators["fear sleep sap"] = &TriggerContext::fear_sleep_sap;
         creators["poison disease bleed"] = &TriggerContext::poison_disease_bleed;
         creators["movement impaired"] = &TriggerContext::movement_impaired;
@@ -484,6 +485,7 @@ private:
         return new HandOfProtectionOutlivedTrigger(botAI);
     }
     static Trigger* banish_outlived(PlayerbotAI* botAI) { return new BanishOutlivedTrigger(botAI); }
+    static Trigger* immune_enemy_near(PlayerbotAI* botAI) { return new ImmuneEnemyNearTrigger(botAI); }
     static Trigger* fear_charm_sleep(PlayerbotAI* botAI) { return new FearCharmSleepTrigger(botAI); }
     static Trigger* fear_sleep_sap(PlayerbotAI* botAI) { return new FearSleepSapTrigger(botAI); }
     static Trigger* poison_disease_bleed(PlayerbotAI* botAI) { return new PoisonDiseaseBleedTrigger(botAI); }

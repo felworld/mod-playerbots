@@ -365,6 +365,8 @@ public:
         creators["immunity cast"] = &ValueContext::immunity_cast;
         creators["safe to drop immunity"] = &ValueContext::safe_to_drop_immunity;
         creators["banished target"] = &ValueContext::banished_target;
+        creators["immune enemy players"] = &ValueContext::immune_enemy_players;
+        creators["immune enemy near"] = &ValueContext::immune_enemy_near;
     }
 
 private:
@@ -666,6 +668,8 @@ private:
     static UntypedValue* immunity_cast(PlayerbotAI* botAI) { return new ImmunityCastValue(botAI); }
     static UntypedValue* safe_to_drop_immunity(PlayerbotAI* botAI) { return new SafeToDropImmunityValue(botAI); }
     static UntypedValue* banished_target(PlayerbotAI* botAI) { return new BanishedTargetValue(botAI); }
+    static UntypedValue* immune_enemy_players(PlayerbotAI* botAI) { return new ImmuneEnemyPlayersValue(botAI); }
+    static UntypedValue* immune_enemy_near(PlayerbotAI* botAI) { return new ImmuneEnemyNearValue(botAI); }
 };
 
 #endif

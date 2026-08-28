@@ -12,6 +12,8 @@
 #include <string>
 #include <vector>
 
+class Unit;
+
 // The immunities "cancel immunity" knows how to drop (see ImmunityTriggers.h). Spell ids rather
 // than names, since Divine Intervention and Hand of Protection land on bots of every class and the
 // name lookup only covers spells the bot itself knows (Felworld).
@@ -32,6 +34,15 @@ namespace ai::immunity
     {
         return trigger == "critical health" || trigger == "low health" || trigger == "low mana";
     }
+
+    // The condition that makes AttackersValue drop a unit from every target list (upstream #2486):
+    // immune to both physical and magic damage. The wearer may still be able to act - a bubbled
+    // paladin keeps swinging.
+    bool IsFullyDamageImmune(Unit const* unit);
+
+    // Wearing one of the immunities Mass Dispel strips and Shattering Throw breaks: Divine Shield,
+    // Ice Block or Hand of Protection.
+    bool HasDispellableImmunity(Unit const* unit);
 }
 
 #endif

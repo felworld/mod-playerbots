@@ -104,4 +104,20 @@ public:
     bool IsActive() override;
 };
 
+// And the third side: an enemy player's immunity pointed at the bot. A bubbled enemy is untouchable
+// (the immune filter drops them from every target list) but may still be able to act, so the bot
+// stands off - no mob pulls, distance, recovery, class answers (Vanish, Mass Dispel) - until the
+// immunity runs out and the ordinary PvP paths resume the fight (Felworld).
+class ImmuneEnemyNearTrigger : public Trigger
+{
+public:
+    ImmuneEnemyNearTrigger(PlayerbotAI* botAI) : Trigger(botAI, "immune enemy near") {}
+
+    bool IsActive() override;
+    // Noticing the bubble is a human read of the enemy's buff bar - same latency family as a
+    // dispel, so the bot doesn't peel frame-perfectly on the cast.
+    ReactionCategory GetReactionCategory() override { return REACTION_DISPEL; }
+    std::string const GetTargetName() override { return "immune enemy near"; }
+};
+
 #endif

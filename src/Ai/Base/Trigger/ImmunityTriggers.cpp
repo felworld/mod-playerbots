@@ -89,3 +89,13 @@ bool BanishOutlivedTrigger::IsActive()
     return bot->IsWithinDistInMap(banished.unit, botAI->GetRange("spell")) &&
            bot->IsWithinLOSInMap(banished.unit) && !bot->HasSpellCooldown(banished.spellId);
 }
+
+bool ImmuneEnemyNearTrigger::IsActive()
+{
+    // Open world only: in a battleground the objective flow owns the bot's time (and the value
+    // reads empty there anyway while the feature stays scoped to wpvp).
+    if (!bot->IsAlive() || bot->InBattleground() || bot->InArena())
+        return false;
+
+    return AI_VALUE(Unit*, "immune enemy near") != nullptr;
+}
