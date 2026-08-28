@@ -1655,7 +1655,13 @@ the fight, a bot with no real resurrection spell but a set of jumper
 cables will walk to a dead group member and try a jump-start — the
 item's native fail chance supplies the comedy. Duels honor
 `AiPlayerbot.DuelConsumables` (engineering items are tier `1`, the
-Felworld setting). No other config knobs.
+Felworld setting).
+
+Each gadget use used to come with a chat line ("Throwing Iron Grenade at
+Defias Pillager"), which in a group with a couple of engineers turned
+into a wall of text. `AiPlayerbot.EngineeringChatterChance` (0-100,
+default 20) is the chance any single use gets announced at all — the
+gadgets themselves always fire regardless. No other config knobs.
 
 ## Outlived immunities
 

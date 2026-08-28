@@ -16,6 +16,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "Random.h"
 #include "SpellAuraDefines.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
@@ -109,8 +110,9 @@ bool UseRocketBootsAction::Execute(Event /*event*/)
     if (!boots || !UseEquipped(bot, boots, nullptr))
         return false;
 
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "use_rocket_boots", "Punching it!", {}));
+    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "use_rocket_boots", "Punching it!", {}));
     return true;
 }
 

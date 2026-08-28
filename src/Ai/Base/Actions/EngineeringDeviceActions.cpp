@@ -15,6 +15,7 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
+#include "Random.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 
@@ -170,10 +171,11 @@ bool UseTargetDummyAction::Execute(Event /*event*/)
     if (!item || !UseDevice(bot, botAI, item))
         return false;
 
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "use_target_dummy",
-        "Deploying %item",
-        {{"%item", chat->FormatItem(item->GetTemplate())}}));
+    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "use_target_dummy",
+            "Deploying %item",
+            {{"%item", chat->FormatItem(item->GetTemplate())}}));
     return true;
 }
 
@@ -193,10 +195,11 @@ bool UseExplosiveSheepAction::Execute(Event /*event*/)
     if (!item || !UseDevice(bot, botAI, item))
         return false;
 
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "use_explosive_sheep",
-        "Releasing %item",
-        {{"%item", chat->FormatItem(item->GetTemplate())}}));
+    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "use_explosive_sheep",
+            "Releasing %item",
+            {{"%item", chat->FormatItem(item->GetTemplate())}}));
     return true;
 }
 
@@ -236,9 +239,10 @@ bool UseJumperCablesAction::Execute(Event /*event*/)
     if (!item || !UseDevice(bot, botAI, item, target))
         return false;
 
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "use_jumper_cables",
-        "Trying %item on %target",
-        {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
+    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "use_jumper_cables",
+            "Trying %item on %target",
+            {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
     return true;
 }
