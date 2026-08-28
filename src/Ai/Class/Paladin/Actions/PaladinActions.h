@@ -11,6 +11,14 @@
 #include "GenericSpellActions.h"
 #include "ImmunityActions.h"
 
+namespace ai::paladin
+{
+// WotLK stacking: one blessing per paladin per target, but differently-named blessings
+// from different paladins coexist. True if this bot already maintains any blessing
+// (single or greater) on the target - casting another would overwrite it.
+bool HasAnyBlessingFromBot(PlayerbotAI* botAI, Unit* target);
+}
+
 // seals
 BUFF_ACTION(CastSealOfRighteousnessAction, "seal of righteousness");
 BUFF_ACTION(CastSealOfJusticeAction, "seal of justice");

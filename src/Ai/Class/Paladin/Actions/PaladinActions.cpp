@@ -13,6 +13,27 @@
 #include "Playerbots.h"
 #include "SharedDefines.h"
 
+namespace ai::paladin
+{
+bool HasAnyBlessingFromBot(PlayerbotAI* botAI, Unit* target)
+{
+    static char const* const blessingNames[] = {
+        "blessing of might", "greater blessing of might",
+        "blessing of wisdom", "greater blessing of wisdom",
+        "blessing of kings", "greater blessing of kings",
+        "blessing of sanctuary", "greater blessing of sanctuary"
+    };
+
+    for (char const* name : blessingNames)
+    {
+        if (botAI->HasAura(name, target, false, true))
+            return true;
+    }
+
+    return false;
+}
+}
+
 static bool IsBlessingTargetCandidate(Player* bot, Player* player)
 {
     if (!player || !player->IsAlive() || player->GetMapId() != bot->GetMapId())
@@ -229,8 +250,8 @@ Unit* CastBlessingOfMightOnPartyAction::GetTarget()
     {
         return !HasBlessingAura(botAI, player,
             { "blessing of might", "greater blessing of might",
-              "blessing of wisdom", "greater blessing of wisdom",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+              "blessing of wisdom", "greater blessing of wisdom" }) &&
+            !ai::paladin::HasAnyBlessingFromBot(botAI, player);
     });
 }
 
@@ -249,8 +270,7 @@ Value<Unit*>* CastBlessingOfMightOnPartyAction::GetTargetValue()
     return context->GetValue<Unit*>(
     "party member without aura",
     "blessing of might,greater blessing of might,blessing of wisdom,"
-    "greater blessing of wisdom,blessing of sanctuary,"
-    "greater blessing of sanctuary"
+    "greater blessing of wisdom"
     );
 }
 
@@ -289,8 +309,8 @@ Unit* CastBlessingOfWisdomOnPartyAction::GetTarget()
 
         return !HasBlessingAura(botAI, player,
             { "blessing of might", "greater blessing of might",
-              "blessing of wisdom", "greater blessing of wisdom",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+              "blessing of wisdom", "greater blessing of wisdom" }) &&
+            !ai::paladin::HasAnyBlessingFromBot(botAI, player);
     });
 }
 
@@ -298,8 +318,7 @@ Value<Unit*>* CastBlessingOfWisdomOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
     "party member without aura",
-    "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might,"
-    "blessing of sanctuary,greater blessing of sanctuary"
+    "blessing of wisdom,greater blessing of wisdom,blessing of might,greater blessing of might"
     );
 }
 
@@ -443,8 +462,7 @@ Value<Unit*>* CastBlessingOfKingsOnPartyAction::GetTargetValue()
 {
     return context->GetValue<Unit*>(
         "party member without aura",
-        "blessing of kings,greater blessing of kings,"
-        "blessing of sanctuary,greater blessing of sanctuary"
+        "blessing of kings,greater blessing of kings"
     );
 }
 
@@ -460,11 +478,10 @@ Unit* CastBlessingOfKingsOnPartyAction::GetTarget()
     return FindBlessingTarget(bot, botAI, [&](Player* player)
     {
         const bool isTank = IsTankRole(player);
-        const bool hasKingsOrSanct = HasBlessingAura(botAI, player,
-            { "blessing of kings", "greater blessing of kings",
-              "blessing of sanctuary", "greater blessing of sanctuary" });
+        const bool hasKings = HasBlessingAura(botAI, player,
+            { "blessing of kings", "greater blessing of kings" });
 
-        if (hasKingsOrSanct)
+        if (hasKings || ai::paladin::HasAnyBlessingFromBot(botAI, player))
             return false;
 
         if (hasBwisdom)

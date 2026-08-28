@@ -88,6 +88,33 @@ namespace ai::buff
 
     std::string MakeAuraQualifierForBuff(std::string const& name)
     {
+        // Comma-separated spell lists (e.g. blessing triggers) expand element-wise
+        if (name.find(',') != std::string::npos)
+        {
+            std::string result;
+            size_t start = 0;
+            while (start <= name.size())
+            {
+                size_t const end = name.find(',', start);
+                std::string const part =
+                    name.substr(start, end == std::string::npos ? std::string::npos : end - start);
+
+                if (!part.empty())
+                {
+                    if (!result.empty())
+                        result += ',';
+                    result += MakeAuraQualifierForBuff(part);
+                }
+
+                if (end == std::string::npos)
+                    break;
+
+                start = end + 1;
+            }
+
+            return result;
+        }
+
         // Paladin
         if (name == "blessing of kings")        return "blessing of kings,greater blessing of kings";
         if (name == "blessing of might")        return "blessing of might,greater blessing of might";

@@ -39,8 +39,9 @@ bool BlessingTrigger::IsActive()
 {
     Unit* target = GetTarget();
     return SpellTrigger::IsActive() &&
-           !botAI->HasAnyAuraOf(target, "blessing of might", "blessing of wisdom",
-                                "blessing of kings", "blessing of sanctuary", nullptr);
+           !botAI->HasAnyAuraOf(target, "blessing of might", "greater blessing of might",
+                                "blessing of wisdom", "greater blessing of wisdom", nullptr) &&
+           !ai::paladin::HasAnyBlessingFromBot(botAI, target);
 }
 
 bool DivineShieldLowHealthTrigger::IsActive()
