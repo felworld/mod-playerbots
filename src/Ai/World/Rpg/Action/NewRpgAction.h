@@ -94,6 +94,15 @@ class NewRpgWanderRandomAction : public NewRpgBaseAction
 public:
     NewRpgWanderRandomAction(PlayerbotAI* botAI) : NewRpgBaseAction(botAI, "new rpg wander random") {}
     bool Execute(Event event) override;
+
+    // Wandering is the grind state: it only earns its keep while there is
+    // something to fight. This long without combat or a grind target means
+    // the spot is picked clean (or contested by a crowd) - go idle early and
+    // roll a new activity instead of pacing out the full status duration.
+    const uint32 wanderDeadSpotTimeout = 60 * IN_MILLISECONDS;
+    // Keep the meander within earshot of where it started; the leash steers
+    // the drift back rather than teleporting or hard-stopping the bot.
+    const float wanderLeashRadius = 150.0f;
 };
 
 class NewRpgWanderNpcAction : public NewRpgBaseAction
@@ -115,7 +124,15 @@ protected:
     bool DoIncompleteQuest(NewRpgInfo::DoQuest& data);
     bool DoCompletedQuest(NewRpgInfo::DoQuest& data);
 
+    // How long to wait at the turn-in spot before giving up on rewarding
+    // (e.g. quests that can only be turned in to gameobjects).
     const uint32 poiStayTime = 5 * 60 * 1000;
+    // While an objective is incomplete: how long to work one POI point before
+    // moving to another of the quest's points, and how many consecutive
+    // stays without a single objective tick before abandoning the quest
+    // (3 x 90s keeps the ~5 min terminal timing the old single-stay check had).
+    const uint32 poiRotateTime = 90 * 1000;
+    const uint8 poiMaxNoProgressStays = 3;
 };
 
 class NewRpgTravelFlightAction : public NewRpgBaseAction

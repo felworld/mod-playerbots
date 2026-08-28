@@ -23,6 +23,7 @@
 #include "Player.h"
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
+#include "Playerbots.h"
 #include "QuestDef.h"
 #include "Random.h"
 #include "RandomPlayerbotMgr.h"
@@ -550,7 +551,31 @@ bool NewRpgWanderRandomAction::Execute(Event /*event*/)
     if (SearchQuestGiverAndAcceptOrReward())
         return true;
 
-    return MoveRandomNear();
+    NewRpgInfo& info = botAI->rpgInfo;
+    auto* dataPtr = std::get_if<NewRpgInfo::WanderRandom>(&info.data);
+    if (!dataPtr)
+        return false;
+    auto& data = *dataPtr;
+
+    // First tick after entering the status: anchor the leash where the bot
+    // stands (ChangeToWanderRandom has no bot to read a position from).
+    if (data.origin == WorldPosition())
+    {
+        data.origin = WorldPosition(bot);
+        data.lastEventful = getMSTime();
+    }
+
+    if (bot->IsInCombat() || AI_VALUE(Unit*, "grind target"))
+        data.lastEventful = getMSTime();
+    else if (GetMSTimeDiffToNow(data.lastEventful) >= wanderDeadSpotTimeout)
+    {
+        // Nothing to fight here for a while - stop pacing a dead (or
+        // crowded-out) spot and let the idle roll pick a new activity.
+        info.ChangeToIdle();
+        return true;
+    }
+
+    return MoveDriftNear(50.0f, data.heading, data.origin, wanderLeashRadius);
 }
 
 bool NewRpgWanderNpcAction::Execute(Event /*event*/)
@@ -630,6 +655,19 @@ bool NewRpgDoQuestAction::Execute(Event /*event*/)
     return true;
 }
 
+// Progress counter for one quest objective, mirroring the kill/cast vs
+// collect split used throughout DoIncompleteQuest.
+static uint32 GetObjectiveProgress(QuestStatusData const& q_status, int32 objectiveIdx)
+{
+    if (objectiveIdx < 0)
+        return 0;
+    if (objectiveIdx < QUEST_OBJECTIVES_COUNT)
+        return q_status.CreatureOrGOCount[objectiveIdx];
+    if (objectiveIdx < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
+        return q_status.ItemCount[objectiveIdx - QUEST_OBJECTIVES_COUNT];
+    return 0;
+}
+
 bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
 {
     uint32 questId = data.questId;
@@ -658,6 +696,8 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
             data.lastReachPOI = 0;
             data.pos = WorldPosition();
             data.objectiveIdx = 0;
+            data.heading = -1.0f;
+            data.noProgressStays = 0;
         }
     }
     if (data.pos == WorldPosition())
@@ -703,31 +743,21 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
     if (!data.lastReachPOI)
     {
         data.lastReachPOI = getMSTime();
+        data.progressAtReach = GetObjectiveProgress(bot->getQuestStatusMap().at(questId), data.objectiveIdx);
         return true;
     }
-    // stayed at this POI for more than 5 minutes
-    if (GetMSTimeDiffToNow(data.lastReachPOI) >= poiStayTime)
+    // worked this POI point long enough - rotate to another of the quest's
+    // points instead of camping one tile for minutes
+    if (GetMSTimeDiffToNow(data.lastReachPOI) >= poiRotateTime)
     {
-        bool hasProgression = false;
-        int32 currentObjective = data.objectiveIdx;
-        // check if the objective has progression
-        Quest const* quest = sObjectMgr->GetQuestTemplate(questId);
-        const QuestStatusData& q_status = bot->getQuestStatusMap().at(questId);
-        if (currentObjective < QUEST_OBJECTIVES_COUNT)
+        QuestStatusData const& q_status = bot->getQuestStatusMap().at(questId);
+        bool progressed = GetObjectiveProgress(q_status, data.objectiveIdx) > data.progressAtReach;
+        data.noProgressStays = progressed ? 0 : data.noProgressStays + 1;
+        if (data.noProgressStays >= poiMaxNoProgressStays)
         {
-            if (q_status.CreatureOrGOCount[currentObjective] != 0 && quest->RequiredNpcOrGoCount[currentObjective])
-                hasProgression = true;
-        }
-        else if (currentObjective < QUEST_OBJECTIVES_COUNT + QUEST_ITEM_OBJECTIVES_COUNT)
-        {
-            if (q_status.ItemCount[currentObjective - QUEST_OBJECTIVES_COUNT] != 0 &&
-                quest->RequiredItemCount[currentObjective - QUEST_OBJECTIVES_COUNT])
-                hasProgression = true;
-        }
-        if (!hasProgression)
-        {
-            // we has reach the poi for more than 5 mins but no progession
-            // may not be able to complete this quest, marked as abandoned
+            // several consecutive stays without a single objective tick:
+            // spawns contested by a crowd or a quest the bot can't actually
+            // progress - abandon it
             /// @TODO: It may be better to make lowPriorityQuest a global set shared by all bots (or saved in db)
             botAI->lowPriorityQuest.insert(questId);
             botAI->rpgStatistic.questAbandoned++;
@@ -739,14 +769,15 @@ bool NewRpgDoQuestAction::DoIncompleteQuest(NewRpgInfo::DoQuest& data)
         data.lastReachPOI = 0;
         data.pos = WorldPosition();
         data.objectiveIdx = 0;
+        data.heading = -1.0f;
         return true;
     }
 
-    // At the POI: keep the bot actively placed but avoid large
-    // random 20yd hops that look like pacing back and forth. A small
-    // ~8yd wander reads as the bot looking around while grind/loot
-    // strategies do their work.
-    return MoveRandomNear(8.0f);
+    // At the POI: patrol the objective area while grind/loot strategies do
+    // their work. Drift with a leash around the POI point - wide enough to
+    // reach spawns the old tight 8yd shuffle never approached, anchored
+    // enough to stay recognizably "at" the objective.
+    return MoveDriftNear(20.0f, data.heading, data.pos, 40.0f);
 }
 
 bool NewRpgDoQuestAction::DoCompletedQuest(NewRpgInfo::DoQuest& data)

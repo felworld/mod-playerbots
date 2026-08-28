@@ -41,7 +41,9 @@ struct NewRpgInfo
     // RPG_WANDER_RANDOM
     struct WanderRandom
     {
-        WanderRandom() = default;
+        WorldPosition origin{};  // leash anchor: bot position when wandering started
+        float heading{-1.0f};    // persistent drift heading, < 0 until the first step
+        uint32 lastEventful{0};  // last time there was combat or a grind target here
     };
     // RPG_DO_QUEST
     struct DoQuest
@@ -51,6 +53,9 @@ struct NewRpgInfo
         int32 objectiveIdx{0};
         WorldPosition pos{};
         uint32 lastReachPOI{0};
+        float heading{-1.0f};       // persistent drift heading for the at-POI patrol
+        uint32 progressAtReach{0};  // objective counter when this POI point was reached
+        uint8 noProgressStays{0};   // consecutive POI stays without an objective tick
     };
     // RPG_TRAVEL_FLIGHT
     struct TravelFlight

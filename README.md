@@ -25,6 +25,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
 - **[Quest-aware grinding](FEATURES.md#quest-aware-grinding)** — `!grind
   quests` makes a bot pull only mobs its group still needs, like a questing
   partner.
+- **[Purposeful idle wandering](FEATURES.md#purposeful-idle-wandering)** —
+  idle bots meander across grind areas and rotate between quest POI points
+  instead of pacing circles on one tile, and leave picked-clean or
+  contested spots early.
 - **[Runner focus fire](FEATURES.md#runner-focus-fire)** — DPS bots burn
   down a dungeon mob fleeing for reinforcements before the adds arrive,
   without ever overriding a skull mark or breaking fear CC.

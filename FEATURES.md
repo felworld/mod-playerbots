@@ -28,6 +28,36 @@ like a questing partner instead of slaughtering everything in sight.
 Toggled with the `!grind quests` chat command
 ([below](#commands-added-in-this-fork)).
 
+## Purposeful idle wandering
+
+Two states of upstream's idle "new RPG" system read as bots pacing in
+circles. Wander-random — the state in which a solo bot actually grinds a
+spot — hopped to a uniformly random nearby point every few seconds for
+five minutes, orbiting one tile. And a questing bot parked at a quest POI
+shuffled inside an 8yd circle, waiting out a five-minute no-progress timer
+before giving up — painfully visible wherever many same-level bots contest
+the same spawns. Four changes make both read as intent:
+
+- **Wandering drifts.** Successive steps share a persistent heading (with
+  jitter), so the bot traces a meandering path across the grind area —
+  sweeping into fresh spawns — instead of orbiting where it stands. A soft
+  leash steers the drift back once it strays too far from where the wander
+  started.
+- **Dead spots end early.** A minute with no combat and no grind target in
+  sight ends the wander, and the bot rolls a new activity (another grind
+  spot, a quest, a flight) instead of serving the full five minutes among
+  picked-clean or crowded-out spawns.
+- **Quest POIs rotate.** A bot that works one POI point for ~90 seconds
+  without a single objective tick moves to another of the quest's POI
+  points; three consecutive dead stays abandon the quest. The terminal
+  timing matches the old five-minute check, but partial progress no longer
+  immunizes a stalled quest against abandonment, and under contention bots
+  spread across the objective area instead of stacking on one tile.
+- **The at-POI patrol covers the spawn area.** While grind and loot
+  strategies do the actual questing work, the bot drifts on a ~40yd leash
+  around the POI point rather than shuffling in the old 8yd circle,
+  reaching spawns the tight circle never approached.
+
 ## Runner focus fire
 
 When a dungeon mob breaks off at low health to fetch reinforcements, DPS

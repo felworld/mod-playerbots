@@ -298,6 +298,62 @@ bool NewRpgBaseAction::MoveRandomNear(float moveStep, MovementPriority priority,
     return false;
 }
 
+bool NewRpgBaseAction::MoveDriftNear(float moveStep, float& heading, WorldPosition const& leashCenter,
+                                     float leashRadius, MovementPriority priority)
+{
+    if (IsWaitingForLastMove(priority))
+        return false;
+
+    // The heading lives in the caller's rpg status data so successive steps
+    // share it: uniform random angles make the bot orbit one tile, a jittered
+    // persistent heading traces a meandering path across the area instead.
+    if (heading < 0.0f)
+        heading = frand(0.0f, 2 * static_cast<float>(M_PI));
+
+    // Past the leash: aim the drift back at the anchor before sampling.
+    if (bot->GetExactDist2d(leashCenter.GetPositionX(), leashCenter.GetPositionY()) > leashRadius)
+        heading = bot->GetAngle(leashCenter.GetPositionX(), leashCenter.GetPositionY());
+
+    Map* map = bot->GetMap();
+    const float x = bot->GetPositionX();
+    const float y = bot->GetPositionY();
+    const float z = bot->GetPositionZ();
+    for (int attempt = 0; attempt < 8; ++attempt)
+    {
+        float distance = (0.4f + rand_norm() * 0.6f) * moveStep;
+        float angle = heading + frand(-0.7f, 0.7f);
+        float dx = x + distance * cos(angle);
+        float dy = y + distance * sin(angle);
+        float dz = z;
+
+        PathGenerator path(bot);
+        path.CalculatePath(dx, dy, dz);
+        PathType type = path.GetPathType();
+        uint32 typeOk = PATHFIND_NORMAL | PATHFIND_INCOMPLETE | PATHFIND_FARFROMPOLY;
+        bool canReach = !(type & (~typeOk));
+
+        if (!canReach)
+            continue;
+
+        if (!map->CanReachPositionAndGetValidCoords(bot, dx, dy, dz))
+            continue;
+
+        if (map->IsInWater(bot->GetPhaseMask(), dx, dy, dz, bot->GetCollisionHeight()))
+            continue;
+
+        if (MoveTo(bot->GetMapId(), dx, dy, dz, false, false, false, true, priority))
+        {
+            heading = angle;
+            return true;
+        }
+    }
+
+    // Eight forward-ish samples all failed (wall, water, map edge) - turn
+    // around for the next tick instead of pushing the same heading again.
+    heading = frand(0.0f, 2 * static_cast<float>(M_PI));
+    return false;
+}
+
 bool NewRpgBaseAction::ForceToWait(uint32 duration, MovementPriority priority)
 {
     AI_VALUE(LastMovement&, "last movement")
