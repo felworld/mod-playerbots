@@ -54,3 +54,14 @@ CancelDivineInterventionAction::CancelDivineInterventionAction(PlayerbotAI* botA
 
 CancelHandOfProtectionAction::CancelHandOfProtectionAction(PlayerbotAI* botAI)
     : CancelImmunityAction(botAI, "cancel hand of protection", ai::immunity::HandOfProtectionRanks()) {}
+
+bool CancelBanishAction::Execute(Event /*event*/)
+{
+    BanishedTarget const banished = FindBanishedTarget(botAI);
+    if (!banished)
+        return false;
+
+    // The record is left standing: the aura only goes when the re-cast lands, so an interrupted
+    // cast has to be retried, and a landed one already reads as "nothing banished".
+    return botAI->CastSpell(banished.spellId, banished.unit);
+}

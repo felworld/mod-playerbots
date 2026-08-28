@@ -97,3 +97,27 @@ bool SafeToDropImmunityValue::EnemyPlayerInSight()
 
     return false;
 }
+
+BanishedTarget FindBanishedTarget(PlayerbotAI* botAI)
+{
+    Player* bot = botAI->GetBot();
+    Unit* unit = botAI->GetUnit(botAI->GetAiObjectContext()->GetValue<ObjectGuid>("banished target")->Get());
+    if (!unit || !unit->IsAlive())
+        return {};
+
+    for (auto const& [spellId, application] : unit->GetAppliedAuras())
+    {
+        Aura const* aura = application ? application->GetBase() : nullptr;
+        if (!aura || aura->GetCasterGUID() != bot->GetGUID())
+            continue;
+
+        // Rank-agnostic: Banish is the one MECHANIC_BANISH spell a warlock carries, and the aura
+        // itself names the rank that has to be re-cast to release it.
+        if (aura->GetSpellInfo()->Mechanic != MECHANIC_BANISH || !bot->HasSpell(spellId))
+            continue;
+
+        return { unit, spellId };
+    }
+
+    return {};
+}

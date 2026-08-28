@@ -230,6 +230,7 @@ public:
         creators["cancel dispersion"] = &ActionContext::cancel_dispersion;
         creators["cancel divine intervention"] = &ActionContext::cancel_divine_intervention;
         creators["cancel hand of protection"] = &ActionContext::cancel_hand_of_protection;
+        creators["cancel banish"] = &ActionContext::cancel_banish;
         creators["auto talents"] = &ActionContext::auto_talents;
         creators["auto share quest"] = &ActionContext::auto_share_quest;
         creators["auto maintenance on levelup"] = &ActionContext::auto_maintenance_on_levelup;
@@ -499,6 +500,7 @@ private:
         return new CancelDivineInterventionAction(botAI);
     }
     static Action* cancel_hand_of_protection(PlayerbotAI* botAI) { return new CancelHandOfProtectionAction(botAI); }
+    static Action* cancel_banish(PlayerbotAI* botAI) { return new CancelBanishAction(botAI); }
     static Action* auto_talents(PlayerbotAI* botAI) { return new AutoSetTalentsAction(botAI); }
     static Action* auto_share_quest(PlayerbotAI* ai) { return new AutoShareQuestAction(ai); }
     static Action* auto_maintenance_on_levelup(PlayerbotAI* botAI) { return new AutoMaintenanceOnLevelupAction(botAI); }

@@ -93,4 +93,15 @@ protected:
     bool Limiting() override;
 };
 
+// The other side of the same coin: an immunity the bot put on somebody else. The mob a warlock
+// banished is immune to everything, so once the rest of the pull is dead the group is left standing
+// over a mob it cannot touch until the aura runs out. Releasing it is the warlock's job (Felworld).
+class BanishOutlivedTrigger : public Trigger
+{
+public:
+    BanishOutlivedTrigger(PlayerbotAI* botAI) : Trigger(botAI, "banish outlived") {}
+
+    bool IsActive() override;
+};
+
 #endif

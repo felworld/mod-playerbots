@@ -26,6 +26,13 @@ void CancelImmunityStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
             triggers.push_back(new TriggerNode("dispersion outlived",
                 { NextAction("cancel dispersion", ACTION_EMERGENCY + 5) }));
             break;
+        // Not an emergency and not free - it is a cast that hands the group back a live mob, so it
+        // sits with the rest of the combat kit rather than above it. Nothing competes with it in
+        // practice: the trigger only fires once the attacker list is empty.
+        case CLASS_WARLOCK:
+            triggers.push_back(new TriggerNode("banish outlived",
+                { NextAction("cancel banish", ACTION_HIGH) }));
+            break;
         default:
             break;
     }

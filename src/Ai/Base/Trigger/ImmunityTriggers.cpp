@@ -71,3 +71,21 @@ bool HandOfProtectionOutlivedTrigger::Limiting()
 {
     return botAI->IsTank(bot) || botAI->IsMelee(bot) || bot->getClass() == CLASS_HUNTER;
 }
+
+// The banish is only in the way once nothing else is: while the rest of the pull is still swinging
+// it is doing exactly the job it was cast for. Out of combat it is left alone too - it drops on its
+// own there, and releasing it would hand the group back a mob it has walked away from.
+bool BanishOutlivedTrigger::IsActive()
+{
+    if (!bot->IsInCombat() || !AI_VALUE(GuidVector, "attackers").empty())
+        return false;
+
+    BanishedTarget const banished = FindBanishedTarget(botAI);
+    if (!banished)
+        return false;
+
+    // Nothing walks the group onto a mob nobody can attack, so the release waits until the bot can
+    // reach and see it - following the master over is what closes that gap.
+    return bot->IsWithinDistInMap(banished.unit, botAI->GetRange("spell")) &&
+           bot->IsWithinLOSInMap(banished.unit) && !bot->HasSpellCooldown(banished.spellId);
+}

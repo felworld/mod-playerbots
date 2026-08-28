@@ -364,6 +364,7 @@ public:
         creators["combat start time"] = &ValueContext::combat_start_time;
         creators["immunity cast"] = &ValueContext::immunity_cast;
         creators["safe to drop immunity"] = &ValueContext::safe_to_drop_immunity;
+        creators["banished target"] = &ValueContext::banished_target;
     }
 
 private:
@@ -664,6 +665,7 @@ private:
     static UntypedValue* combat_start_time(PlayerbotAI* botAI) { return new CombatStartTimeValue(botAI); }
     static UntypedValue* immunity_cast(PlayerbotAI* botAI) { return new ImmunityCastValue(botAI); }
     static UntypedValue* safe_to_drop_immunity(PlayerbotAI* botAI) { return new SafeToDropImmunityValue(botAI); }
+    static UntypedValue* banished_target(PlayerbotAI* botAI) { return new BanishedTargetValue(botAI); }
 };
 
 #endif

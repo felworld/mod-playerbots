@@ -173,6 +173,7 @@ class CastBanishOnCcAction : public CastCrowdControlSpellAction
 public:
     CastBanishOnCcAction(PlayerbotAI* botAI) : CastCrowdControlSpellAction(botAI, "banish") {}
     bool isPossible() override;
+    bool Execute(Event event) override;
 };
 
 class CastFearOnCcAction : public CastCrowdControlSpellAction

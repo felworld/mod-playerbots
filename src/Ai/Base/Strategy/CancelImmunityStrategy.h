@@ -11,9 +11,10 @@
 
 class PlayerbotAI;
 
-// Always on, in and out of combat: drops an immunity the bot is wearing once it has outlived its
-// use (see ImmunityTriggers.h). Out-of-combat coverage matters for Divine Intervention, which is
-// meant to be cancelled after the wipe has settled (Felworld).
+// Always on, in and out of combat: drops an immunity the bot is answerable for once it has outlived
+// its use (see ImmunityTriggers.h) - one it is wearing, or the Banish it put on a mob.
+// Out-of-combat coverage matters for Divine Intervention, which is meant to be cancelled after the
+// wipe has settled (Felworld).
 class CancelImmunityStrategy : public Strategy
 {
 public:

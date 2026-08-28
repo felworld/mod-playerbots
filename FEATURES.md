@@ -1731,6 +1731,36 @@ Protection are cast on the bot by others and are always managed. Hunter
 Deterrence is left alone: five seconds, and the hunter can still move and
 trap under it. No config knobs.
 
+Banish is the same problem pointed outwards. A warlock takes a demon or
+elemental out of a dungeon pull, the group kills everything else, and
+then finds the mob it banished is immune to all damage and stays that way
+for the rest of the aura - nobody can finish it, and walking off leaves
+it to come back. It is the only control a bot casts that needs releasing.
+Everything else the classes bring - Polymorph, Hex, Sap, Freezing Trap,
+Shackle Undead, Repentance, Hibernate, fears - breaks on damage, and the
+shared targeting already attacks a controlled mob once nothing else is
+left standing; druid Cyclone is a full immunity like Banish but runs out
+in six seconds on its own. Banish never reaches that fallback, because an
+immune mob is dropped from every target list the bot keeps.
+
+So the warlock releases it, the way a player does: Banish re-cast on a
+banished mob is refused as immune and the core drops the aura on that
+refusal (`spell_warl_banish`). The release waits for all three of - the
+bot is still in combat, the group's attacker list is empty (while
+anything else is still swinging, the banish is doing exactly its job),
+and the mob is inside `AiPlayerbot.SpellDistance` and in line of sight,
+since nothing walks a group onto a mob nobody can attack and following
+the master over is what closes that gap. Out of combat it is left alone:
+the aura lapses on its own there, and releasing it would hand back a mob
+the group has deliberately walked away from.
+
+Like the immunities above, only a banish the bot can account for is
+managed - the cast records its target, so a raid script's banish or a
+`cast banish` from the master runs its course. The record keeps the rank
+that landed, because the core only drops the aura of the exact spell
+re-cast, and it is left standing until the aura is actually gone, so an
+interrupted release is retried.
+
 ## Emote exchanges that end
 
 Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting

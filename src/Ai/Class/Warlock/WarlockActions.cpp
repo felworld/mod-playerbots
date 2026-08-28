@@ -43,6 +43,19 @@ bool CastBanishOnCcAction::isPossible()
     return CastCrowdControlSpellAction::isPossible();
 }
 
+// Remembers who was banished, so "cancel banish" can release the mob once the rest of the pull is
+// dead - a banished mob is immune to everything and drops off every target list the bot keeps, so
+// there is no finding it again afterwards (Felworld).
+bool CastBanishOnCcAction::Execute(Event event)
+{
+    Unit* target = GetTarget();
+    if (!target || !CastCrowdControlSpellAction::Execute(event))
+        return false;
+
+    context->GetValue<ObjectGuid>("banished target")->Set(target->GetGUID());
+    return true;
+}
+
 // Checks if the CC target can be feared
 bool CastFearOnCcAction::isPossible()
 {

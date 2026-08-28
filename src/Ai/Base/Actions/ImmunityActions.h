@@ -70,4 +70,17 @@ public:
     CancelHandOfProtectionAction(PlayerbotAI* botAI);
 };
 
+// Releases the bot's own Banish by re-casting it on the mob that is under it: the mob is immune to
+// the spell it is already wearing, and the core drops the aura on that immune hit
+// (spell_warl_banish) - the same two clicks a player uses. It cannot go through the usual cast
+// action, since PlayerbotAI::CanCastSpell refuses every cast at an immune target; reach and rank
+// are settled by "banish outlived" instead (Felworld).
+class CancelBanishAction : public Action
+{
+public:
+    CancelBanishAction(PlayerbotAI* botAI) : Action(botAI, "cancel banish") {}
+
+    bool Execute(Event event) override;
+};
+
 #endif
