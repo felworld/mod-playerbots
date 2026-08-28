@@ -120,4 +120,17 @@ public:
     std::string const GetTargetName() override { return "immune enemy near"; }
 };
 
+// Sharper still: the immune enemy is not just near but beating on the bot - a bubbled paladin
+// keeps swinging at a target that cannot swing back. Class strategies answer it with an escape
+// the plain standoff cannot offer (a rogue Vanishes) (Felworld).
+class ImmuneEnemyAttackerTrigger : public Trigger
+{
+public:
+    ImmuneEnemyAttackerTrigger(PlayerbotAI* botAI) : Trigger(botAI, "immune enemy attacker") {}
+
+    bool IsActive() override;
+    ReactionCategory GetReactionCategory() override { return REACTION_DISPEL; }
+    std::string const GetTargetName() override { return "immune enemy near"; }
+};
+
 #endif

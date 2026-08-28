@@ -54,6 +54,13 @@ void GenericRogueNonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& trig
         new TriggerNode("off hand weapon no enchant",
                         { NextAction("use deadly poison on off hand", 19.0f) }));
 
+    // A bubbled enemy beating on the rogue can't be fought back - Vanish out from under the
+    // swings (above the shared "immunity standoff" peel at 43, whose retreat then continues
+    // stealthed). The action's own gates cover knowing the spell and its cooldown; the trigger
+    // stays quiet for a rogue already stealthed (Felworld).
+    triggers.push_back(new TriggerNode("immune enemy attacker",
+                                       { NextAction("vanish", 46.0f) }));
+
     triggers.push_back(new TriggerNode("often", { NextAction("unstealth", 30.0f) }));
 
     // A rogue opens a duel from stealth: the 3s countdown after the accept

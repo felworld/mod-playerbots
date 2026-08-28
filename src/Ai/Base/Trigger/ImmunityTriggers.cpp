@@ -99,3 +99,16 @@ bool ImmuneEnemyNearTrigger::IsActive()
 
     return AI_VALUE(Unit*, "immune enemy near") != nullptr;
 }
+
+bool ImmuneEnemyAttackerTrigger::IsActive()
+{
+    if (!bot->IsAlive() || bot->InBattleground() || bot->InArena())
+        return false;
+
+    // Being stealthed already is the escape this trigger exists to buy - nothing left to do.
+    if (bot->HasStealthAura())
+        return false;
+
+    Unit* enemy = AI_VALUE(Unit*, "immune enemy near");
+    return enemy && enemy->GetVictim() == bot;
+}
