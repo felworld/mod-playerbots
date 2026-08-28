@@ -482,16 +482,28 @@ LootObject LootObjectStack::GetNearest(float maxDistance)
         if (!lootObject.IsLootPossible(bot))
             continue;
 
-        // Grouped chest roll-off: hold while a /roll contest for this chest
-        // is pending or was lost to another group member. Reaching here
-        // means the bot could open it, so only capable openers enter.
+        // Grouped chest roll-off: a chest whose contest this bot is already
+        // waiting on, or lost to another group member, is not a candidate.
+        // Only this side-effect-free check runs in the scan - entering a
+        // contest is a visible /roll, so it happens once, below, for the
+        // one object the bot settles on.
         if (GameObject* go = worldObj->ToGameObject())
-            if (!sChestRollMgr->MayLoot(bot, go, lootObject.skillId))
+            if (sChestRollMgr->IsBlocked(bot, go, lootObject.skillId))
                 continue;
 
         nearestDistance = distance;
         nearest = lootObject;
     }
+
+    // Reaching here means the bot could open it, so only a capable opener
+    // enters the contest. Losing it (or still waiting on an earlier roll)
+    // costs this pass rather than pushing the bot on to the next chest,
+    // which is what turned one sighting into a burst of rolls.
+    if (!nearest.IsEmpty())
+        if (WorldObject* worldObj = ObjectAccessor::GetWorldObject(*bot, nearest.guid))
+            if (GameObject* go = worldObj->ToGameObject())
+                if (!sChestRollMgr->MayLoot(bot, go, nearest.skillId))
+                    return LootObject();
 
     return nearest;
 }

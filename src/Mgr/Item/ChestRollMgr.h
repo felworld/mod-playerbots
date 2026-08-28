@@ -26,10 +26,18 @@ class ChestRollMgr
 public:
     static ChestRollMgr* instance();
 
-    // Gate called from loot-target selection. Returns true when the bot may
-    // loot the gameobject now; for an eligible chest this starts or joins a
-    // roll-off (side effect: the bot /rolls once) and returns false while
-    // the contest is undecided or was lost to someone else.
+    // Pure query for loot-target scanning: true when an open roll-off the
+    // bot has already entered, or one it lost, currently bars it from the
+    // gameobject. Never starts a contest and never rolls, so a scan that
+    // walks past several chests stays silent.
+    bool IsBlocked(Player* bot, GameObject* go, uint32 lootSkillId);
+
+    // Gate called once the bot has settled on the gameobject as its loot
+    // target. Returns true when it may loot now; for an eligible chest this
+    // starts or joins a roll-off (side effect: the bot /rolls once) and
+    // returns false while the contest is undecided or was lost to someone
+    // else. A bot with a roll already in the air never opens a second
+    // contest, so one sighting produces one roll.
     bool MayLoot(Player* bot, GameObject* go, uint32 lootSkillId);
 
     // Record a real player's /roll observed via MSG_RANDOM_ROLL so it
@@ -57,6 +65,11 @@ private:
     static bool IsRollableChest(GameObject* go, uint32 lootSkillId);
     static bool GroupHasRealPlayer(Group* group);
     static void Decide(Session& session, time_t now);
+    // The group whose roll-off governs this chest for the bot, or nullptr
+    // when the chest isn't arbitrated at all.
+    static Group* ArbitratingGroup(Player* bot, GameObject* go, uint32 lootSkillId);
+    // Whether the bot is already waiting on a roll it made in this group.
+    bool HasRollInTheAir(ObjectGuid botGuid, ObjectGuid groupGuid, time_t now) const;
     void Prune(time_t now);
 
     std::mutex _mutex;

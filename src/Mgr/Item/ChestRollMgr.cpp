@@ -80,50 +80,112 @@ bool ChestRollMgr::GroupHasRealPlayer(Group* group)
     return false;
 }
 
-bool ChestRollMgr::MayLoot(Player* bot, GameObject* go, uint32 lootSkillId)
+Group* ChestRollMgr::ArbitratingGroup(Player* bot, GameObject* go, uint32 lootSkillId)
 {
     if (!sPlayerbotAIConfig.chestRollEnable)
-        return true;
+        return nullptr;
 
     if (!IsRollableChest(go, lootSkillId))
-        return true;
+        return nullptr;
 
     Group* group = bot->GetGroup();
     if (!group || group->isBGGroup() || group->isBFGroup())
-        return true;
+        return nullptr;
 
     if (!GroupHasRealPlayer(group))
-        return true;
+        return nullptr;
+
+    return group;
+}
+
+bool ChestRollMgr::HasRollInTheAir(ObjectGuid botGuid, ObjectGuid groupGuid, time_t now) const
+{
+    for (auto const& [chestGuid, session] : _sessions)
+    {
+        if (session.decided || session.groupGuid != groupGuid || now > session.rollsCloseAt)
+            continue;
+
+        if (session.rolls.find(botGuid) != session.rolls.end())
+            return true;
+    }
+
+    return false;
+}
+
+bool ChestRollMgr::IsBlocked(Player* bot, GameObject* go, uint32 lootSkillId)
+{
+    Group* group = ArbitratingGroup(bot, go, lootSkillId);
+    if (!group)
+        return false;
 
     time_t now = time(nullptr);
     ObjectGuid botGuid = bot->GetGUID();
 
     std::lock_guard<std::mutex> lock(_mutex);
+
+    auto it = _sessions.find(go->GetGUID());
+    if (it == _sessions.end())
+        return false;  // no contest yet - still a candidate, MayLoot may start one
+
+    Session const& session = it->second;
+    if (session.groupGuid != group->GetGUID())
+        return false;  // contested by another group - no arbitration across groups
+
+    // An undecided contest past its window is a candidate: whoever picks the
+    // chest next settles it in MayLoot, so a winner who wandered off can't
+    // leave it in limbo.
+    if (!session.decided)
+        return now <= session.rollsCloseAt && session.rolls.find(botGuid) != session.rolls.end();
+
+    return session.winnerGuid != botGuid && now <= session.claimExpiresAt;
+}
+
+bool ChestRollMgr::MayLoot(Player* bot, GameObject* go, uint32 lootSkillId)
+{
+    Group* group = ArbitratingGroup(bot, go, lootSkillId);
+    if (!group)
+        return true;
+
+    time_t now = time(nullptr);
+    ObjectGuid botGuid = bot->GetGUID();
+    ObjectGuid groupGuid = group->GetGUID();
+
+    std::lock_guard<std::mutex> lock(_mutex);
     Prune(now);
 
-    auto [it, created] = _sessions.try_emplace(go->GetGUID());
-    Session& session = it->second;
-    if (created)
+    auto it = _sessions.find(go->GetGUID());
+    if (it == _sessions.end())
     {
-        session.groupGuid = group->GetGUID();
-        session.rollsCloseAt = now + ROLL_WINDOW_SECS;
+        // Nobody has contested this chest yet. Opening the contest is a
+        // visible /roll, so a bot already waiting on one holds off rather
+        // than rolling for every chest it walks past.
+        if (HasRollInTheAir(botGuid, groupGuid, now))
+            return false;
+
+        Session& fresh = _sessions[go->GetGUID()];
+        fresh.groupGuid = groupGuid;
+        fresh.rollsCloseAt = now + ROLL_WINDOW_SECS;
+        // Safe under the lock: the group broadcast reaches the other bots'
+        // packet handlers synchronously, but those discard playerbot
+        // rollers before calling back into this manager.
+        fresh.rolls[botGuid] = { bot->DoRandomRoll(1, 100), fresh.nextOrder++ };
+        return false;
     }
-    else if (session.groupGuid != group->GetGUID())
+
+    Session& session = it->second;
+    if (session.groupGuid != groupGuid)
         return true;  // contested by another group - no arbitration across groups
 
     if (!session.decided)
     {
-        if (now <= session.rollsCloseAt && session.rolls.find(botGuid) == session.rolls.end())
-        {
-            // Safe under the lock: the group broadcast reaches the other
-            // bots' packet handlers synchronously, but those discard
-            // playerbot rollers before calling back into this manager.
-            uint32 value = bot->DoRandomRoll(1, 100);
-            session.rolls[botGuid] = { value, session.nextOrder++ };
-        }
-
         if (now <= session.rollsCloseAt)
+        {
+            if (session.rolls.find(botGuid) == session.rolls.end() &&
+                !HasRollInTheAir(botGuid, groupGuid, now))
+                session.rolls[botGuid] = { bot->DoRandomRoll(1, 100), session.nextOrder++ };
+
             return false;
+        }
 
         Decide(session, now);
     }
