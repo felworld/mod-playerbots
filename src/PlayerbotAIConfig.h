@@ -271,8 +271,6 @@ public:
     bool groupChatter;
     uint32 groupChatterChance;
     uint32 groupChatterFalloff;
-    // Chance (0-100) that a bot announces an engineering item use in chat.
-    uint32 engineeringChatterChance;
 
     uint32 broadcastChanceMaxValue;
 

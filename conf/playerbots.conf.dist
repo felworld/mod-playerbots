@@ -3123,12 +3123,6 @@ AiPlayerbot.GroupChatter = 1
 # same shape in a party of two or a raid of twenty-five.
 AiPlayerbot.GroupChatterChance = 85
 AiPlayerbot.GroupChatterFalloff = 30
-# Chance (0-100) that a bot announces an engineering item use in chat -
-# "Throwing Iron Grenade at Defias Pillager", "Punching it!", and friends.
-# The gadgets themselves always fire; this only rations the commentary. A
-# party full of engineers lobbing a bomb a minute each turns 100 into a
-# wall of text, so by default only about one use in five gets a line.
-AiPlayerbot.EngineeringChatterChance = 20
 # Chance to reply to toxic links with toxic links (0-100)
 AiPlayerbot.ToxicLinksRepliesChance = 30
 # Chance to reply to Thunderfury with Thunderfury (0-100)

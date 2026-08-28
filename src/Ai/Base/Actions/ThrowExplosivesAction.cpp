@@ -7,15 +7,12 @@
 #include "ThrowExplosivesAction.h"
 
 #include "Bag.h"
-#include "ChatHelper.h"
 #include "Event.h"
 #include "Item.h"
 #include "ItemTemplate.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "Random.h"
 #include "SpellAuraDefines.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
@@ -217,11 +214,6 @@ bool ThrowExplosivesAction::ThrowAt(Item* item, Unit* target)
     if (uint32 castTime = spellInfo->CalcCastTime())
         botAI->SetNextCheckDelay(castTime + sPlayerbotAIConfig.reactDelay);
 
-    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "throw_explosive",
-            "Throwing %item at %target",
-            {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
     return true;
 }
 
@@ -255,11 +247,5 @@ bool SapperChargeAction::Execute(Event /*event*/)
     packet << uint32(TARGET_FLAG_NONE);
 
     bot->GetSession()->HandleUseItemOpcode(packet);
-
-    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "sapper_charge",
-            "Setting off %item",
-            {{"%item", chat->FormatItem(item->GetTemplate())}}));
     return true;
 }

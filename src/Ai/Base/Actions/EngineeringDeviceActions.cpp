@@ -15,7 +15,6 @@
 #include "PlayerbotAI.h"
 #include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "Random.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
 
@@ -168,15 +167,7 @@ bool UseTargetDummyAction::isPossible()
 bool UseTargetDummyAction::Execute(Event /*event*/)
 {
     Item* item = EngineeringDevices::FindBestCarried(bot, EngineeringDevices::TargetDummies());
-    if (!item || !UseDevice(bot, botAI, item))
-        return false;
-
-    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "use_target_dummy",
-            "Deploying %item",
-            {{"%item", chat->FormatItem(item->GetTemplate())}}));
-    return true;
+    return item && UseDevice(bot, botAI, item);
 }
 
 bool UseExplosiveSheepAction::isUseful()
@@ -192,15 +183,7 @@ bool UseExplosiveSheepAction::isPossible()
 bool UseExplosiveSheepAction::Execute(Event /*event*/)
 {
     Item* item = EngineeringDevices::FindBestCarried(bot, EngineeringDevices::ExplosiveSheep());
-    if (!item || !UseDevice(bot, botAI, item))
-        return false;
-
-    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "use_explosive_sheep",
-            "Releasing %item",
-            {{"%item", chat->FormatItem(item->GetTemplate())}}));
-    return true;
+    return item && UseDevice(bot, botAI, item);
 }
 
 bool UseJumperCablesAction::isUseful()
@@ -239,10 +222,11 @@ bool UseJumperCablesAction::Execute(Event /*event*/)
     if (!item || !UseDevice(bot, botAI, item, target))
         return false;
 
-    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "use_jumper_cables",
-            "Trying %item on %target",
-            {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
+    // The one gadget worth a chat line: out of combat, aimed at a person, and
+    // it explains why the bot is standing over a corpse channeling.
+    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+        "use_jumper_cables",
+        "Trying %item on %target",
+        {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
     return true;
 }

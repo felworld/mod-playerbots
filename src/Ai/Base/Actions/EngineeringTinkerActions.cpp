@@ -6,7 +6,6 @@
 
 #include "EngineeringTinkerActions.h"
 
-#include "ChatHelper.h"
 #include "DBCStores.h"
 #include "DBCStructure.h"
 #include "Event.h"
@@ -14,9 +13,7 @@
 #include "ItemTemplate.h"
 #include "Player.h"
 #include "PlayerbotAI.h"
-#include "PlayerbotTextMgr.h"
 #include "Playerbots.h"
-#include "Random.h"
 #include "SpellAuraDefines.h"
 #include "SpellInfo.h"
 #include "SpellMgr.h"
@@ -107,13 +104,7 @@ bool UseRocketBootsAction::isPossible()
 bool UseRocketBootsAction::Execute(Event /*event*/)
 {
     Item* boots = EngineeringTinkers::UsableEquipped(bot, EQUIPMENT_SLOT_FEET, true);
-    if (!boots || !UseEquipped(bot, boots, nullptr))
-        return false;
-
-    if (roll_chance_i(sPlayerbotAIConfig.engineeringChatterChance))
-        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-            "use_rocket_boots", "Punching it!", {}));
-    return true;
+    return boots && UseEquipped(bot, boots, nullptr);
 }
 
 bool UseGloveTinkerAction::isUseful()

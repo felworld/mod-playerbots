@@ -1657,11 +1657,14 @@ item's native fail chance supplies the comedy. Duels honor
 `AiPlayerbot.DuelConsumables` (engineering items are tier `1`, the
 Felworld setting).
 
-Each gadget use used to come with a chat line ("Throwing Iron Grenade at
-Defias Pillager"), which in a group with a couple of engineers turned
-into a wall of text. `AiPlayerbot.EngineeringChatterChance` (0-100,
-default 20) is the chance any single use gets announced at all — the
-gadgets themselves always fire regardless. No other config knobs.
+Gadget uses are silent: players don't narrate their own grenade throws,
+and the throw animation, the explosion, and the combat log already tell
+the story — a chat line per gadget was a wall of text in any group with
+a couple of engineers, and a robotic tell besides. The one exception is
+jumper cables, which get a "Trying Goblin Jumper Cables on Ledeyn" line:
+out of combat, aimed at a person, with a native fail chance, it is the
+one gadget moment a player would actually type about — and it explains
+why the bot is standing over a corpse channeling. No other config knobs.
 
 ## Outlived immunities
 
