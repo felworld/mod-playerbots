@@ -9,11 +9,30 @@
 
 #include "Action.h"
 
+#include <functional>
+#include <string>
 #include <vector>
 
 class Item;
 class Player;
 class PlayerbotAI;
+
+struct JumperCablesNotification
+{
+    Player* user;           // the engineer bot; only valid for the duration of the call
+    std::string itemName;   // plain item name, e.g. "Goblin Jumper Cables XL"
+    std::string targetName; // the dead group member being jump-started
+};
+
+// The jumper-cables attempt is ALWAYS announced here, whether or not anyone is
+// listening; whether playerbots itself says the canned line is a separate
+// config gate (AiPlayerbot.EngineeringChatter). Another module (mod-llm) can
+// register a listener and speak its own version instead. Register during
+// script loading only; notifications fire from map-update threads, so
+// listeners must be fast and must not touch the world state - copy the facts
+// out and queue any real work.
+void RegisterJumperCablesListener(std::function<void(JumperCablesNotification const&)> listener);
+void FireJumperCablesNotification(JumperCablesNotification const& notification);
 
 // The engineer trinket-box devices bots know how to use, shared with PlayerbotFactory stocking.
 namespace EngineeringDevices

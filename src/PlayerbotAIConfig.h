@@ -271,6 +271,9 @@ public:
     bool groupChatter;
     uint32 groupChatterChance;
     uint32 groupChatterFalloff;
+    // The canned jumper-cables announcement; llm mode turns it off and lets
+    // mod-llm voice the moment instead.
+    bool engineeringChatter;
 
     uint32 broadcastChanceMaxValue;
 

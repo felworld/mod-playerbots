@@ -696,6 +696,7 @@ bool PlayerbotAIConfig::Initialize()
     groupChatter = sConfigMgr->GetOption<bool>("AiPlayerbot.GroupChatter", true);
     groupChatterChance = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.GroupChatterChance", 85), 100);
     groupChatterFalloff = std::min<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.GroupChatterFalloff", 30), 100);
+    engineeringChatter = sConfigMgr->GetOption<bool>("AiPlayerbot.EngineeringChatter", true);
     summonWhenGroup = sConfigMgr->GetOption<bool>("AiPlayerbot.SummonWhenGroup", true);
     randomBotFixedLevel = sConfigMgr->GetOption<bool>("AiPlayerbot.RandomBotFixedLevel", false);
     disableRandomLevels = sConfigMgr->GetOption<bool>("AiPlayerbot.DisableRandomLevels", false);

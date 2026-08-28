@@ -24,4 +24,19 @@ protected:
     Unit* Calculate() override;
 };
 
+// Corpse worth a jumper-cables attempt: empty while any living group member
+// knows a real resurrection spell, and prefers a dead resurrecter otherwise,
+// so one successful jump-start can recover the whole group.
+class PartyMemberToJumperCable : public PartyMemberValue
+{
+public:
+    PartyMemberToJumperCable(PlayerbotAI* botAI, std::string const name = "party member to jumper cable")
+        : PartyMemberValue(botAI, name)
+    {
+    }
+
+protected:
+    Unit* Calculate() override;
+};
+
 #endif

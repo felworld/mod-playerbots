@@ -15,7 +15,7 @@ void NonCombatStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)
     triggers.push_back(new TriggerNode(
         "jumper cables",
         { NextAction("jumper cables", ACTION_CRITICAL_HEAL + 5),
-          NextAction("reach party member to resurrect", ACTION_CRITICAL_HEAL + 4) }));
+          NextAction("reach party member to jumper cable", ACTION_CRITICAL_HEAL + 4) }));
 }
 
 void CollisionStrategy::InitTriggers(std::vector<TriggerNode*>& triggers)

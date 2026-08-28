@@ -154,6 +154,7 @@ public:
         creators["party member to heal"] = &ValueContext::party_member_to_heal;
         creators["healer low mana"] = &ValueContext::healer_low_mana;
         creators["party member to resurrect"] = &ValueContext::party_member_to_resurrect;
+        creators["party member to jumper cable"] = &ValueContext::party_member_to_jumper_cable;
         creators["current target"] = &ValueContext::current_target;
         creators["self target"] = &ValueContext::self_target;
         creators["group leader"] = &ValueContext::group_leader;
@@ -509,6 +510,10 @@ private:
     static UntypedValue* party_member_to_heal(PlayerbotAI* botAI) { return new PartyMemberToHeal(botAI); }
     static UntypedValue* healer_low_mana(PlayerbotAI* botAI) { return new HealerLowMana(botAI); }
     static UntypedValue* party_member_to_resurrect(PlayerbotAI* botAI) { return new PartyMemberToResurrect(botAI); }
+    static UntypedValue* party_member_to_jumper_cable(PlayerbotAI* botAI)
+    {
+        return new PartyMemberToJumperCable(botAI);
+    }
     static UntypedValue* party_member_to_dispel(PlayerbotAI* botAI) { return new PartyMemberToDispel(botAI); }
     static UntypedValue* party_member_to_boost(PlayerbotAI* botAI) { return new PartyMemberToBoost(botAI); }
     static UntypedValue* party_member_to_protect(PlayerbotAI* botAI) { return new PartyMemberToProtect(botAI); }

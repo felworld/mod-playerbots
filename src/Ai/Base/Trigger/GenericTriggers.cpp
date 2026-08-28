@@ -1075,7 +1075,7 @@ bool JumperCablesTrigger::IsActive()
     if (!EngineeringDevices::FindBestCarried(bot, EngineeringDevices::JumperCables()))
         return false;
 
-    return AI_VALUE(Unit*, "party member to resurrect") != nullptr;
+    return AI_VALUE(Unit*, "party member to jumper cable") != nullptr;
 }
 
 bool RocketBootsTrigger::IsActive()

@@ -64,3 +64,22 @@ ReachPartyMemberToResurrectAction::ReachPartyMemberToResurrectAction(PlayerbotAI
 }
 
 std::string const ReachPartyMemberToResurrectAction::GetTargetName() { return "party member to resurrect"; }
+
+ReachPartyMemberToJumperCableAction::ReachPartyMemberToJumperCableAction(PlayerbotAI* botAI)
+    : ReachTargetAction(botAI, "reach party member to jumper cable", INTERACTION_DISTANCE / 2)
+{
+}
+
+bool ReachPartyMemberToJumperCableAction::isUseful()
+{
+    if (botAI->HasStrategy("stay", botAI->GetState()) || bot->GetCurrentSpell(CURRENT_CHANNELED_SPELL))
+        return false;
+
+    // The base check pads `distance` with both units' combat reach, which for a
+    // large-model bot can declare "reached" while still outside item interaction
+    // range and strand the walk; the cables action needs the raw distance.
+    Unit* target = GetTarget();
+    return target && !bot->IsWithinDistInMap(target, INTERACTION_DISTANCE);
+}
+
+std::string const ReachPartyMemberToJumperCableAction::GetTargetName() { return "party member to jumper cable"; }

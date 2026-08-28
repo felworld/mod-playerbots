@@ -70,4 +70,13 @@ public:
     std::string const GetTargetName() override;
 };
 
+class ReachPartyMemberToJumperCableAction : public ReachTargetAction
+{
+public:
+    ReachPartyMemberToJumperCableAction(PlayerbotAI* botAI);
+
+    bool isUseful() override;
+    std::string const GetTargetName() override;
+};
+
 #endif

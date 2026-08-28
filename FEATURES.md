@@ -1653,7 +1653,13 @@ stealth, and no gadget is worth spending a stealth opener or a vanish
 on. And after
 the fight, a bot with no real resurrection spell but a set of jumper
 cables will walk to a dead group member and try a jump-start — the
-item's native fail chance supplies the comedy. Duels honor
+item's native fail chance supplies the comedy. Cables are a last
+resort, not a race: as long as any living group member actually knows a
+resurrection spell (checked in the spellbook, so a level-9 priest
+doesn't count), the engineer leaves the corpse to them. When cables are
+genuinely the only option, the engineer jump-starts a dead resurrecter
+first — one success recovers the whole group — and falls back to anyone
+only when the group has no resurrecters at all. Duels honor
 `AiPlayerbot.DuelConsumables` (engineering items are tier `1`, the
 Felworld setting).
 
@@ -1664,7 +1670,10 @@ a couple of engineers, and a robotic tell besides. The one exception is
 jumper cables, which get a "Trying Goblin Jumper Cables on Ledeyn" line:
 out of combat, aimed at a person, with a native fail chance, it is the
 one gadget moment a player would actually type about — and it explains
-why the bot is standing over a corpse channeling. No other config knobs.
+why the bot is standing over a corpse channeling. That canned line sits
+behind `AiPlayerbot.EngineeringChatter` (default on); the llm session
+mode turns it off and mod-llm voices the moment in the bot's own words
+instead. No other config knobs.
 
 ## Outlived immunities
 

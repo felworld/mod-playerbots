@@ -6,6 +6,8 @@
 
 #include "EngineeringDeviceActions.h"
 
+#include <mutex>
+
 #include "ChatHelper.h"
 #include "Event.h"
 #include "Item.h"
@@ -20,6 +22,18 @@
 
 namespace
 {
+    std::vector<std::function<void(JumperCablesNotification const&)>>& CablesListeners()
+    {
+        static std::vector<std::function<void(JumperCablesNotification const&)>> listeners;
+        return listeners;
+    }
+
+    std::mutex& CablesListenersMutex()
+    {
+        static std::mutex mutex;
+        return mutex;
+    }
+
     uint32 OnUseSpellId(ItemTemplate const* proto)
     {
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
@@ -70,6 +84,19 @@ namespace
 
         return true;
     }
+}
+
+void RegisterJumperCablesListener(std::function<void(JumperCablesNotification const&)> listener)
+{
+    std::lock_guard<std::mutex> lock(CablesListenersMutex());
+    CablesListeners().push_back(std::move(listener));
+}
+
+void FireJumperCablesNotification(JumperCablesNotification const& notification)
+{
+    std::lock_guard<std::mutex> lock(CablesListenersMutex());
+    for (auto const& listener : CablesListeners())
+        listener(notification);
 }
 
 namespace EngineeringDevices
@@ -203,7 +230,7 @@ bool UseJumperCablesAction::isUseful()
             break;
     }
 
-    Unit* target = AI_VALUE(Unit*, "party member to resurrect");
+    Unit* target = AI_VALUE(Unit*, "party member to jumper cable");
     return target && bot->IsWithinDistInMap(target, INTERACTION_DISTANCE);
 }
 
@@ -214,7 +241,7 @@ bool UseJumperCablesAction::isPossible()
 
 bool UseJumperCablesAction::Execute(Event /*event*/)
 {
-    Unit* target = AI_VALUE(Unit*, "party member to resurrect");
+    Unit* target = AI_VALUE(Unit*, "party member to jumper cable");
     if (!target)
         return false;
 
@@ -222,11 +249,18 @@ bool UseJumperCablesAction::Execute(Event /*event*/)
     if (!item || !UseDevice(bot, botAI, item, target))
         return false;
 
+    JumperCablesNotification notification;
+    notification.user = bot;
+    notification.itemName = item->GetTemplate()->Name1;
+    notification.targetName = target->GetName();
+    FireJumperCablesNotification(notification);
+
     // The one gadget worth a chat line: out of combat, aimed at a person, and
     // it explains why the bot is standing over a corpse channeling.
-    botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
-        "use_jumper_cables",
-        "Trying %item on %target",
-        {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
+    if (sPlayerbotAIConfig.engineeringChatter)
+        botAI->TellMasterNoFacing(PlayerbotTextMgr::instance().GetBotTextOrDefault(
+            "use_jumper_cables",
+            "Trying %item on %target",
+            {{"%item", chat->FormatItem(item->GetTemplate())}, {"%target", target->GetName()}}));
     return true;
 }

@@ -3123,6 +3123,11 @@ AiPlayerbot.GroupChatter = 1
 # same shape in a party of two or a raid of twenty-five.
 AiPlayerbot.GroupChatterChance = 85
 AiPlayerbot.GroupChatterFalloff = 30
+# The canned "Trying Goblin Jumper Cables on X" line when an engineer bot
+# attempts an improvised resurrection - the one gadget that gets announced
+# (everything else fires silently). Felworld's llm session mode turns this
+# off and lets mod-llm voice the moment in the bot's own words instead.
+AiPlayerbot.EngineeringChatter = 1
 # Chance to reply to toxic links with toxic links (0-100)
 AiPlayerbot.ToxicLinksRepliesChance = 30
 # Chance to reply to Thunderfury with Thunderfury (0-100)
