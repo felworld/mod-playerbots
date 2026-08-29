@@ -7,6 +7,7 @@
 #include "GenericSpellActions.h"
 #include "CcTargetValue.h"
 #include "Chat.h"
+#include "DispelBackoff.h"
 #include "Event.h"
 #include "GenericBuffUtils.h"
 #include "Group.h"
@@ -767,5 +768,6 @@ bool CastDebuffSpellAction::isUseful()
         return false;
 
     return CastAuraSpellAction::isUseful() &&
-           (target->GetHealth() / AI_VALUE(float, "estimated group dps")) >= needLifeTime;
+           (target->GetHealth() / AI_VALUE(float, "estimated group dps")) >= needLifeTime &&
+           !DispelBackoffActive(bot, target, AI_VALUE2(uint32, "spell id", spell));
 }

@@ -36,6 +36,10 @@ is in [FEATURES.md](FEATURES.md). In brief:
   interrupts, dispels, and emergency heals fire after a jittered
   human-scale delay, and occasionally miss, instead of triggering
   instantly every time.
+- **[Debuffs that stop feeding the cleanse](FEATURES.md#debuffs-that-stop-feeding-the-cleanse)** —
+  a bot whose DoTs keep getting dispelled off a target stops reapplying
+  that dispel school and switches to direct damage, instead of pumping
+  globals into a Paladin's Cleanse forever.
 - **[Pet group etiquette](FEATURES.md#pet-group-etiquette)** — bot pets
   assist their owner's target, keep taunts off in instanced groups and
   against players, and heel on disengage instead of body-pulling the next

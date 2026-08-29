@@ -616,6 +616,7 @@ public:
     PlayerbotsBattlefieldScript() : BattlefieldScript("PlayerbotsBattlefieldScript") { }
 };
 
+void AddPlayerbotsDispelScripts();
 void AddPlayerbotsSecureLoginScripts();
 void AddPlayerbotsSocialScripts();
 void AddPlayerbotsTelemetryScripts();
@@ -638,6 +639,7 @@ void AddPlayerbotsScripts()
     new PlayerbotsWorldScript();
     new PlayerbotsScript();
     new PlayerBotsBGScript();
+    AddPlayerbotsDispelScripts();
     AddPlayerbotsSecureLoginScripts();
     AddPlayerbotsSocialScripts();
     AddPlayerbotsTelemetryScripts();

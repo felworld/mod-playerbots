@@ -611,6 +611,20 @@ AiPlayerbot.MissingBuffReagentMessageCooldown = 300
 # Bots can flee from enemies
 AiPlayerbot.FleeingEnabled = 1
 
+# Stop reapplying debuffs into a cleanse loop (Felworld). When an opponent
+# dispels DebuffDispelBackoffCount of a bot's debuffs of the same dispel
+# school (magic/curse/disease/poison) off the same target within
+# DebuffDispelBackoffSeconds, the bot holds every debuff of that school
+# against that target and falls through to its direct-damage rotation
+# instead. The window slides, so the bot re-tests once things quiet down
+# and backs off again immediately if the re-test gets cleansed too. The
+# board learns per opponent and per school, so a Paladin who cleanses
+# magic and disease still eats curses. Applies in PvP and PvE alike.
+# 0 disables (bots reapply debuffs no matter how often they are dispelled).
+# Default: 2 / 45
+AiPlayerbot.DebuffDispelBackoffCount = 2
+AiPlayerbot.DebuffDispelBackoffSeconds = 45
+
 #
 #
 ####################################################################################################

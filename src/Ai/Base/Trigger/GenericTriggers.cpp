@@ -11,6 +11,7 @@
 #include "Corpse.h"
 #include "CraftBandageAction.h"
 #include "CreatureAI.h"
+#include "DispelBackoff.h"
 #include "DungeonHoldValues.h"
 #include "EngineeringDeviceActions.h"
 #include "EngineeringTinkerActions.h"
@@ -447,7 +448,8 @@ bool DebuffTrigger::IsActive()
         return false;
 
     return BuffTrigger::IsActive() &&
-           (target->GetHealth() / AI_VALUE(float, "estimated group dps")) >= needLifeTime;
+           (target->GetHealth() / AI_VALUE(float, "estimated group dps")) >= needLifeTime &&
+           !DispelBackoffActive(bot, target, AI_VALUE2(uint32, "spell id", spell));
 }
 
 bool DebuffOnBossTrigger::IsActive()

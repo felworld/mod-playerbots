@@ -222,6 +222,10 @@ public:
     uint32 dungeonHoldEngageDelay;
     uint32 dungeonHoldTimeout;
 
+    // holding dispelled debuffs instead of reapplying into a cleanse loop (Felworld)
+    uint32 debuffDispelBackoffCount;
+    uint32 debuffDispelBackoffSeconds;
+
     // bystander assist (Felworld)
     bool enableBystanderAssist;
     float bystanderAssistRadius;

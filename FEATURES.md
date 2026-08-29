@@ -99,6 +99,33 @@ windows (defaults 200–1500 ms interrupts, 300–2000 ms emergency heals,
 (default 5) in `playerbots.conf.dist`; set a `Max` to 0 to restore the
 robotic instant reactions for that category.
 
+## Debuffs that stop feeding the cleanse
+
+A DoT class fighting an opponent who can dispel used to lock into a loop:
+the missing-debuff triggers outrank the damage rotation, so every Cleanse
+re-armed them and the bot spent all its globals reapplying Shadow Word:
+Pain into a Paladin who removed it on sight — never a Mind Blast, never a
+kill ([felworld/mod-playerbots#108](https://github.com/felworld/mod-playerbots/issues/108)).
+Now bots learn what a human learns mid-fight. A core `UnitScript` hook
+records every enemy dispel of a bot's debuff on a board keyed by bot,
+target, and dispel school; once `AiPlayerbot.DebuffDispelBackoffCount`
+(default 2) dispels of the same school land within
+`AiPlayerbot.DebuffDispelBackoffSeconds` (default 45), the shared debuff
+trigger and action bases hold every debuff of that school against that
+target, and the engine falls through to the direct-damage rotation.
+
+Keying by school rather than spell is the point: two cleansed Shadow Word:
+Pains prove Vampiric Touch will not stick either, while a Warlock's curses
+still land on a Paladin who cannot touch curses. The board learns each
+opponent's actual dispel coverage — no class table, so a Ret Paladin who
+never bothers cleansing keeps eating DoTs, and a dispelling PvE mob gets
+the same treatment. The window slides, so the bot re-tests a dot once
+things quiet down (baiting the odd dispel is real play, and costs the
+opponent mana and globals) and backs straight off again if the re-test
+gets cleansed. Applies to every class's debuffs through the shared
+`DebuffTrigger`/`CastDebuffSpellAction` bases; set the count to 0 to
+restore the upstream reapply-forever behavior.
+
 ## Pet group etiquette
 
 Hunter, warlock, death knight, frost mage, and enhancement shaman pets

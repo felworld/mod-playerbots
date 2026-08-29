@@ -655,6 +655,11 @@ bool PlayerbotAIConfig::Initialize()
     dungeonHoldEngageDelay = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonHoldEngageDelay", 1500);
     dungeonHoldTimeout = sConfigMgr->GetOption<uint32>("AiPlayerbot.DungeonHoldTimeout", 5000);
 
+    // holding dispelled debuffs instead of reapplying into a cleanse loop (Felworld)
+    debuffDispelBackoffCount = sConfigMgr->GetOption<uint32>("AiPlayerbot.DebuffDispelBackoffCount", 2);
+    debuffDispelBackoffSeconds =
+        std::max<uint32>(sConfigMgr->GetOption<uint32>("AiPlayerbot.DebuffDispelBackoffSeconds", 45), 1);
+
     // bystander assist (Felworld)
     enableBystanderAssist = sConfigMgr->GetOption<bool>("AiPlayerbot.EnableBystanderAssist", true);
     bystanderAssistRadius = sConfigMgr->GetOption<float>("AiPlayerbot.BystanderAssistRadius", 40.0f);
