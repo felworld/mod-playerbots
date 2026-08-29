@@ -1870,6 +1870,56 @@ that landed, because the core only drops the aura of the exact spell
 re-cast, and it is left standing until the aura is actually gone, so an
 interrupted release is retried.
 
+[Enemy immunity standoff](#enemy-immunity-standoff) is the same problem
+from the other side: an enemy's immunity pointed at the bot.
+
+## Enemy immunity standoff
+
+Upstream filters any unit that is immune to all damage out of every
+target list a bot keeps, so the moment a paladin cast Divine Shield
+mid-fight the bot's opponent ceased to exist for it: the combat engine
+dropped the target, the grind strategy found a new one, and a bot that
+had been winning a world PvP duel walked off and pulled a mob -
+committing its health and cooldowns to PvE right next to an armed
+enemy, since a bubbled paladin can keep swinging at a bot that cannot
+swing back.
+
+Now the bot does what a player does: waits the bubble out on its own
+terms. While an enemy player within notice range is immune to all
+damage - Divine Shield, Ice Block, whatever the aura; the check is the
+same condition that empties the target lists - the bot stops starting
+mob fights, backs out of the enemy's reach (~30 yards), and lets the
+ordinary recovery behaviors fill the window: food, drink, self-heals.
+The moment the immunity runs out the enemy re-enters every target list
+and the ordinary PvP paths resume the fight, no further ceremony.
+Spotting the bubble goes through the
+[human reaction latency](#human-reaction-latency) layer - the same
+family as a dispel - so nobody peels frame-perfectly on the cast.
+
+Two classes have a sharper answer, tried before the walk-away:
+
+- A **rogue** being beaten on by an immune enemy Vanishes out from
+  under the swings; the retreat then continues stealthed, and the
+  re-opener when the bubble drops is the normal stealth opening.
+- A **priest** who knows Mass Dispel strips the bubble outright and
+  resumes the fight now, gated on mana (the spell costs a third of base
+  mana) and range. The cast goes by position, since a unit-target cast
+  refuses immune targets; piercing the immunity is Mass Dispel's own
+  privilege in the spell data.
+
+A **warrior** already carries the in-combat version of that answer:
+Shattering Throw (see [Per-class PvP passes](#per-class-pvp-passes))
+breaks exactly the immunities Mass Dispel strips.
+
+Duel opponents count (a duel can be same-faction); zones where PvP is
+prohibited do not - there is nothing to wait out where the fight cannot
+resume. Open world only: battleground objective play keeps its own
+flow. `AiPlayerbot.ImmunityStandoff` (default on, `0` disables) turns
+the standoff, the pull-hold and both class answers off together.
+[Outlived immunities](#outlived-immunities) is the mirror image - the
+bot's own immunity outliving its use, rather than an enemy's standing
+in the way.
+
 ## Emote exchanges that end
 
 Bot-to-bot emote exchanges end instead of looping. Upstream bots reacting

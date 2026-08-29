@@ -225,6 +225,11 @@ is in [FEATURES.md](FEATURES.md). In brief:
   of sitting out its full duration after the danger has passed. A warlock
   likewise releases its Banish once the rest of the pull is dead, so the
   group is not left standing over a mob it cannot touch.
+- **[Enemy immunity standoff](FEATURES.md#enemy-immunity-standoff)** — a
+  bot whose enemy bubbles (Divine Shield, Ice Block) no longer shrugs and
+  pulls a nearby mob; it holds its pulls, backs off and recovers until the
+  immunity expires — rogues Vanish out from under a still-swinging bubbled
+  attacker, and priests strip the bubble outright with Mass Dispel.
 - **[Emote exchanges that end](FEATURES.md#emote-exchanges-that-end)** —
   bot-to-bot emote replies trail off instead of ping-ponging forever, and
   crowds don't reply in chorus.
