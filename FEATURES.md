@@ -709,7 +709,11 @@ already go through real need/greed rolls), and chests that everyone can
 loot anyway — the ones that aren't consumed by looting or that restock
 on a timer, so the next player who opens them gets their own copy (the
 Scarlet Monastery fireworks rockets are the classic case) — are exempt,
-as are all-bot groups, which loot the way they always did.
+as are all-bot groups, which loot the way they always did. So are chests
+that do something to the world when opened instead of just paying out —
+a linked trap, an object script, a looted-event: Zul'Farrak's forty
+Shallow Graves each summon a pack of zombies and despawn, so a roll-off
+there is a contest over who springs the trap.
 `AiPlayerbot.ChestRollEnable` in `playerbots.conf.dist` (default off
 upstream-style; enabled in the Felworld config tree).
 

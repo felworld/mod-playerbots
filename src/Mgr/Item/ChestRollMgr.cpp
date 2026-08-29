@@ -56,6 +56,19 @@ bool ChestRollMgr::IsRollableChest(GameObject* go, uint32 lootSkillId)
     if (!goInfo->chest.consumable || goInfo->chest.chestRestockTime)
         return false;
 
+    // Opening some chests does more to the world than hand over loot: a
+    // linked trap fires, a script runs, a looted-event goes off. Those are
+    // props and set pieces rather than treasure - Zul'Farrak's Shallow
+    // Graves (entries 128308/128403, forty of them across the instance,
+    // each summoning a pack of Zul'Farrak Zombies on open and despawning
+    // behind them) are the case that named this check. What is being
+    // contested there isn't loot, it's who springs the trap, and announcing
+    // a roll-off for it is a robotic tell. Across the 3.3.5a chest
+    // templates the line catches trapped herb nodes, quest pickups and
+    // event props; no ordinary treasure chest carries any of the three.
+    if (goInfo->chest.linkedTrapId || goInfo->chest.eventId || !goInfo->AIName.empty() || goInfo->ScriptId)
+        return false;
+
     // Gathering nodes are chests too; those stay first-come-first-served.
     switch (lootSkillId)
     {
