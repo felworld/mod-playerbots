@@ -11,6 +11,7 @@
 #include "ChatHelper.h"
 #include "CreatureData.h"
 #include "Event.h"
+#include "ForceRebuff.h"
 #include "GroupChatter.h"
 #include "Item.h"
 #include "NewRpgInfo.h"
@@ -460,6 +461,7 @@ public:
     void ApplyInstanceStrategies(uint32 mapId, bool tellMaster = false);
     // The kit every 5-man gets when no bespoke instance pack covers the map (Felworld).
     void ApplyGenericDungeonStrategies(uint32 mapId, bool hasInstanceStrategy);
+    bool IsInNonRaidDungeon() const;
     bool HasTargetExclusions() const;
     void EvaluateHealerDpsStrategy();
     bool ContainsStrategy(StrategyType type);
@@ -699,6 +701,7 @@ public:
     std::unordered_set<uint32> lowPriorityQuest;
     time_t bgReleaseAttemptTime = 0;
     QuestCompetitionInfo questCompetitionInfo;
+    ForceRebuffState forceRebuff;
 
     // Schedules a callback to run once after <delayMs> milliseconds.
     void AddTimedEvent(std::function<void()> callback, uint32 delayMs);

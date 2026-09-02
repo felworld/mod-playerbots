@@ -7,6 +7,7 @@
 #include "Trigger.h"
 #include "AiObjectContext.h"
 #include "Event.h"
+#include "PlayerbotAI.h"
 #include "Random.h"
 #include "Timer.h"
 #include "Unit.h"
@@ -81,6 +82,10 @@ Unit* Trigger::GetTarget() { return GetTargetValue()->Get(); }
 
 bool Trigger::needCheck(uint32 now)
 {
+    // During an out-of-combat force-rebuff, evaluate every buff trigger each tick
+    if (IsBuffTrigger() && !IsDebuffTrigger() && botAI->forceRebuff.IsPending() && !bot->IsInCombat())
+        return true;
+
     if (checkInterval < 2)
         return true;
 

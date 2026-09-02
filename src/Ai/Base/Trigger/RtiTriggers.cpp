@@ -33,7 +33,7 @@ bool RtiCcTrigger::IsActive()
 
     Unit* ccTarget = AI_VALUE2(Unit*, "cc target", getName());
     if (ccTarget && ccTarget == rtiCcTarget)
-        return HasCcTargetTrigger::IsActive();
+        return IsCcTargetFree(ccTarget, rtiCcTarget);
 
     return IsWorthCrowdControlling(botAI, rtiCcTarget) && botAI->CanCastSpell(getName(), rtiCcTarget);
 }
