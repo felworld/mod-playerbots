@@ -233,10 +233,7 @@ bool BuffTrigger::IsActive()
         return false;
 
     Aura* aura = botAI->GetAura(spell, target, checkIsOwner, checkDuration);
-    if (!aura || (beforeDuration && uint32(aura->GetDuration()) < beforeDuration))
-        return true;
-
-    return false;
+    return ai::buff::BuffBelowRefreshTarget(botAI, aura, beforeDuration);
 }
 
 Value<Unit*>* BuffOnPartyTrigger::GetTargetValue()
@@ -757,11 +754,23 @@ bool IsNotFacingTargetTrigger::IsActive()
 // worth controlling and whether this bot has budget left on it (Felworld).
 bool HasCcTargetTrigger::IsActive()
 {
-    if (AI_VALUE2(Unit*, "current cc target", getName()))
+    // Upstream gates crowd control in 5-mans on a raid icon so bots stop re-sheeping a mob the
+    // party is killing; Felworld answers that with IsWorthCrowdControlling instead, so a marked
+    // mob is honoured when the leader sets one and CC still runs in an unmarked bot-only party.
+    Unit* rtiCcTarget = botAI->IsInNonRaidDungeon() ? AI_VALUE(Unit*, "rti cc target") : nullptr;
+    Unit* target = AI_VALUE2(Unit*, "cc target", getName());
+    if (!IsCcTargetFree(target, rtiCcTarget))
         return false;
 
-    Unit* target = AI_VALUE2(Unit*, "cc target", getName());
-    return target && IsWorthCrowdControlling(botAI, target);
+    return IsWorthCrowdControlling(botAI, target);
+}
+
+bool HasCcTargetTrigger::IsCcTargetFree(Unit* ccTarget, Unit* rtiCcTarget)
+{
+    if (!ccTarget || (rtiCcTarget && ccTarget != rtiCcTarget))
+        return false;
+
+    return !AI_VALUE2(Unit*, "current cc target", getName());
 }
 
 bool MovingFillerTrigger::IsActive()
@@ -1119,4 +1128,9 @@ bool GloveTinkerTrigger::IsActive()
         return false;
 
     return EngineeringTinkers::UsableEquipped(bot, EQUIPMENT_SLOT_HANDS, false) != nullptr;
+}
+
+bool ForceRebuffPendingTrigger::IsActive()
+{
+    return botAI->forceRebuff.IsPending();
 }
