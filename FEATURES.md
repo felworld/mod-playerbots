@@ -409,7 +409,11 @@ Enemy players answer to the budget alone — diminishing returns already
 price their re-controls, and the solo breather Polymorph wants an
 opponent that is losing. A raid icon set for crowd control buys no
 exemption: a marked mob the group has started killing is still not
-re-sheeped.
+re-sheeped. Inside a 5-man dungeon the icon does narrow the choice:
+once the leader marks a mob for control, that is the only mob the bots
+will control. (Upstream gates dungeon crowd control on the icon
+entirely, which would silence it in a bot-only party; the unmarked
+case keeps working here.)
 
 ## Off-role bots do not main-heal
 
